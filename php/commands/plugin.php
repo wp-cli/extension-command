@@ -1,14 +1,12 @@
 <?php
 
-WP_CLI::add_command('plugin', 'Plugin_Command');
-
 /**
  * Implement plugin command
  *
  * @package wp-cli
  * @subpackage commands/internals
  */
-class Plugin_Command extends WP_CLI_Command_With_Upgrade {
+class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	protected $item_type = 'plugin';
 	protected $upgrader = 'Plugin_Upgrader';
@@ -191,7 +189,22 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 			$this->delete( $args, array(), false );
 			$this->install( $args, $assoc_args );
 		} else {
-			parent::update( $args, $assoc_args );
+			list( $basename ) = $this->parse_name( $args );
+
+			$was_active = is_plugin_active( $basename );
+			$was_network_active = is_plugin_active_for_network( $basename );
+
+			parent::_update( $basename );
+
+			if ( $was_active ) {
+				$new_args = array( $args[0] );
+
+				$new_assoc_args = array();
+				if ( $was_network_active )
+					$new_assoc_args['network'] = true;
+
+				$this->activate( $new_args, $new_assoc_args );
+			}
 		}
 	}
 
@@ -332,3 +345,6 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		return $name;
 	}
 }
+
+WP_CLI::add_command( 'plugin', 'Plugin_Command' );
+

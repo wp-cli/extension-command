@@ -1,14 +1,12 @@
 <?php
 
-WP_CLI::add_command('theme', 'Theme_Command');
-
 /**
  * Implement theme command
  *
  * @package wp-cli
  * @subpackage commands/internals
  */
-class Theme_Command extends WP_CLI_Command_With_Upgrade {
+class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 	protected $item_type = 'theme';
 	protected $upgrader = 'Theme_Upgrader';
@@ -168,10 +166,12 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	/**
 	 * Update a theme.
 	 *
-	 * @synopsis <theme>
+	 * @synopsis <theme> [--version=<version>]
 	 */
 	function update( $args, $assoc_args ) {
-		parent::update( $args, $assoc_args );
+		list( $_, $name ) = $this->parse_name( $args );
+
+		parent::_update( $name );
 	}
 
 	/**
@@ -221,3 +221,6 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		return WP_CONTENT_DIR . '/themes/' . $theme . '/style.css';
 	}
 }
+
+WP_CLI::add_command( 'theme', 'Theme_Command' );
+
