@@ -1,0 +1,41 @@
+{
+    "name": "wp-cli/extension-command",
+    "description": "Manage WordPress plugins and themes.",
+    "type": "wp-cli-package",
+    "homepage": "https://github.com/wp-cli/extension-command",
+    "support": {
+        "issues": "https://github.com/wp-cli/extension-command/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Daniel Bachhuber",
+            "email": "daniel@runcommand.io",
+            "homepage": "https://runcommand.io"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "": "src/",
+            "WP_CLI\\": "src/WP_CLI"
+        },
+        "files": [ "extension-command.php" ]
+    },
+    "require": {},
+    "require-dev": {
+        "behat/behat": "~2.5",
+        "wp-cli/wp-cli": "*"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.x-dev"
+        },
+        "commands": [
+            "plugin",
+            "theme",
+            "theme mod"
+        ]
+    }
+}

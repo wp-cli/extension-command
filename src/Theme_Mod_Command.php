@@ -198,5 +198,3 @@ class Theme_Mod_command extends WP_CLI_Command {
 	}
 
 }
-
-WP_CLI::add_command( 'theme mod', 'Theme_Mod_Command' );
