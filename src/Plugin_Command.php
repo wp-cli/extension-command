@@ -989,5 +989,3 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		return ! WP_CLI::launch( $command . $path );
 	}
 }
-
-WP_CLI::add_command( 'plugin', 'Plugin_Command' );

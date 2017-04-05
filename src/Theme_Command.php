@@ -772,5 +772,3 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		parent::_list( $_, $assoc_args );
 	}
 }
-
-WP_CLI::add_command( 'theme', 'Theme_Command' );
