@@ -49,7 +49,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		'version'
 	);
 
-	function __construct() {
+	public function __construct() {
 		require_once ABSPATH.'wp-admin/includes/plugin.php';
 		require_once ABSPATH.'wp-admin/includes/plugin-install.php';
 
@@ -542,7 +542,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @alias upgrade
 	 */
-	function update( $args, $assoc_args ) {
+	public function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['version'] ) ) {
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 				$assoc_args['force'] = 1;

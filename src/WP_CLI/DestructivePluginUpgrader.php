@@ -7,7 +7,7 @@ namespace WP_CLI;
  */
 class DestructivePluginUpgrader extends \Plugin_Upgrader {
 
-	function install_package( $args = array() ) {
+	public function install_package( $args = array() ) {
 		parent::upgrade_strings();  // needed for the 'remove_old' string
 
 		$args['clear_destination'] = true;
