@@ -99,6 +99,15 @@ Feature: Manage WordPress themes
       P2 updated successfully from version 1.4.1 to version
       """
 
+    When I run `wp theme install p2 --version=1.4.1 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update --all`
+    Then STDOUT should contain:
+      """
+      Success: Updated 1 of 1 themes.
+      """
+
   Scenario: Get the path of an installed theme
     Given a WP install
 
