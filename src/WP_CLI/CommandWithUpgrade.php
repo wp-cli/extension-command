@@ -15,7 +15,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected $chained_command = false;
 
-	function __construct() {
+	public function __construct() {
 		// Do not automatically check translations updates after updating plugins/themes.
 		add_action( 'upgrader_process_complete', function() {
 			remove_action( 'upgrader_process_complete', array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 );
@@ -41,7 +41,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
 
-	function status( $args ) {
+	public function status( $args ) {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
@@ -119,7 +119,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		\WP_CLI::line( 'Legend: ' . \WP_CLI::colorize( implode( ', ', $legend_line ) ) );
 	}
 
-	function install( $args, $assoc_args ) {
+	public function install( $args, $assoc_args ) {
 
 		$successes = $errors = 0;
 		foreach ( $args as $slug ) {
