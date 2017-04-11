@@ -346,7 +346,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				\WP_CLI\Utils\format_items( $format, $status, array( 'name', 'old_version', 'new_version', 'status' ) );
 			}
 		}
-		Utils\report_batch_operation_results( $this->item_type, 'update', count( $args ), $num_updated, $errors );
+		Utils\report_batch_operation_results( $this->item_type, 'update', $num_to_update, $num_updated, $errors );
 	}
 
 	protected function _list( $_, $assoc_args ) {
