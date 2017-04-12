@@ -655,7 +655,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     # Check whether theme is installed; exit status 0 if installed, otherwise 1
-	 *     $ wp theme is-installed hello-dolly
+	 *     $ wp theme is-installed hello
 	 *     $ echo $?
 	 *     1
 	 *
