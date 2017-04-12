@@ -8,18 +8,18 @@ use \WP_CLI\Utils;
  * ## EXAMPLES
  *
  *     # Activate plugin
- *     $ wp plugin activate hello-dolly
- *     Plugin 'hello-dolly' activated.
+ *     $ wp plugin activate hello
+ *     Plugin 'hello' activated.
  *     Success: Activated 1 of 1 plugins.
  *
  *     # Deactivate plugin
- *     $ wp plugin deactivate hello-dolly
- *     Plugin 'hello-dolly' deactivated.
+ *     $ wp plugin deactivate hello
+ *     Plugin 'hello' deactivated.
  *     Success: Deactivated 1 of 1 plugins.
  *
  *     # Delete plugin
- *     $ wp plugin delete hello-dolly
- *     Deleted 'hello-dolly' plugin.
+ *     $ wp plugin delete hello
+ *     Deleted 'hello' plugin.
  *     Success: Deleted 1 of 1 plugins.
  *
  *     # Install the latest version from wordpress.org and activate
@@ -236,13 +236,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     # Activate plugin
-	 *     $ wp plugin activate hello-dolly
-	 *     Plugin 'hello-dolly' activated.
+	 *     $ wp plugin activate hello
+	 *     Plugin 'hello' activated.
 	 *     Success: Activated 1 of 1 plugins.
 	 *
 	 *     # Activate plugin in entire multisite network
-	 *     $ wp plugin activate hello-dolly --network
-	 *     Plugin 'hello-dolly' network activated.
+	 *     $ wp plugin activate hello --network
+	 *     Plugin 'hello' network activated.
 	 *     Success: Network activated 1 of 1 plugins.
 	 */
 	public function activate( $args, $assoc_args = array() ) {
@@ -314,8 +314,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     # Deactivate plugin
-	 *     $ wp plugin deactivate hello-dolly
-	 *     Plugin 'hello-dolly' deactivated.
+	 *     $ wp plugin deactivate hello
+	 *     Plugin 'hello' deactivated.
 	 *     Success: Deactivated 1 of 1 plugins.
 	 */
 	public function deactivate( $args, $assoc_args = array() ) {
@@ -801,7 +801,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     # Check whether plugin is installed; exit status 0 if installed, otherwise 1
-	 *     $ wp plugin is-installed hello-dolly
+	 *     $ wp plugin is-installed hello
 	 *     $ echo $?
 	 *     1
 	 *
