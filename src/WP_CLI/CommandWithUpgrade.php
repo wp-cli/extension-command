@@ -248,9 +248,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$response = wp_remote_head( $response->download_link );
 			$response_code = wp_remote_retrieve_response_code( $response );
 			if ( 200 !== $response_code ) {
+				if ( is_wp_error( $response ) ) {
+					$error_msg = $response->get_error_message();
+				} else {
+					$error_msg = sprintf( 'HTTP code %d', $response_code );
+				}
 				\WP_CLI::error( sprintf(
-					"Can't find the requested %s's version %s in the WordPress.org %s repository (HTTP code %d).",
-					$download_type, $version, $download_type, $response_code ) );
+					"Can't find the requested %s's version %s in the WordPress.org %s repository (%s).",
+					$download_type, $version, $download_type, $error_msg ) );
 			}
 		}
 	}
