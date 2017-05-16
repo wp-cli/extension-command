@@ -331,7 +331,19 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$cache_manager->whitelist_package($item['update_package'], $this->item_type, $item['name'], $item['update_version']);
 			}
 			$upgrader = $this->get_upgrader( $assoc_args );
+			// Ensure the upgrader uses the download offer present in each item
+			$transient_filter = function( $transient ) use ( $items_to_update ) {
+				foreach( $items_to_update as $name => $item_data ) {
+					if ( isset( $transient->response[ $name ] ) ) {
+						$transient->response[ $name ]->new_version = $item_data['update_version'];
+						$transient->response[ $name ]->package = $item_data['update_package'];
+					}
+				}
+				return $transient;
+			};
+			add_filter( 'site_transient_' . $this->upgrade_transient, $transient_filter, 999 );
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
+			remove_filter( 'site_transient_' . $this->upgrade_transient, $transient_filter, 999 );
 		}
 
 		// Let the user know the results.
