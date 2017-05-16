@@ -499,6 +499,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--all]
 	 * : If set, all plugins that have updates will be updated.
 	 *
+	 * [--minor]
+	 * : Only perform updates for minor releases (e.g. from 1.3 to 1.4 instead of 2.0)
+	 *
+	 * [--patch]
+	 * : Only perform updates for patch releases (e.g. from 1.3 to 1.3.3 instead of 1.4)
+	 *
 	 * [--format=<format>]
 	 * : Output summary as table or summary. Defaults to table.
 	 *
