@@ -33,3 +33,44 @@ Feature: Update WordPress plugins
     Then STDOUT should be a table containing rows:
       | name       | status   | update    | version           |
       | akismet    | inactive | none      | {UPDATE_VERSION}  |
+
+  Scenario: Error when both --minor and --patch are provided
+    Given a WP install
+
+    When I try `wp plugin update --patch --minor --all`
+    Then STDERR should be:
+      """
+      Error: --minor and --patch cannot be used together.
+      """
+
+  Scenario: Update a plugin to its latest patch release
+    Given a WP install
+    And I run `wp plugin install --force akismet --version=2.5.4`
+
+    When I run `wp plugin update akismet --patch`
+    Then STDOUT should contain:
+      """
+      Success: Updated 1 of 1 plugins.
+      """
+
+    When I run `wp plugin get akismet --field=version`
+    Then STDOUT should be:
+      """
+      2.5.10
+      """
+
+  Scenario: Update a plugin to its latest minor release
+    Given a WP install
+    And I run `wp plugin install --force akismet --version=2.5.4`
+
+    When I run `wp plugin update akismet --minor`
+    Then STDOUT should contain:
+      """
+      Success: Updated 1 of 1 plugins.
+      """
+
+    When I run `wp plugin get akismet --field=version`
+    Then STDOUT should be:
+      """
+      2.6.1
+      """
