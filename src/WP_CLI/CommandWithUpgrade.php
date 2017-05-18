@@ -2,6 +2,7 @@
 
 namespace WP_CLI;
 
+use Composer\Semver\Comparator;
 use WP_CLI;
 use WP_CLI\Utils;
 
@@ -277,6 +278,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			\WP_CLI::error( "Please specify one or more {$this->item_type}s, or use --all." );
 		}
 
+		if ( Utils\get_flag_value( $assoc_args, 'minor' ) && Utils\get_flag_value( $assoc_args, 'patch' ) ) {
+			WP_CLI::error( '--minor and --patch cannot be used together.' );
+		}
+
 		$items = $this->get_item_list();
 
 		$errors = 0;
@@ -288,6 +293,13 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$items_to_update = wp_list_filter( $items, array(
 			'update' => true
 		) );
+
+		if ( 'plugin' === $this->item_type
+			&& ( Utils\get_flag_value( $assoc_args, 'minor' )
+			|| Utils\get_flag_value( $assoc_args, 'patch' ) ) ) {
+			$type = Utils\get_flag_value( $assoc_args, 'minor' ) ? 'minor' : 'patch';
+			$items_to_update = self::get_minor_or_patch_updates( $items_to_update, $type );
+		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' ) ) {
 			if ( empty( $items_to_update ) ) {
@@ -319,7 +331,19 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$cache_manager->whitelist_package($item['update_package'], $this->item_type, $item['name'], $item['update_version']);
 			}
 			$upgrader = $this->get_upgrader( $assoc_args );
+			// Ensure the upgrader uses the download offer present in each item
+			$transient_filter = function( $transient ) use ( $items_to_update ) {
+				foreach( $items_to_update as $name => $item_data ) {
+					if ( isset( $transient->response[ $name ] ) ) {
+						$transient->response[ $name ]->new_version = $item_data['update_version'];
+						$transient->response[ $name ]->package = $item_data['update_package'];
+					}
+				}
+				return $transient;
+			};
+			add_filter( 'site_transient_' . $this->upgrade_transient, $transient_filter, 999 );
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
+			remove_filter( 'site_transient_' . $this->upgrade_transient, $transient_filter, 999 );
 		}
 
 		// Let the user know the results.
@@ -448,6 +472,60 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		);
 
 		return $colors[ $status ];
+	}
+
+	/**
+	 * Get the minor or patch version for plugins with available updates
+	 *
+	 * @param array  $items Plugins with updates.
+	 * @param string $type  Either 'minor' or 'patch'
+	 * @return array
+	 */
+	private function get_minor_or_patch_updates( $items, $type ) {
+		foreach ( $items as $i => $item ) {
+			$wporg_url = sprintf( 'https://api.wordpress.org/plugins/info/1.0/%s.json', $item['name'] );
+			$response = Utils\http_request( 'GET', $wporg_url );
+			// Must not be hosted on wp.org
+			if ( 20 != substr( $response->status_code, 0, 2 ) ) {
+				unset( $items[ $i ] );
+				continue;
+			}
+			$data = json_decode( $response->body, true );
+			// No minor or patch versions to access
+			if ( empty( $data['versions'] ) ) {
+				unset( $items[ $i ] );
+				continue;
+			}
+			$update_version = $update_package = false;
+			foreach ( $data['versions'] as $version => $download_link ) {
+				$update_type = Utils\get_named_sem_ver( $version, $item['version'] );
+				// Compared version must be older
+				if ( ! $update_type ) {
+					continue;
+				}
+				// Only permit 'patch' for 'patch'
+				if ( 'patch' === $type && 'patch' !== $update_type ) {
+					continue;
+				}
+				// Permit 'minor' or 'patch' for 'minor'
+				if ( 'minor' === $type && ! in_array( $update_type, array( 'minor', 'patch' ), true ) ) {
+					continue;
+				}
+				if ( $update_version && ! Comparator::greaterThan( $version, $update_version ) ) {
+					continue;
+				}
+				$update_version = $version;
+				$update_package = $download_link;
+			}
+			// If there's not a matching version, bail on updates
+			if ( ! $update_version ) {
+				unset( $items[ $i ] );
+				continue;
+			}
+			$items[ $i ]['update_version'] = $update_version;
+			$items[ $i ]['update_package'] = $update_package;
+		}
+		return $items;
 	}
 
 	/**
