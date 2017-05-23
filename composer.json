@@ -33,9 +33,34 @@
             "dev-master": "1.x-dev"
         },
         "commands": [
-            "plugin",
-            "theme",
-            "theme mod"
+            "plugin activate",
+            "plugin deactivate",
+            "plugin delete",
+            "plugin get",
+            "plugin install",
+            "plugin is-installed",
+            "plugin list",
+            "plugin path",
+            "plugin search",
+            "plugin status",
+            "plugin toggle",
+            "plugin uninstall",
+            "plugin update",
+            "theme activate",
+            "theme delete",
+            "theme disable",
+            "theme enable",
+            "theme get",
+            "theme install",
+            "theme is-installed",
+            "theme list",
+            "theme mod get",
+            "theme mod set",
+            "theme mod remove",
+            "theme path",
+            "theme search",
+            "theme status",
+            "theme update"
         ]
     }
 }
