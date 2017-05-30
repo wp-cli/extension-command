@@ -46,11 +46,29 @@ Feature: Update WordPress plugins
   Scenario: Exclude plugin updates from bulk updates.
     Given a WP install
 
-    When I run `wp plugin update --all --exclude=akismet`
-    Then STDOUT should not contain:
+    When I run `wp plugin install akismet --version=3.0.0 --force`    
+    Then STDOUT should contain:
+      """"
+      Downloading install package from https://downloads.wordpress.org/plugin/akismet.3.0.0.zip...
+      """"
+
+    When I run `wp plugin status akismet`
+    Then STDOUT should contain:
+      """"
+      Update available
+      """"
+
+    When I run `wp plugin update --all --exclude=akismet | grep 'Skipped'`
+    Then STDOUT should contain:
       """
       akismet
       """
+
+    When I run `wp plugin status akismet`
+    Then STDOUT should contain:
+      """"
+      Update available
+      """"
 
   Scenario: Update a plugin to its latest patch release
     Given a WP install
