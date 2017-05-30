@@ -43,6 +43,15 @@ Feature: Update WordPress plugins
       Error: --minor and --patch cannot be used together.
       """
 
+  Scenario: Exclude plugin updates from bulk updates.
+    Given a WP install
+
+    When I run `wp plugin update --all --exclude=akismet`
+    Then STDOUT should not contain:
+      """
+      akismet
+      """
+
   Scenario: Update a plugin to its latest patch release
     Given a WP install
     And I run `wp plugin install --force akismet --version=2.5.4`
