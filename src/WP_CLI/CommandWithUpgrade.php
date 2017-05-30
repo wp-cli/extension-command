@@ -321,6 +321,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' ) ) {
 			if ( empty( $items_to_update ) ) {
 				\WP_CLI::log( "No {$this->item_type} updates available." );
+
+				if ( NULL !== $exclude ) {
+					\WP_CLI::log( "Skipped updates for: $exclude" );
+				}
+
 				return;
 			}
 
@@ -334,6 +339,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			} else {
 				\WP_CLI::log( "Available {$this->item_type} updates:" );
 				\WP_CLI\Utils\format_items( 'table', $items_to_update, array( 'name', 'status', 'version', 'update_version' ) );
+			}
+
+			if ( NULL !== $exclude ) {
+				\WP_CLI::log( "Skipped updates for: $exclude" );
 			}
 
 			return;
@@ -395,6 +404,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$total_updated = Utils\get_flag_value( $assoc_args, 'all' ) ? $num_to_update : count( $args );
 		Utils\report_batch_operation_results( $this->item_type, 'update', $total_updated, $num_updated, $errors );
+		if ( NULL !== $exclude ) {
+			\WP_CLI::log( "Skipped updates for: $exclude" );
+		}
 	}
 
 	protected function _list( $_, $assoc_args ) {
