@@ -108,6 +108,33 @@ Feature: Manage WordPress themes
       Success: Updated 1 of 1 themes.
       """
 
+  Scenario: Exclude theme from bulk updates.
+    Given a WP install
+
+    When I run `wp theme install p2 --version=1.4.1 --force`    
+    Then STDOUT should contain:
+      """"
+      Downloading install package from https://downloads.wordpress.org/theme/p2.1.4.1.zip...
+      """"
+
+    When I run `wp theme status p2`
+    Then STDOUT should contain:
+      """"
+      Update available
+      """"
+
+    When I run `wp theme update --all --exclude=p2 | grep 'Skipped'`
+    Then STDOUT should contain:
+      """
+      p2
+      """
+
+    When I run `wp theme status p2`
+    Then STDOUT should contain:
+      """"
+      Update available
+      """"
+
   Scenario: Get the path of an installed theme
     Given a WP install
 
