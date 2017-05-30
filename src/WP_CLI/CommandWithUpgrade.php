@@ -21,6 +21,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		add_action( 'upgrader_process_complete', function() {
 			remove_action( 'upgrader_process_complete', array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 );
 		}, 1 );
+
+		$this->fetcher = new \WP_CLI\Fetchers\Plugin;
 	}
 
 	abstract protected function get_upgrader_class( $force );
@@ -301,9 +303,29 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$items_to_update = self::get_minor_or_patch_updates( $items_to_update, $type );
 		}
 
+		$exclude = WP_CLI\Utils\get_flag_value( $assoc_args, 'exclude' );
+		if ( isset( $exclude ) ) {
+			$exclude_items = explode( ',', trim( $assoc_args['exclude'], ',' ) );
+			unset( $assoc_args['exclude'] );
+			foreach ( $exclude_items as $item ) {
+				if ( 'plugin' === $this->item_type ) {
+					$plugin = $this->fetcher->get( $item );
+					unset( $items_to_update[ $plugin->file ] );
+				} elseif ( 'theme' === $this->item_type ) {
+					$theme_root = get_theme_root() . '/' . $item;
+					unset( $items_to_update[ $theme_root ] );
+				}
+			}
+		}
+
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' ) ) {
 			if ( empty( $items_to_update ) ) {
 				\WP_CLI::log( "No {$this->item_type} updates available." );
+
+				if ( NULL !== $exclude ) {
+					\WP_CLI::log( "Skipped updates for: $exclude" );
+				}
+
 				return;
 			}
 
@@ -317,6 +339,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			} else {
 				\WP_CLI::log( "Available {$this->item_type} updates:" );
 				\WP_CLI\Utils\format_items( 'table', $items_to_update, array( 'name', 'status', 'version', 'update_version' ) );
+			}
+
+			if ( NULL !== $exclude ) {
+				\WP_CLI::log( "Skipped updates for: $exclude" );
 			}
 
 			return;
@@ -378,6 +404,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$total_updated = Utils\get_flag_value( $assoc_args, 'all' ) ? $num_to_update : count( $args );
 		Utils\report_batch_operation_results( $this->item_type, 'update', $total_updated, $num_updated, $errors );
+		if ( NULL !== $exclude ) {
+			\WP_CLI::log( "Skipped updates for: $exclude" );
+		}
 	}
 
 	protected function _list( $_, $assoc_args ) {
