@@ -498,6 +498,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--all]
 	 * : If set, all plugins that have updates will be updated.
+	 * 
+	 * [--exclude=<name>]
+	 * : Comma separated list of plugin names that should be excluded from updating.
 	 *
 	 * [--minor]
 	 * : Only perform updates for minor releases (e.g. from 1.3 to 1.4 instead of 2.0)
@@ -545,6 +548,20 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     | nginx-cache-controller | 3.1.1       | 3.2.0       | Updated |
 	 *     +------------------------+-------------+-------------+---------+
 	 *     Success: Updated 2 of 2 plugins.
+	 * 
+	 *     $ wp plugin update --all --exclude=akismet
+	 *     Enabling Maintenance mode...
+	 *     Downloading update from https://downloads.wordpress.org/plugin/nginx-champuru.3.2.0.zip...
+	 *     Unpacking the update...
+	 *     Installing the latest version...
+	 *     Removing the old version of the plugin...
+	 *     Plugin updated successfully.
+	 *     Disabling Maintenance mode...
+	 *     +------------------------+-------------+-------------+---------+
+	 *     | name                   | old_version | new_version | status  |
+	 *     +------------------------+-------------+-------------+---------+
+	 *     | nginx-cache-controller | 3.1.1       | 3.2.0       | Updated |
+	 *     +------------------------+-------------+-------------+---------+
 	 *
 	 * @alias upgrade
 	 */

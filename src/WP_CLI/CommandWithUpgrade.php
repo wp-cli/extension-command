@@ -21,6 +21,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		add_action( 'upgrader_process_complete', function() {
 			remove_action( 'upgrader_process_complete', array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 );
 		}, 1 );
+
+		$this->fetcher = new \WP_CLI\Fetchers\Plugin;
 	}
 
 	abstract protected function get_upgrader_class( $force );
@@ -299,6 +301,21 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			|| Utils\get_flag_value( $assoc_args, 'patch' ) ) ) {
 			$type = Utils\get_flag_value( $assoc_args, 'minor' ) ? 'minor' : 'patch';
 			$items_to_update = self::get_minor_or_patch_updates( $items_to_update, $type );
+		}
+
+		$exclude = WP_CLI\Utils\get_flag_value( $assoc_args, 'exclude' );
+		if ( isset( $exclude ) ) {
+			$exclude_items = explode( ',', trim( $assoc_args['exclude'], ',' ) );
+			unset( $assoc_args['exclude'] );
+			foreach ( $exclude_items as $item ) {
+				if ( 'plugin' === $this->item_type ) {
+					$plugin = $this->fetcher->get( $item );
+					unset( $items_to_update[ $plugin->file ] );
+				} elseif ( 'theme' === $this->item_type ) {
+					$theme_root = get_theme_root() . '/' . $item;
+					unset( $items_to_update[ $theme_root ] );
+				}
+			}
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' ) ) {

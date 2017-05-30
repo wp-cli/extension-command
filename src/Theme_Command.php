@@ -589,6 +589,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--all]
 	 * : If set, all themes that have updates will be updated.
+	 * 
+	 * [--exclude=<name>]
+	 * : Comma separated list of plugin names that should be excluded from updating.
 	 *
 	 * [--format=<format>]
 	 * : Output summary as table or summary. Defaults to table.
@@ -619,6 +622,26 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     | twentyfifteen | 1.4         | 1.5         | Updated |
 	 *     | twentysixteen | 1.1         | 1.2         | Updated |
 	 *     +---------------+-------------+-------------+---------+
+	 *     Success: Updated 2 of 2 themes.
+	 * 
+	 *     # Exclude themes updates when bulk updating the themes
+	 *     $ wp theme update --all --exclude=twentyfifteen
+	 *     Downloading update from https://downloads.wordpress.org/theme/astra.1.0.5.1.zip...
+	 *     Unpacking the update...
+	 *     Installing the latest version...
+	 *     Removing the old version of the theme...
+	 *     Theme updated successfully.
+	 *     Downloading update from https://downloads.wordpress.org/theme/twentyseventeen.1.2.zip...
+	 *     Unpacking the update...
+	 *     Installing the latest version...
+	 *     Removing the old version of the theme...
+	 *     Theme updated successfully.
+	 *     +-----------------+----------+---------+----------------+
+	 *     | name            | status   | version | update_version |
+	 *     +-----------------+----------+---------+----------------+
+	 *     | astra           | inactive | 1.0.1   | 1.0.5.1        |
+	 *     | twentyseventeen | inactive | 1.1     | 1.2            |
+	 *     +-----------------+----------+---------+----------------+
 	 *     Success: Updated 2 of 2 themes.
 	 *
 	 *     # Update all themes
