@@ -108,6 +108,15 @@ Feature: Manage WordPress themes
       Success: Updated 1 of 1 themes.
       """
 
+  Scenario: Exclude theme from bulk updates.
+    Given a WP install
+
+    When I run `wp theme update --all --exclude=twentysixteen`
+    Then STDOUT should not contain:
+      """
+      twentysixteen
+      """
+
   Scenario: Get the path of an installed theme
     Given a WP install
 
