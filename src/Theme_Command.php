@@ -590,7 +590,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--all]
 	 * : If set, all themes that have updates will be updated.
 	 * 
-	 * [--exclude=<name>]
+	 * [--exclude=<theme-names>]
 	 * : Comma separated list of plugin names that should be excluded from updating.
 	 *
 	 * [--format=<format>]
