@@ -17,7 +17,7 @@
  *     $ wp theme mod remove --all
  *     Success: Theme mods removed.
  */
-class Theme_Mod_command extends WP_CLI_Command {
+class Theme_Mod_Command extends WP_CLI_Command {
 
 	private $fields = array(
 		'key',
