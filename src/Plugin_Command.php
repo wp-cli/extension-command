@@ -509,7 +509,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Only perform updates for patch releases (e.g. from 1.3 to 1.3.3 instead of 1.4)
 	 *
 	 * [--format=<format>]
-	 * : Output summary as table or summary. Defaults to table.
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - summary
+	 * ---
 	 *
 	 * [--version=<version>]
 	 * : If set, the plugin will be updated to the specified version.
