@@ -549,6 +549,8 @@ wp plugin update [<plugin>...] [--all] [--minor] [--patch] [--format=<format>] [
 		default: table
 		options:
 		  - table
+		  - csv
+		  - json
 		  - summary
 		---
 
@@ -1134,6 +1136,8 @@ wp theme update [<theme>...] [--all] [--format=<format>] [--version=<version>] [
 		default: table
 		options:
 		  - table
+		  - csv
+		  - json
 		  - summary
 		---
 
