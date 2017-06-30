@@ -514,6 +514,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * default: table
 	 * options:
 	 *   - table
+	 *   - csv
+	 *   - json
 	 *   - summary
 	 * ---
 	 *
