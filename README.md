@@ -544,7 +544,15 @@ wp plugin update [<plugin>...] [--all] [--minor] [--patch] [--format=<format>] [
 		Only perform updates for patch releases (e.g. from 1.3 to 1.3.3 instead of 1.4)
 
 	[--format=<format>]
-		Output summary as table or summary. Defaults to table.
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - summary
+		---
 
 	[--version=<version>]
 		If set, the plugin will be updated to the specified version.
@@ -1123,7 +1131,15 @@ wp theme update [<theme>...] [--all] [--format=<format>] [--version=<version>] [
 		If set, all themes that have updates will be updated.
 
 	[--format=<format>]
-		Output summary as table or summary. Defaults to table.
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - summary
+		---
 
 	[--version=<version>]
 		If set, the theme will be updated to the specified version.

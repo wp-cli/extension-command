@@ -594,7 +594,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Comma separated list of theme names that should be excluded from updating.
 	 *
 	 * [--format=<format>]
-	 * : Output summary as table or summary. Defaults to table.
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - summary
+	 * ---
 	 *
 	 * [--version=<version>]
 	 * : If set, the theme will be updated to the specified version.
