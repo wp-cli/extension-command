@@ -34,3 +34,26 @@ Feature: Deactivate WordPress plugins
       Plugin 'hello' deactivated.
       """
     And the return code should be 1
+
+  Scenario: Deactivate all when a previously active plugin is hidden by "all_plugins" filter
+    Given a wp-content/mu-plugins/hide-active-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Hide an Active Plugin
+       * Description: Hides Akismet plugin, which is already active
+       * Author: WP-CLI tests
+       */
+
+       add_filter( 'all_plugins', function( $all_plugins ) {
+          unset( $all_plugins['akismet/akismet.php'] );
+          return $all_plugins;
+       } );
+       """
+
+    When I run `wp plugin deactivate --all`
+    Then STDOUT should not contain:
+    """
+    Plugin 'akismet' deactivated.
+    """
+
