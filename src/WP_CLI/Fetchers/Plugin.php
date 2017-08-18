@@ -14,12 +14,12 @@ class Plugin extends Base {
 
 	/**
 	 * Get a plugin object by name
-	 * 
+	 *
 	 * @param string $name
 	 * @return object|false
 	 */
 	public function get( $name ) {
-		foreach ( get_plugins() as $file => $_ ) {
+		foreach ( apply_filters( 'all_plugins', get_plugins() ) as $file => $_ ) {
 			if ( $file === "$name.php" ||
 				( $name && $file === $name ) ||
 				( dirname( $file ) === $name && $name !== '.' ) ) {

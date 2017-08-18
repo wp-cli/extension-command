@@ -426,8 +426,8 @@ Feature: Manage WordPress plugins
     And a wp-content/plugins/handbook/functionality-for-pages.php file:
       """
       <?php
-	  /**
-	   * Plugin Name: Handbook Functionality for Pages
+      /**
+       * Plugin Name: Handbook Functionality for Pages
        * Description: Adds handbook-like table of contents to all Pages for a site. Covers Table of Contents and the "watch this page" widget
        * Author: Nacin
        */
@@ -474,3 +474,35 @@ Feature: Manage WordPress plugins
       """
       Plugin installed successfully
       """
+
+  Scenario: Plugin hidden by "all_plugins" filter
+    Given a WP install
+    And these installed and active plugins:
+      """
+      akismet
+      jetpack
+      query-monitor
+      """
+    And a wp-content/mu-plugins/hide-qm-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Hide Query Monitor on Production
+       * Description: Hides the Query Monitor plugin on production sites
+       * Author: WP-CLI tests
+       */
+
+       add_filter( 'all_plugins', function( $all_plugins ) {
+          unset( $all_plugins['query-monitor/query-monitor.php'] );
+          return $all_plugins;
+       } );
+       """
+
+    When I run `wp plugin list --fields=name`
+    Then STDOUT should not contain:
+    """
+    query-monitor
+    """
+
+
+
