@@ -35,12 +35,7 @@ Feature: Activate WordPress plugins
     And the return code should be 1
 
   Scenario: Activate all when one plugin is hidden by "all_plugins" filter
-    Given these installed and active plugins:
-      """
-      akismet
-      jetpack
-      query-monitor
-      """
+    Given I run `wp plugin install query-monitor`
     And a wp-content/mu-plugins/hide-qm-plugin.php file:
       """
       <?php
@@ -57,8 +52,13 @@ Feature: Activate WordPress plugins
        """
 
     When I run `wp plugin activate --all`
-    Then STDOUT should not contain:
-    """
-    query-monitor
-    """
+    Then STDOUT should contain:
+      """
+      Plugin 'akismet' activated.
+      Plugin 'hello' activated.
+      """
+    And STDOUT should not contain:
+      """
+      Plugin 'query-monitor' activated.
+      """
 
