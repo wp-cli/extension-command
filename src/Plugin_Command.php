@@ -252,7 +252,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( $all ) {
 			$args = array_map( function( $file ){
 				return Utils\get_plugin_name( $file );
-			}, array_keys( get_plugins() ) );
+			}, array_keys( $this->get_all_plugins() ) );
 		}
 
 		$successes = $errors = 0;
@@ -325,7 +325,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( $disable_all ) {
 			$args = array_map( function( $file ){
 				return Utils\get_plugin_name( $file );
-			}, array_keys( get_plugins() ) );
+			}, array_keys( $this->get_all_plugins() ) );
 		}
 
 		$successes = $errors = 0;
@@ -498,7 +498,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--all]
 	 * : If set, all plugins that have updates will be updated.
-	 * 
+	 *
 	 * [--exclude=<name>]
 	 * : Comma separated list of plugin names that should be excluded from updating.
 	 *
@@ -556,7 +556,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     | nginx-cache-controller | 3.1.1       | 3.2.0       | Updated |
 	 *     +------------------------+-------------+-------------+---------+
 	 *     Success: Updated 2 of 2 plugins.
-	 * 
+	 *
 	 *     $ wp plugin update --all --exclude=akismet
 	 *     Enabling Maintenance mode...
 	 *     Downloading update from https://downloads.wordpress.org/plugin/nginx-champuru.3.2.0.zip...
@@ -587,7 +587,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	protected function get_item_list() {
 		$items = $duplicate_names = array();
 
-		foreach ( get_plugins() as $file => $details ) {
+		foreach ( $this->get_all_plugins() as $file => $details ) {
 			$update_info = $this->get_update_info( $file );
 
 			$name = Utils\get_plugin_name( $file );
@@ -1018,5 +1018,17 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		return ! WP_CLI::launch( $command . $path );
+	}
+
+	/**
+	 * Get all available plugins.
+	 *
+	 * Uses the same filter core uses in plugins.php to determine which plugins
+	 * should be available to manage through the WP_Plugins_List_Table class.
+	 *
+	 * @return array
+	 */
+	private function get_all_plugins() {
+		return apply_filters( 'all_plugins', get_plugins() );
 	}
 }
