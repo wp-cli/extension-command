@@ -3,7 +3,7 @@
 use \WP_CLI\Utils;
 
 /**
- * Manage plugins.
+ * Manages site plugins, including installs, activations, and updates.
  *
  * ## EXAMPLES
  *
