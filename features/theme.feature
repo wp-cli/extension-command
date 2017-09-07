@@ -111,10 +111,10 @@ Feature: Manage WordPress themes
   Scenario: Exclude theme from bulk updates.
     Given a WP install
 
-    When I run `wp theme install p2 --version=1.4.1 --force`    
+    When I run `wp theme install p2 --version=1.4.1 --force`
     Then STDOUT should contain:
       """"
-      Downloading install package from https://downloads.wordpress.org/theme/p2.1.4.1.zip...
+      from https://downloads.wordpress.org/theme/p2.1.4.1.zip...
       """"
 
     When I run `wp theme status p2`
