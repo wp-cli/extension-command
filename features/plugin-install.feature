@@ -5,8 +5,12 @@ Feature: Install WordPress plugins
 
     When I run `wp plugin install https://github.com/runcommand/one-time-login/archive/master.zip --activate`
     Then STDOUT should contain:
+      """"
+      Downloading install
+      """"
+    And STDOUT should contain:
       """
-      from https://github.com/runcommand/one-time-login/archive/master.zip
+      package from https://github.com/runcommand/one-time-login/archive/master.zip
       """
     And STDOUT should contain:
       """
