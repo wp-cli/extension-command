@@ -46,10 +46,14 @@ Feature: Update WordPress plugins
   Scenario: Exclude plugin updates from bulk updates.
     Given a WP install
 
-    When I run `wp plugin install akismet --version=3.0.0 --force`    
+    When I run `wp plugin install akismet --version=3.0.0 --force`
     Then STDOUT should contain:
       """"
-      Downloading install package from https://downloads.wordpress.org/plugin/akismet.3.0.0.zip...
+      Downloading install
+      """"
+    And STDOUT should contain:
+      """"
+      package from https://downloads.wordpress.org/plugin/akismet.3.0.0.zip...
       """"
 
     When I run `wp plugin status akismet`
