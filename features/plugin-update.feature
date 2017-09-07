@@ -49,7 +49,11 @@ Feature: Update WordPress plugins
     When I run `wp plugin install akismet --version=3.0.0 --force`
     Then STDOUT should contain:
       """"
-      from https://downloads.wordpress.org/plugin/akismet.3.0.0.zip...
+      Downloading install
+      """"
+    And STDOUT should contain:
+      """"
+      package from https://downloads.wordpress.org/plugin/akismet.3.0.0.zip...
       """"
 
     When I run `wp plugin status akismet`

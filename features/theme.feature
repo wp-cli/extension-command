@@ -114,7 +114,11 @@ Feature: Manage WordPress themes
     When I run `wp theme install p2 --version=1.4.1 --force`
     Then STDOUT should contain:
       """"
-      from https://downloads.wordpress.org/theme/p2.1.4.1.zip...
+      Downloading install
+      """"
+    And STDOUT should contain:
+      """"
+      package from https://downloads.wordpress.org/theme/p2.1.4.1.zip...
       """"
 
     When I run `wp theme status p2`
