@@ -96,28 +96,28 @@ Feature: Manage WordPress plugins
   Scenario: Install a plugin, activate, then force install an older version of the plugin
     Given a WP install
 
-    When I run `wp plugin install akismet --version=2.5.7 --force`
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list --name=akismet --field=update_version`
+    When I run `wp plugin list --name=wordpress-importer --field=update_version`
     Then STDOUT should not be empty
     And save STDOUT as {UPDATE_VERSION}
 
     When I run `wp plugin list --fields=name,status,update,version,update_version`
     Then STDOUT should be a table containing rows:
-      | name       | status   | update    | version   | update_version   |
-      | akismet    | inactive | available | 2.5.7     | {UPDATE_VERSION} |
+      | name               | status   | update    | version | update_version   |
+      | wordpress-importer | inactive | available | 0.5     | {UPDATE_VERSION} |
 
-    When I run `wp plugin activate akismet`
+    When I run `wp plugin activate wordpress-importer`
     Then STDOUT should not be empty
 
-    When I run `wp plugin install akismet --version=2.5.6 --force`
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
     Then STDOUT should not be empty
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name       | status   | update    | version   |
-      | akismet    | active   | available | 2.5.6     |
+      | name               | status   | update    | version |
+      | wordpress-importer | active   | available | 0.5     |
 
     When I try `wp plugin update`
     Then STDERR should be:
@@ -128,7 +128,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin update --all --format=summary | grep 'updated successfully from'`
     Then STDOUT should contain:
       """
-      Akismet updated successfully from version 2.5.6 to version
+      WordPress Importer updated successfully from version 0.5 to version
       """
 
     When I try `wp plugin update xxx yyy`
@@ -145,10 +145,10 @@ Feature: Manage WordPress plugins
       Error: No plugins updated.
       """
 
-    When I run `wp plugin install akismet --version=2.5.6 --force`
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
     Then STDOUT should not be empty
 
-    When I try `wp plugin update akismet hello xxx`
+    When I try `wp plugin update wordpress-importer hello xxx`
     Then STDERR should contain:
       """
       Warning: The 'xxx' plugin could not be found.
@@ -290,13 +290,13 @@ Feature: Manage WordPress plugins
     And I run `if test -d wp-content/plugins; then echo "fail"; fi`
     Then STDOUT should be empty
 
-    When I run `wp plugin install akismet --activate`
+    When I run `wp plugin install wordpress-importer --activate`
     Then STDOUT should not be empty
 
     When I run `wp plugin list --status=active --fields=name,status`
     Then STDOUT should be a table containing rows:
-      | name       | status   |
-      | akismet    | active   |
+      | name               | status   |
+      | wordpress-importer | active   |
 
   Scenario: Plugin name with HTML entities
     Given a WP install
@@ -358,44 +358,44 @@ Feature: Manage WordPress plugins
     Given a WP install
     And these installed and active plugins:
       """
-      akismet
+      wordpress-importer
       """
 
-    When I run `wp plugin deactivate akismet --uninstall`
+    When I run `wp plugin deactivate wordpress-importer --uninstall`
     Then STDOUT should be:
       """
-      Plugin 'akismet' deactivated.
-      Uninstalling 'akismet'...
-      Uninstalled and deleted 'akismet' plugin.
+      Plugin 'wordpress-importer' deactivated.
+      Uninstalling 'wordpress-importer'...
+      Uninstalled and deleted 'wordpress-importer' plugin.
       Success: Deactivated 1 of 1 plugins.
       """
 
-    When I try `wp plugin get akismet`
+    When I try `wp plugin get wordpress-importer`
     Then STDERR should be:
       """
-      Error: The 'akismet' plugin could not be found.
+      Error: The 'wordpress-importer' plugin could not be found.
       """
 
   Scenario: Deactivate and uninstall a plugin, part two
     Given a WP install
     And these installed and active plugins:
       """
-      akismet
+      wordpress-importer
       """
 
-    When I run `wp plugin uninstall akismet --deactivate`
+    When I run `wp plugin uninstall wordpress-importer --deactivate`
     Then STDOUT should be:
       """
-      Deactivating 'akismet'...
-      Plugin 'akismet' deactivated.
-      Uninstalled and deleted 'akismet' plugin.
+      Deactivating 'wordpress-importer'...
+      Plugin 'wordpress-importer' deactivated.
+      Uninstalled and deleted 'wordpress-importer' plugin.
       Success: Uninstalled 1 of 1 plugins.
       """
 
-    When I try `wp plugin get akismet`
+    When I try `wp plugin get wordpress-importer`
     Then STDERR should be:
       """
-      Error: The 'akismet' plugin could not be found.
+      Error: The 'wordpress-importer' plugin could not be found.
       """
 
 
