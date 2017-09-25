@@ -3,36 +3,36 @@ Feature: Update WordPress plugins
   Scenario: Updating plugin with invalid version shouldn't remove the old version
     Given a WP install
 
-    When I run `wp plugin install akismet --version=2.5.6 --force`
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list --name=akismet --field=update_version`
+    When I run `wp plugin list --name=wordpress-importer --field=update_version`
     Then STDOUT should not be empty
     And save STDOUT as {UPDATE_VERSION}
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name       | status   | update    | version   |
-      | akismet    | inactive | available | 2.5.6     |
+      | name               | status   | update    | version |
+      | wordpress-importer | inactive | available | 0.5     |
 
-    When I try `wp plugin update akismet --version=2.9.0`
+    When I try `wp plugin update akismet --version=0.5.3`
     Then STDERR should be:
       """
-      Error: Can't find the requested plugin's version 2.9.0 in the WordPress.org plugin repository (HTTP code 404).
+      Error: Can't find the requested plugin's version 0.5.3 in the WordPress.org plugin repository (HTTP code 404).
       """
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name       | status   | update    | version   |
-      | akismet    | inactive | available | 2.5.6     |
+      | name               | status   | update    | version |
+      | wordpress-importer | inactive | available | 0.5     |
 
-    When I run `wp plugin update akismet`
+    When I run `wp plugin update wordpress-importer`
     Then STDOUT should not be empty
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name       | status   | update    | version           |
-      | akismet    | inactive | none      | {UPDATE_VERSION}  |
+      | name               | status   | update    | version           |
+      | wordpress-importer | inactive | none      | {UPDATE_VERSION}  |
 
   Scenario: Error when both --minor and --patch are provided
     Given a WP install
@@ -46,29 +46,29 @@ Feature: Update WordPress plugins
   Scenario: Exclude plugin updates from bulk updates.
     Given a WP install
 
-    When I run `wp plugin install akismet --version=3.0.0 --force`
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
     Then STDOUT should contain:
       """"
       Downloading install
       """"
     And STDOUT should contain:
       """"
-      package from https://downloads.wordpress.org/plugin/akismet.3.0.0.zip...
+      package from https://downloads.wordpress.org/plugin/wordpress-importer.0.5.zip...
       """"
 
-    When I run `wp plugin status akismet`
+    When I run `wp plugin status wordpress-importer`
     Then STDOUT should contain:
       """"
       Update available
       """"
 
-    When I run `wp plugin update --all --exclude=akismet | grep 'Skipped'`
+    When I run `wp plugin update --all --exclude=wordpress-importer | grep 'Skipped'`
     Then STDOUT should contain:
       """
-      akismet
+      wordpress-importer
       """
 
-    When I run `wp plugin status akismet`
+    When I run `wp plugin status wordpress-importer`
     Then STDOUT should contain:
       """"
       Update available
@@ -76,20 +76,21 @@ Feature: Update WordPress plugins
 
   Scenario: Update a plugin to its latest patch release
     Given a WP install
-    And I run `wp plugin install --force akismet --version=2.5.4`
+    And I run `wp plugin install --force wordpress-importer --version=0.5`
 
-    When I run `wp plugin update akismet --patch`
+    When I run `wp plugin update wordpress-importer --patch`
     Then STDOUT should contain:
       """
       Success: Updated 1 of 1 plugins.
       """
 
-    When I run `wp plugin get akismet --field=version`
+    When I run `wp plugin get wordpress-importer --field=version`
     Then STDOUT should be:
       """
-      2.5.10
+      0.5.2
       """
 
+  @require-wp-4.0
   Scenario: Update a plugin to its latest minor release
     Given a WP install
     And I run `wp plugin install --force akismet --version=2.5.4`
