@@ -152,15 +152,22 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						if ( preg_match( '#github\.com/([^/]+)/([^/]+)/releases/download/#', $local_or_remote_zip_file ) || preg_match( '#github\.com/([^/]+)/([^/]+)/raw/#', $local_or_remote_zip_file ) ) {
 							return $source;
 						}
-						$branch_length = strlen( pathinfo( $local_or_remote_zip_file, PATHINFO_FILENAME ) );
-						if ( $branch_length ) {
-							$new_path = substr( rtrim( $source, '/' ), 0, - ( $branch_length + 1 ) ) . '/';
-							if ( $GLOBALS['wp_filesystem']->move( $source, $new_path ) ) {
-								WP_CLI::log( "Renamed Github-based project from '" . Utils\basename( $source ) . "' to '" . Utils\basename( $new_path ) . "'." );
-								return $new_path;
-							} else {
-								return new \WP_Error( 'wpcli_install_gitub', "Couldn't move Github-based project to appropriate directory." );
-							}
+
+						$branch_name = pathinfo( $local_or_remote_zip_file, PATHINFO_FILENAME );
+
+						// Always be attached "archive" into release tag and tag on github.
+						if ( preg_match( '#github\.com/([^/]+)/([^/]+)/archive/#', $local_or_remote_zip_file ) ) {
+							$path_array = explode( "/", pathinfo( $local_or_remote_zip_file, PATHINFO_DIRNAME) );
+							array_pop( $path_array );
+							$branch_name = end( $path_array );
+						}
+
+						$new_path = str_replace( pathinfo( $source, PATHINFO_BASENAME ), $branch_name, $source );
+						if ( $GLOBALS['wp_filesystem']->move( $source, $new_path ) ) {
+							WP_CLI::log( "Renamed Github-based project from '" . Utils\basename( $source ) . "' to '" . Utils\basename( $new_path ) . "'." );
+							return $new_path;
+						} else {
+							return new \WP_Error( 'wpcli_install_github', "Couldn't move Github-based project to appropriate directory." );
 						}
 						return $source;
 					};
