@@ -167,7 +167,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 							WP_CLI::log( "Renamed Github-based project from '" . Utils\basename( $source ) . "' to '" . Utils\basename( $new_path ) . "'." );
 							return $new_path;
 						} else {
-							return new \WP_Error( 'wpcli_install_gitub', "Couldn't move Github-based project to appropriate directory." );
+							return new \WP_Error( 'wpcli_install_github', "Couldn't move Github-based project to appropriate directory." );
 						}
 						return $source;
 					};
