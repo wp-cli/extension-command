@@ -149,24 +149,24 @@ Feature: Install WordPress plugins
   Scenario: Don't attempt to rename ZIPs coming from a GitHub archive release/tag
     Given a WP install
 
-    When I run `wp plugin install https://github.com/dseomn/dseomn-customizations-wp/archive/v0.0.2.zip`
+    When I run `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/archive/v0.1.0.zip`
     Then STDOUT should contain:
       """
       Plugin installed successfully.
       """
     And STDOUT should contain:
       """
-      package from https://github.com/dseomn/dseomn-customizations-wp/archive/v0.0.2.zip
+      package from https://github.com/wp-cli-test/generic-example-plugin/archive/v0.1.0.zip
       """
     And STDOUT should contain:
       """
-      Renamed Github-based project from 'dseomn-customizations-wp-0.0.2' to 'dseomn-customizations-wp'.
+      Renamed Github-based project from 'generic-example-plugin-0.1.0' to 'generic-example-plugin'.
       """
     And STDOUT should contain:
       """
       Plugin installed successfully.
       """
     And STDERR should be empty
-    And the wp-content/plugins/dseomn-customizations-wp directory should exist
-    And the wp-content/plugins/dseomn-customizations-w directory should not exist
-    And the wp-content/plugins/dseomn-customizations-wp-0.0.2 directory should not exist
+    And the wp-content/plugins/generic-example-plugin directory should exist
+    And the wp-content/plugins/generic-example-plugi directory should not exist
+    And the wp-content/plugins/generic-example-plugin-0.1.0 directory should not exist
