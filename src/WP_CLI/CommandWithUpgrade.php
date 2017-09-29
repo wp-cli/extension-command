@@ -257,7 +257,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			// check if the requested version exists
 			$response = wp_remote_head( $response->download_link );
 			$response_code = wp_remote_retrieve_response_code( $response );
-			if ( 200 !== $response_code ) {
+			if ( 200 !== (int) $response_code ) {
 				if ( is_wp_error( $response ) ) {
 					$error_msg = $response->get_error_message();
 				} else {
