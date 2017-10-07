@@ -642,6 +642,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// Get drop-ins that WordPress uses.
 		$wp_dropins = _get_dropins();
 
+		// Get format for result.
+		$format = $assoc_args['format'];
+
 		$items = array();
 
 		foreach ( $dropins as $key => $dropin ) {
@@ -657,7 +660,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$items[] = $dropin;
 		}
 
-		WP_CLI\Utils\format_items( 'table', $items, array( 'name', 'description' ) );
+		WP_CLI\Utils\format_items( $format, $items, array( 'name', 'description' ) );
 	}
 }
 
