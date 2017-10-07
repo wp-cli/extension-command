@@ -420,6 +420,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
+		// Get dropins.
+		if ( isset( $assoc_args['status'] ) && 'dropin' === $assoc_args['status'] ) {
+			$this->get_wp_cli_dropin( $assoc_args );
+			return;
+		}
+
 		$all_items = $this->get_all_items();
 		if ( !is_array( $all_items ) )
 			\WP_CLI::error( "No {$this->item_type}s found." );
@@ -617,6 +623,41 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected function get_formatter( &$assoc_args ) {
 		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->item_type );
+	}
+
+	/**
+	 * Get Dropins.
+	 *
+	 * @param array $assoc_args Data passed in from command.
+	 */
+	protected function get_wp_cli_dropin( $assoc_args ) {
+
+		// Get dropins from active plugins.
+		$dropins = get_dropins();
+
+		if ( empty( $dropins ) ) {
+			WP_CLI::error( __( 'No dropins found.' ) );
+		}
+
+		// Get drop-ins that WordPress uses.
+		$wp_dropins = _get_dropins();
+
+		$items = array();
+
+		foreach ( $dropins as $key => $dropin ) {
+
+			// Get dropin name.
+			$dropin['name'] = $key . ' - ' . $dropin['Name'];
+
+			// Set dropin description.
+			if ( empty( $dropin['Description'] ) ) {
+				$dropin['description'] = $wp_dropins[ $key ][0];
+			}
+
+			$items[] = $dropin;
+		}
+
+		WP_CLI\Utils\format_items( 'table', $items, array( 'name', 'description' ) );
 	}
 }
 
