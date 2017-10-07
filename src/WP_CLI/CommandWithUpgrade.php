@@ -609,9 +609,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$items = $api->$plural;
 
-		$count = \WP_CLI\Utils\get_flag_value( $api->info, 'results', 'unknown' );
-		\WP_CLI::success( sprintf( 'Showing %s of %s %s.', count( $items ), $count, $plural ) );
-
 		$formatter->display_items( $items );
 	}
 
