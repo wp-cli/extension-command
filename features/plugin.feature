@@ -511,6 +511,12 @@ Feature: Manage WordPress plugins
     And I run `if test -d wp-content/plugins; then echo "fail"; fi`
     Then STDOUT should be empty
 
+    When I try `wp plugin list --status=dropin`
+    Then STDERR should be:
+      """
+      Error: No plugins found.
+      """
+
     When I run `wp plugin install query-monitor --activate`
     Then STDOUT should not be empty
 
@@ -519,10 +525,7 @@ Feature: Manage WordPress plugins
       | name          | status   |
       | query-monitor | active   |
 
-    When I run `wp plugin list --status=dropin`
+    When I run `wp plugin list --status=dropin --fields=name,title,description`
     Then STDOUT should be a table containing rows:
-      | name                                  | description              |
-      | db.php - Query Monitor Database Class | Custom database class.   |
-
-
-
+      | name   | title                               | description              |
+      | db.php | Query Monitor Database Class        | Custom database class.   |

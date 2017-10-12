@@ -886,6 +886,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Get a list of plugins.
 	 *
+	 * Displays a list of the plugins installed on the site with activation
+	 * status, whether or not there's an update available, etc.
+	 *
+	 * Use `--status=dropin` to list installed dropins (e.g. `object-cache.php`).
+	 *
 	 * ## OPTIONS
 	 *
 	 * [--<field>=<value>]
