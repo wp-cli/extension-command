@@ -218,6 +218,22 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			);
 		}
 
+		$raw_items = get_dropins();
+		$raw_data = _get_dropins();
+		foreach( $raw_items as $name => $item_data ) {
+			$description = ! empty( $raw_data[ $name ][0] ) ? $raw_data[ $name ][0] : '';
+			$items[ $name ] = array(
+				'name'           => $name,
+				'title'          => $item_data['Title'],
+				'description'    => $description,
+				'status'         => 'dropin',
+				'update'         => false,
+				'update_version' => NULL,
+				'update_package' => NULL,
+				'update_id' => '',
+			);
+		}
+
 		return $items;
 	}
 
