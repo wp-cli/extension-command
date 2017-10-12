@@ -511,12 +511,6 @@ Feature: Manage WordPress plugins
     And I run `if test -d wp-content/plugins; then echo "fail"; fi`
     Then STDOUT should be empty
 
-    When I try `wp plugin list --status=dropin`
-    Then STDERR should be:
-      """
-      Error: No plugins found.
-      """
-
     When I run `wp plugin install query-monitor --activate`
     Then STDOUT should not be empty
 

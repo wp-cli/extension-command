@@ -420,28 +420,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
-		if ( isset( $assoc_args['status'] )
-			&& 'plugin' === $this->item_type
-			&& 'dropin' === $assoc_args['status'] ) {
-			$raw_items = get_dropins();
-			$raw_data = _get_dropins();
-			$all_items = array();
-			foreach( $raw_items as $name => $item_data ) {
-				$description = ! empty( $raw_data[ $name ][0] ) ? $raw_data[ $name ][0] : '';
-				$all_items[] = array(
-					'name' => $name,
-					'title' => $item_data['Title'],
-					'description' => $description,
-					'status' => 'dropin',
-					'update' => 'none',
-					'update_version' => '',
-					'update_id' => '',
-				);
-			}
-			$all_items = ! empty( $all_items ) ? $all_items : false;
-		} else {
-			$all_items = $this->get_all_items();
-		}
+		$all_items = $this->get_all_items();
+
 		if ( !is_array( $all_items ) )
 			\WP_CLI::error( "No {$this->item_type}s found." );
 
