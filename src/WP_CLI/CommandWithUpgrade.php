@@ -421,6 +421,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		call_user_func( $this->upgrade_refresh );
 
 		$all_items = $this->get_all_items();
+
 		if ( !is_array( $all_items ) )
 			\WP_CLI::error( "No {$this->item_type}s found." );
 
@@ -618,5 +619,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected function get_formatter( &$assoc_args ) {
 		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->item_type );
 	}
+
 }
 

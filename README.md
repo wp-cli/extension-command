@@ -257,6 +257,11 @@ Get a list of plugins.
 wp plugin list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
+Displays a list of the plugins installed on the site with activation
+status, whether or not there's an update available, etc.
+
+Use `--status=dropin` to list installed dropins (e.g. `object-cache.php`).
+
 **OPTIONS**
 
 	[--<field>=<value>]
