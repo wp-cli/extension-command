@@ -585,6 +585,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$fields[ $field ] = true;
 		}
 
+		$format = ! empty( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$api_args = array(
@@ -610,8 +611,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$items = $api->$plural;
 
-		$count = \WP_CLI\Utils\get_flag_value( $api->info, 'results', 'unknown' );
-		\WP_CLI::success( sprintf( 'Showing %s of %s %s.', count( $items ), $count, $plural ) );
+		if ( 'table' === $format ) {
+			$count = \WP_CLI\Utils\get_flag_value( $api->info, 'results', 'unknown' );
+			\WP_CLI::success( sprintf( 'Showing %s of %s %s.', count( $items ), $count, $plural ) );
+		}
 
 		$formatter->display_items( $items );
 	}
