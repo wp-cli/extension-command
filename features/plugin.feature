@@ -500,26 +500,24 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list --fields=name`
     Then STDOUT should not contain:
-    """
-    query-monitor
-    """
+      """
+      query-monitor
+      """
 
   Scenario: Show dropins plugin list
     Given a WP install
+    And a wp-content/db-error.php file:
+      """
+      <?php
+      """
 
-    When I run `rm -rf wp-content/plugins`
-    And I run `if test -d wp-content/plugins; then echo "fail"; fi`
-    Then STDOUT should be empty
-
-    When I run `wp plugin install query-monitor --activate`
-    Then STDOUT should not be empty
-
-    When I run `wp plugin list --status=active --fields=name,status`
-    Then STDOUT should be a table containing rows:
-      | name          | status   |
-      | query-monitor | active   |
+    When I run `wp plugin list --status=active`
+    Then STDOUT should not contain:
+      """
+      db-error.php
+      """
 
     When I run `wp plugin list --status=dropin --fields=name,title,description`
     Then STDOUT should be a table containing rows:
-      | name   | title                               | description              |
-      | db.php | Query Monitor Database Class        | Custom database class.   |
+      | name         | title | description                    |
+      | db-error.php |       | Custom database error message. |
