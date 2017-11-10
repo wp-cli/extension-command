@@ -1,5 +1,6 @@
 Feature: List the status of plugins
 
+  @require-wp-4.0
   Scenario: Status should include drop-ins
     Given a WP install
     And a wp-debug.php file:
