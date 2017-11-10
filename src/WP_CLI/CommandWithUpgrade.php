@@ -485,6 +485,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			'active-network' => 'N',
 			'must-use' => 'M',
 			'parent' => 'P',
+			'dropin' => 'D',
 		),
 		'long' => array(
 			'inactive' => 'Inactive',
@@ -492,6 +493,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			'active-network' => 'Network Active',
 			'must-use' => 'Must Use',
 			'parent' => 'Parent',
+			'dropin' => 'Drop-In',
 		)
 	);
 
@@ -506,6 +508,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			'active-network' => '%g',
 			'must-use' => '%c',
 			'parent' => '%p',
+			'dropin' => '%B',
 		);
 
 		return $colors[ $status ];
