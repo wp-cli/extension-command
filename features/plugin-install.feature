@@ -29,8 +29,13 @@ Feature: Install WordPress plugins
       """
       Warning: Destination folder already exists
       """
+    Then STDERR should contain:
+      """
+      Error: No plugins installed.
+      """
     And the wp-content/plugins/one-time-login directory should exist
     And the wp-content/plugins/one-time-login-master directory should not exist
+    And the return code should be 1
 
     When I run `wp plugin install https://github.com/runcommand/one-time-login/archive/master.zip --force`
     Then STDOUT should contain:
@@ -84,7 +89,12 @@ Feature: Install WordPress plugins
       """
       Warning: edit-flow: An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration.
       """
+    And STDERR should contain:
+      """
+      Error: No plugins installed.
+      """
     And STDOUT should be empty
+    And the return code should be 1
 
     When I run `wp plugin install edit-flow`
     Then STDOUT should contain:
@@ -112,7 +122,7 @@ Feature: Install WordPress plugins
       """
     And the return code should be 1
 
-    When I run `wp plugin install user-switching`
+    When I try `wp plugin install user-switching`
     Then STDOUT should be:
       """
       Success: Plugin already installed.
@@ -145,6 +155,11 @@ Feature: Install WordPress plugins
       """
       Warning: Destination folder already exists. "{WORKING_DIR}/wp-content/plugins/akismet/"
       """
+    And STDERR should contain:
+      """
+      Error: No plugins installed.
+      """
+    And the return code should be 1
 
   Scenario: Don't attempt to rename ZIPs coming from a GitHub archive release/tag
     Given a WP install

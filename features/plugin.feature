@@ -33,6 +33,8 @@ Feature: Manage WordPress plugins
       """
       The 'zombieLand' plugin could not be found.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
     # Check that the inner-plugin is not picked up
     When I run `mv {PLUGIN_DIR}/plugin1 {PLUGIN_DIR}/Zombieland/`
@@ -69,6 +71,12 @@ Feature: Manage WordPress plugins
       """
       The 'Zombieland' plugin is active.
       """
+    And STDERR should contain:
+      """
+      Error: No plugins uninstalled.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
 
     When I run `wp plugin deactivate Zombieland`
     Then STDOUT should not be empty
@@ -88,10 +96,15 @@ Feature: Manage WordPress plugins
     And the {PLUGIN_DIR}/zombieland file should not exist
 
     When I try the previous command again
-    Then STDERR should contain:
+    Then STDERR should be:
       """
-      The 'Zombieland' plugin could not be found.
+      Warning: The 'Zombieland' plugin could not be found.
       """
+    And STDOUT should be:
+      """
+      Success: Plugin already uninstalled.
+      """
+    And the return code should be 0
 
   Scenario: Install a plugin, activate, then force install an older version of the plugin
     Given a WP install
@@ -124,6 +137,8 @@ Feature: Manage WordPress plugins
       """
       Error: Please specify one or more plugins, or use --all.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
     When I run `wp plugin update --all --format=summary | grep 'updated successfully from'`
     Then STDOUT should contain:
@@ -144,6 +159,7 @@ Feature: Manage WordPress plugins
       """
       Error: No plugins updated.
       """
+    And the return code should be 1
 
     When I run `wp plugin install wordpress-importer --version=0.5 --force`
     Then STDOUT should not be empty
@@ -157,6 +173,7 @@ Feature: Manage WordPress plugins
       """
       Error: Only updated 1 of 3 plugins.
       """
+    And the return code should be 1
 
   Scenario: Activate a network-only plugin on single site
     Given a WP install
@@ -215,7 +232,7 @@ Feature: Manage WordPress plugins
       | name            | status           |
       | akismet         | active           |
 
-    When I run `wp plugin activate akismet`
+    When I try `wp plugin activate akismet`
     Then STDERR should contain:
       """
       Warning: Plugin 'akismet' is already active.
@@ -224,6 +241,7 @@ Feature: Manage WordPress plugins
       """
       Success: Plugin already activated.
       """
+    And the return code should be 0
 
     When I run `wp plugin activate akismet --network`
     Then STDOUT should be:
@@ -232,7 +250,7 @@ Feature: Manage WordPress plugins
       Success: Network activated 1 of 1 plugins.
       """
 
-    When I run `wp plugin activate akismet --network`
+    When I try `wp plugin activate akismet --network`
     Then STDERR should be:
       """
       Warning: Plugin 'akismet' is already network active.
@@ -241,6 +259,7 @@ Feature: Manage WordPress plugins
       """
       Success: Plugin already network activated.
       """
+    And the return code should be 0
 
     When I try `wp plugin deactivate akismet`
     Then STDERR should be:
@@ -248,6 +267,7 @@ Feature: Manage WordPress plugins
       Warning: Plugin 'akismet' is network active and must be deactivated with --network flag.
       Error: No plugins deactivated.
       """
+    And STDOUT should be empty
     And the return code should be 1
 
     When I run `wp plugin deactivate akismet --network`
@@ -258,7 +278,7 @@ Feature: Manage WordPress plugins
       """
     And the return code should be 0
 
-    When I run `wp plugin deactivate akismet`
+    When I try `wp plugin deactivate akismet`
     Then STDERR should be:
       """
       Warning: Plugin 'akismet' isn't active.
@@ -375,6 +395,8 @@ Feature: Manage WordPress plugins
       """
       Error: The 'wordpress-importer' plugin could not be found.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
   Scenario: Deactivate and uninstall a plugin, part two
     Given a WP install
@@ -397,7 +419,8 @@ Feature: Manage WordPress plugins
       """
       Error: The 'wordpress-importer' plugin could not be found.
       """
-
+    And STDOUT should be empty
+    And the return code should be 1
 
   Scenario: Uninstall a plugin without deleting
     Given a WP install
@@ -465,7 +488,7 @@ Feature: Manage WordPress plugins
   Scenario: Ignore empty slugs
     Given a WP install
 
-    When I run `wp plugin install ''`
+    When I try `wp plugin install ''`
     Then STDERR should contain:
       """
       Warning: Ignoring ambigious empty slug value.
@@ -474,6 +497,7 @@ Feature: Manage WordPress plugins
       """
       Plugin installed successfully
       """
+    And the return code should be 0
 
   Scenario: Plugin hidden by "all_plugins" filter
     Given a WP install

@@ -12,6 +12,8 @@ Feature: Manage WordPress theme mods
       """
       You must specify at least one mod or use --all.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
     When I run `wp theme mod set background_color 123456`
     And I run `wp theme mod get --all`
@@ -55,6 +57,8 @@ Feature: Manage WordPress theme mods
       """
       You must specify at least one mod or use --all.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
     When I run `wp theme mod remove background_color`
     Then STDOUT should be:

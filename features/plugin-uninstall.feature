@@ -22,10 +22,11 @@ Feature: Uninstall a WordPress plugin
       Warning: The 'akismet' plugin is active.
       Error: No plugins uninstalled.
       """
+    And STDOUT should be empty
     And the return code should be 1
 
   Scenario: Attempting to uninstall a plugin that doesn't exist
-    When I run `wp plugin uninstall edit-flow`
+    When I try `wp plugin uninstall edit-flow`
     Then STDOUT should be:
       """
       Success: Plugin already uninstalled.
