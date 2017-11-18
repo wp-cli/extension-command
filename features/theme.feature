@@ -23,7 +23,7 @@ Feature: Manage WordPress themes
     Then save STDOUT as {PREVIOUS_THEME}
 
     When I run `wp theme activate p2`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
       Success: Switched to 'P2' theme.
       """
@@ -35,6 +35,7 @@ Feature: Manage WordPress themes
       Error: No themes deleted.
       """
     And STDOUT should be empty
+    And the return code should be 1
 
     When I run `wp theme activate {PREVIOUS_THEME}`
     Then STDOUT should not be empty
@@ -43,10 +44,15 @@ Feature: Manage WordPress themes
     Then STDOUT should not be empty
 
     When I try the previous command again
-    Then STDERR should contain:
+    Then STDERR should be:
       """
-      The 'p2' theme could not be found.
+      Warning: The 'p2' theme could not be found.
       """
+    And STDOUT should be:
+      """
+      Success: Theme already deleted.
+      """
+    And the return code should be 0
 
     When I run `wp theme list`
     Then STDOUT should not be empty
@@ -92,6 +98,7 @@ Feature: Manage WordPress themes
       """
       Error: Please specify one or more themes, or use --all.
       """
+    And the return code should be 1
 
     When I run `wp theme update --all --format=summary | grep 'updated successfully from'`
     Then STDOUT should contain:
@@ -168,6 +175,8 @@ Feature: Manage WordPress themes
       """
       Warning: The 'P2' theme is already active.
       """
+    And STDOUT should be empty
+    And the return code should be 0
 
   Scenario: Install a theme when the theme directory doesn't yet exist
     Given a WP install
@@ -195,18 +204,24 @@ Feature: Manage WordPress themes
       """
       Error: Stylesheet is missing.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
     When I try `wp theme get myth`
     Then STDERR should contain:
       """
       Error: Stylesheet is missing.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
     When I try `wp theme status myth`
     Then STDERR should be:
       """
       Error: Stylesheet is missing.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
     When I run `wp theme install myth --force`
     Then STDOUT should contain:
@@ -222,6 +237,7 @@ Feature: Manage WordPress themes
     When I try `wp option get allowedthemes`
     Then the return code should be 1
     And STDERR should be empty
+    And STDOUT should be empty
 
     When I run `wp theme enable biker`
     Then STDOUT should contain:
@@ -292,12 +308,16 @@ Feature: Manage WordPress themes
       """
       Error: This is not a multisite install.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
     When I try `wp theme disable p2`
     Then STDERR should be:
       """
       Error: This is not a multisite install.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
   Scenario: Install a theme, then update to a specific version of that theme
     Given a WP install
@@ -323,6 +343,8 @@ Feature: Manage WordPress themes
       """
       Error: The parent theme is missing. Please install the "jolene" parent theme.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
   Scenario: List an active theme with its parent
     Given a WP install
@@ -397,6 +419,8 @@ Feature: Manage WordPress themes
       """
       Error: The 'stargazer' theme could not be found.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
     When I run `wp theme install buntu`
     Then STDOUT should contain:
