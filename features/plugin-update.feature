@@ -20,6 +20,7 @@ Feature: Update WordPress plugins
       """
       Error: Can't find the requested plugin's version 0.5.3 in the WordPress.org plugin repository (HTTP code 404).
       """
+    And the return code should be 1
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
@@ -42,6 +43,7 @@ Feature: Update WordPress plugins
       """
       Error: --minor and --patch cannot be used together.
       """
+    And the return code should be 1
 
   Scenario: Exclude plugin updates from bulk updates.
     Given a WP install

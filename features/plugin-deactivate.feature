@@ -20,6 +20,7 @@ Feature: Deactivate WordPress plugins
       Warning: The 'edit-flow' plugin could not be found.
       Error: No plugins deactivated.
       """
+    And STDOUT should be empty
     And the return code should be 1
 
     When I try `wp plugin deactivate akismet hello edit-flow`

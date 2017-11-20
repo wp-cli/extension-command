@@ -19,7 +19,7 @@ Feature: Install WordPress themes
       """
     And the return code should be 1
 
-    When I run `wp theme install p2`
+    When I try `wp theme install p2`
     Then STDOUT should be:
       """
       Success: Theme already installed.
@@ -36,6 +36,7 @@ Feature: Install WordPress themes
       Warning: Couldn't find 'p2-not-a-theme' in the WordPress.org theme directory.
       Error: No themes installed.
       """
+    And STDOUT should be empty
     And the return code should be 1
 
   Scenario: Ensure automatic parent theme installation uses http cacher

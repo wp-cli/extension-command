@@ -11,10 +11,12 @@ Feature: Manage WordPress themes and plugins
     When I try `wp <type> is-installed <item>`
     Then the return code should be 1
     And STDERR should be empty
+    And STDOUT should be empty
 
     When I try `wp <type> get <item>`
     Then the return code should be 1
     And STDERR should not be empty
+    And STDOUT should be empty
 
     # Install an out of date <item> from WordPress.org repository
     When I run `wp <type> install <item> --version=<version>`
@@ -24,7 +26,7 @@ Feature: Manage WordPress themes and plugins
       """
     And the {SUITE_CACHE_DIR}/<type>/<item>-<version>.zip file should exist
 
-    When I try `wp <type> is-installed <item>`
+    When I run `wp <type> is-installed <item>`
     Then the return code should be 0
 
     When I run `wp <type> get <item>`
@@ -101,7 +103,7 @@ Feature: Manage WordPress themes and plugins
     When I try `wp <type> status <item>`
     Then the return code should be 1
     And STDERR should not be empty
-
+    And STDOUT should be empty
 
     # Install and update <item> from cache
     When I run `wp <type> install <item> --version=<version>`
@@ -180,6 +182,12 @@ Feature: Manage WordPress themes and plugins
       """
       Warning: Couldn't find 'an-impossible-slug-because-abc3fr' in the WordPress.org <type> directory.
       """
+    Then STDERR should contain:
+      """
+      Error: No <type>s installed.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
 
     Examples:
       | type   | type_name | item                    | item_title              | version | zip_file                                                              | file_to_check                                                    |

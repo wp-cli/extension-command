@@ -13,7 +13,7 @@ Feature: Delete WordPress plugins
     And the return code should be 0
 
   Scenario: Attempting to delete a plugin that doesn't exist
-    When I run `wp plugin delete edit-flow`
+    When I try `wp plugin delete edit-flow`
     Then STDOUT should be:
       """
       Success: Plugin already deleted.

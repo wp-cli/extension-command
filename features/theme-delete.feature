@@ -17,7 +17,7 @@ Feature: Delete WordPress themes
     When I run `wp theme delete p2`
     Then STDOUT should not be empty
 
-    When I run the previous command again
+    When I try the previous command again
     Then STDOUT should be:
       """
       Success: Theme already deleted.
