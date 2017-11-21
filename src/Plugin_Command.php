@@ -622,7 +622,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'version' => $details['Version'],
 				'update_id' => $file,
 				'title' => $details['Name'],
-				'description' => $details['Description'],
+				'description' => wordwrap( $details['Description'] ),
 			);
 		}
 
