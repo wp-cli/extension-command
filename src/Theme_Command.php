@@ -442,7 +442,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'version' => $theme->get('Version'),
 				'update_id' => $theme->get_stylesheet(),
 				'title' => $theme->get('Name'),
-				'description' => $theme->get('Description'),
+				'description' => wordwrap( $theme->get('Description') ),
 				'author' => $theme->get('Author'),
 			);
 
