@@ -630,7 +630,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * Error handler to ignore failures on accessing SSL "https://api.wordpress.org/themes/update-check/1.1/" in `wp_update_themes()`
 	 * and "https://api.wordpress.org/plugins/update-check/1.1/" in `wp_update_plugins()` which seem to occur intermittently.
 	 */
-	static public function error_handler( $errno, $errstr, $errfile, $errline, $errcontext = null ) {
+	public static function error_handler( $errno, $errstr, $errfile, $errline, $errcontext = null ) {
 		// If ignoring E_USER_WARNING | E_USER_NOTICE, default.
 		if ( ! ( error_reporting() & $errno ) ) {
 			return false;
