@@ -501,7 +501,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'version' ) != 'dev' ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $api->download_link, $this->item_type, $api->slug, $api->version );
 		}
+
+		// Ignore failures on accessing SSL "https://api.wordpress.org/plugins/update-check/1.1/" in `wp_update_plugins()` which seem to occur intermittently.
+		set_error_handler( array( __CLASS__, 'error_handler' ), E_USER_WARNING | E_USER_NOTICE );
+
 		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
+
+		restore_error_handler();
 
 		return $result;
 	}
