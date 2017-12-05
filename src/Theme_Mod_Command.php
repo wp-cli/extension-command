@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage theme mods.
+ * Sets, gets, and removes theme mods.
  *
  * ## EXAMPLES
  *
@@ -25,7 +25,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	);
 
 	/**
-	 * Get one or more theme mods.
+	 * Gets one or more theme mods.
 	 *
 	 * ## OPTIONS
 	 *
@@ -122,7 +122,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Remove one or more theme mods.
+	 * Removes one or more theme mods.
 	 *
 	 * ## OPTIONS
 	 *
@@ -169,7 +169,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Set the value of a theme mod.
+	 * Sets the value of a theme mod.
 	 *
 	 * ## OPTIONS
 	 *
