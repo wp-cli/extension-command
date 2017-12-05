@@ -66,7 +66,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * See the status of one or all themes.
+	 * Reveals the status of one or all themes.
 	 *
 	 * ## OPTIONS
 	 *
@@ -96,7 +96,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Search the WordPress.org theme directory.
+	 * Searches the WordPress.org theme directory.
 	 *
 	 * Displays themes in the WordPress.org theme directory matching a given
 	 * search query.
@@ -190,7 +190,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Activate a theme.
+	 * Activates a theme.
 	 *
 	 * ## OPTIONS
 	 *
@@ -232,7 +232,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Enable a theme on a WordPress multisite install.
+	 * Enables a theme on a WordPress multisite install.
 	 *
 	 * Permits theme to be activated from the dashboard of a site on a WordPress
 	 * multisite install.
@@ -294,7 +294,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Disable a theme on a WordPress multisite install.
+	 * Disables a theme on a WordPress multisite install.
 	 *
 	 * Removes ability for a theme to be activated from the dashboard of a site
 	 * on a WordPress multisite install.
@@ -347,7 +347,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get the path to a theme or to the theme directory.
+	 * Gets the path to a theme or to the theme directory.
 	 *
 	 * ## OPTIONS
 	 *
@@ -471,7 +471,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Install a theme.
+	 * Installs a theme.
 	 *
 	 * ## OPTIONS
 	 *
@@ -519,7 +519,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get details about a theme.
+	 * Gets details about a theme.
 	 *
 	 * ## OPTIONS
 	 *
@@ -582,7 +582,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Update one or more themes.
+	 * Updates one or more themes.
 	 *
 	 * ## OPTIONS
 	 *
@@ -676,7 +676,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Check if the theme is installed.
+	 * Checks if a given theme is installed.
 	 *
 	 * Returns exit code 0 when installed, 1 when uninstalled.
 	 *
@@ -705,7 +705,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Delete a theme.
+	 * Deletes a theme.
 	 *
 	 * Removes the theme from the filesystem.
 	 *
@@ -749,7 +749,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get a list of themes.
+	 * Gets a list of themes.
 	 *
 	 * ## OPTIONS
 	 *
