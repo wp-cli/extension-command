@@ -1,6 +1,6 @@
 {
     "name": "wp-cli/extension-command",
-    "description": "Manage WordPress plugins and themes.",
+    "description": "Manages plugins and themes, including installs, activations, and updates.",
     "type": "wp-cli-package",
     "homepage": "https://github.com/wp-cli/extension-command",
     "support": {
@@ -33,6 +33,7 @@
         },
 		"bundled": true,
         "commands": [
+            "plugin",
             "plugin activate",
             "plugin deactivate",
             "plugin delete",
@@ -46,6 +47,7 @@
             "plugin toggle",
             "plugin uninstall",
             "plugin update",
+            "theme",
             "theme activate",
             "theme delete",
             "theme disable",
@@ -54,6 +56,7 @@
             "theme install",
             "theme is-installed",
             "theme list",
+            "theme mod",
             "theme mod get",
             "theme mod set",
             "theme mod remove",
