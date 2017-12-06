@@ -3,9 +3,9 @@
 use \WP_CLI\Utils;
 
 /**
- * Manages site plugins, including installs, activations, and updates.
+ * Manages plugins, including installs, activations, and updates.
  *
- * See the WordPress [Plugin Handbook](https://developer.wordpress.org/plugins/) developer resource.
+ * See the WordPress [Plugin Handbook](https://developer.wordpress.org/plugins/) developer resource for more information on plugins.
  *
  * ## EXAMPLES
  *
@@ -65,7 +65,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * See the status of one or all plugins.
+	 * Reveals the status of one or all plugins.
 	 *
 	 * ## OPTIONS
 	 *
@@ -98,7 +98,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Search the WordPress.org plugin directory.
+	 * Searches the WordPress.org plugin directory.
 	 *
 	 * Displays plugins in the WordPress.org plugin directory matching a given
 	 * search query.
@@ -238,7 +238,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Activate a plugin.
+	 * Activates a plugin.
 	 *
 	 * ## OPTIONS
 	 *
@@ -313,7 +313,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Deactivate a plugin.
+	 * Deactivates a plugin.
 	 *
 	 * ## OPTIONS
 	 *
@@ -401,7 +401,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Toggle a plugin's activation state.
+	 * Toggles a plugin's activation state.
 	 *
 	 * If the plugin is active, then it will be deactivated. If the plugin is
 	 * inactive, then it will be activated.
@@ -448,7 +448,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get the path to a plugin or to the plugin directory.
+	 * Gets the path to a plugin or to the plugin directory.
 	 *
 	 * ## OPTIONS
 	 *
@@ -513,7 +513,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Update one or more plugins.
+	 * Updates one or more plugins.
 	 *
 	 * ## OPTIONS
 	 *
@@ -650,7 +650,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Install a plugin.
+	 * Installs a plugin.
 	 *
 	 * ## OPTIONS
 	 *
@@ -738,7 +738,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get details about an installed plugin.
+	 * Gets details about an installed plugin.
 	 *
 	 * ## OPTIONS
 	 *
@@ -792,7 +792,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Uninstall a plugin.
+	 * Uninstalls a plugin.
 	 *
 	 * ## OPTIONS
 	 *
@@ -844,7 +844,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Check if the plugin is installed.
+	 * Checks if a given plugin is installed.
 	 *
 	 * Returns exit code 0 when installed, 1 when uninstalled.
 	 *
@@ -871,7 +871,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Delete plugin files without deactivating or uninstalling.
+	 * Deletes plugin files without deactivating or uninstalling.
 	 *
 	 * ## OPTIONS
 	 *
@@ -906,7 +906,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get a list of plugins.
+	 * Gets a list of plugins.
 	 *
 	 * Displays a list of the plugins installed on the site with activation
 	 * status, whether or not there's an update available, etc.
@@ -1014,7 +1014,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get the details of a plugin.
+	 * Gets the details of a plugin.
 	 *
 	 * @param object
 	 * @return array
@@ -1050,7 +1050,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get all available plugins.
+	 * Gets all available plugins.
 	 *
 	 * Uses the same filter core uses in plugins.php to determine which plugins
 	 * should be available to manage through the WP_Plugins_List_Table class.
