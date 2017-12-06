@@ -1,7 +1,7 @@
 wp-cli/extension-command
 ========================
 
-Manage WordPress plugins and themes.
+Manages plugins and themes, including installs, activations, and updates.
 
 [![Build Status](https://travis-ci.org/wp-cli/extension-command.svg?branch=master)](https://travis-ci.org/wp-cli/extension-command)
 
@@ -11,9 +11,50 @@ Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contr
 
 This package implements the following commands:
 
+### wp plugin
+
+Manages plugins, including installs, activations, and updates.
+
+~~~
+wp plugin
+~~~
+
+See the WordPress [Plugin Handbook](https://developer.wordpress.org/plugins/) developer resource for more information on plugins.
+
+**EXAMPLES**
+
+    # Activate plugin
+    $ wp plugin activate hello
+    Plugin 'hello' activated.
+    Success: Activated 1 of 1 plugins.
+
+    # Deactivate plugin
+    $ wp plugin deactivate hello
+    Plugin 'hello' deactivated.
+    Success: Deactivated 1 of 1 plugins.
+
+    # Delete plugin
+    $ wp plugin delete hello
+    Deleted 'hello' plugin.
+    Success: Deleted 1 of 1 plugins.
+
+    # Install the latest version from wordpress.org and activate
+    $ wp plugin install bbpress --activate
+    Installing bbPress (2.5.9)
+    Downloading install package from https://downloads.wordpress.org/plugin/bbpress.2.5.9.zip...
+    Using cached file '/home/vagrant/.wp-cli/cache/plugin/bbpress-2.5.9.zip'...
+    Unpacking the package...
+    Installing the plugin...
+    Plugin installed successfully.
+    Activating 'bbpress'...
+    Plugin 'bbpress' activated.
+    Success: Installed 1 of 1 plugins.
+
+
+
 ### wp plugin activate
 
-Activate a plugin.
+Activates a plugin.
 
 ~~~
 wp plugin activate [<plugin>...] [--all] [--network]
@@ -46,7 +87,7 @@ wp plugin activate [<plugin>...] [--all] [--network]
 
 ### wp plugin deactivate
 
-Deactivate a plugin.
+Deactivates a plugin.
 
 ~~~
 wp plugin deactivate [<plugin>...] [--uninstall] [--all] [--network]
@@ -77,7 +118,7 @@ wp plugin deactivate [<plugin>...] [--uninstall] [--all] [--network]
 
 ### wp plugin delete
 
-Delete plugin files without deactivating or uninstalling.
+Deletes plugin files without deactivating or uninstalling.
 
 ~~~
 wp plugin delete <plugin>...
@@ -104,7 +145,7 @@ wp plugin delete <plugin>...
 
 ### wp plugin get
 
-Get details about an installed plugin.
+Gets details about an installed plugin.
 
 ~~~
 wp plugin get <plugin> [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -141,7 +182,7 @@ wp plugin get <plugin> [--field=<field>] [--fields=<fields>] [--format=<format>]
 
 ### wp plugin install
 
-Install a plugin.
+Installs a plugin.
 
 ~~~
 wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--activate] [--activate-network]
@@ -227,7 +268,7 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--activat
 
 ### wp plugin is-installed
 
-Check if the plugin is installed.
+Checks if a given plugin is installed.
 
 ~~~
 wp plugin is-installed <plugin>
@@ -251,7 +292,7 @@ Returns exit code 0 when installed, 1 when uninstalled.
 
 ### wp plugin list
 
-Get a list of plugins.
+Gets a list of plugins.
 
 ~~~
 wp plugin list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -327,7 +368,7 @@ These fields are optionally available:
 
 ### wp plugin path
 
-Get the path to a plugin or to the plugin directory.
+Gets the path to a plugin or to the plugin directory.
 
 ~~~
 wp plugin path [<plugin>] [--dir]
@@ -352,7 +393,7 @@ wp plugin path [<plugin>] [--dir]
 
 ### wp plugin search
 
-Search the WordPress.org plugin directory.
+Searches the WordPress.org plugin directory.
 
 ~~~
 wp plugin search <search> [--page=<page>] [--per-page=<per-page>] [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -431,7 +472,7 @@ search query.
 
 ### wp plugin status
 
-See the status of one or all plugins.
+Reveals the status of one or all plugins.
 
 ~~~
 wp plugin status [<plugin>]
@@ -467,7 +508,7 @@ wp plugin status [<plugin>]
 
 ### wp plugin toggle
 
-Toggle a plugin's activation state.
+Toggles a plugin's activation state.
 
 ~~~
 wp plugin toggle <plugin>... [--network]
@@ -500,7 +541,7 @@ inactive, then it will be activated.
 
 ### wp plugin uninstall
 
-Uninstall a plugin.
+Uninstalls a plugin.
 
 ~~~
 wp plugin uninstall <plugin>... [--deactivate] [--skip-delete]
@@ -528,7 +569,7 @@ wp plugin uninstall <plugin>... [--deactivate] [--skip-delete]
 
 ### wp plugin update
 
-Update one or more plugins.
+Updates one or more plugins.
 
 ~~~
 wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run]
@@ -616,9 +657,51 @@ wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [-
 
 
 
+### wp theme
+
+Manages themes, including installs, activations, and updates.
+
+~~~
+wp theme
+~~~
+
+See the WordPress [Theme Handbook](https://developer.wordpress.org/themes/) developer resource for more information on themes.
+
+**EXAMPLES**
+
+    # Install the latest version of a theme from wordpress.org and activate
+    $ wp theme install twentysixteen --activate
+    Installing Twenty Sixteen (1.2)
+    Downloading install package from http://downloads.wordpress.org/theme/twentysixteen.1.2.zip...
+    Unpacking the package...
+    Installing the theme...
+    Theme installed successfully.
+    Activating 'twentysixteen'...
+    Success: Switched to 'Twenty Sixteen' theme.
+
+    # Get details of an installed theme
+    $ wp theme get twentysixteen --fields=name,title,version
+    +---------+----------------+
+    | Field   | Value          |
+    +---------+----------------+
+    | name    | Twenty Sixteen |
+    | title   | Twenty Sixteen |
+    | version | 1.2            |
+    +---------+----------------+
+
+    # Get status of theme
+    $ wp theme status twentysixteen
+    Theme twentysixteen details:
+    		Name: Twenty Sixteen
+    		Status: Active
+    		Version: 1.2
+    		Author: the WordPress team
+
+
+
 ### wp theme activate
 
-Activate a theme.
+Activates a theme.
 
 ~~~
 wp theme activate <theme>
@@ -638,7 +721,7 @@ wp theme activate <theme>
 
 ### wp theme delete
 
-Delete a theme.
+Deletes a theme.
 
 ~~~
 wp theme delete <theme>...
@@ -661,7 +744,7 @@ Removes the theme from the filesystem.
 
 ### wp theme disable
 
-Disable a theme on a WordPress multisite install.
+Disables a theme on a WordPress multisite install.
 
 ~~~
 wp theme disable <theme> [--network]
@@ -694,7 +777,7 @@ on a WordPress multisite install.
 
 ### wp theme enable
 
-Enable a theme on a WordPress multisite install.
+Enables a theme on a WordPress multisite install.
 
 ~~~
 wp theme enable <theme> [--network] [--activate]
@@ -734,7 +817,7 @@ multisite install.
 
 ### wp theme get
 
-Get details about a theme.
+Gets details about a theme.
 
 ~~~
 wp theme get <theme> [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -777,7 +860,7 @@ wp theme get <theme> [--field=<field>] [--fields=<fields>] [--format=<format>]
 
 ### wp theme install
 
-Install a theme.
+Installs a theme.
 
 ~~~
 wp theme install <theme|zip|url>... [--version=<version>] [--force] [--activate]
@@ -821,7 +904,7 @@ wp theme install <theme|zip|url>... [--version=<version>] [--force] [--activate]
 
 ### wp theme is-installed
 
-Check if the theme is installed.
+Checks if a given theme is installed.
 
 ~~~
 wp theme is-installed <theme>
@@ -845,7 +928,7 @@ Returns exit code 0 when installed, 1 when uninstalled.
 
 ### wp theme list
 
-Get a list of themes.
+Gets a list of themes.
 
 ~~~
 wp theme list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -901,9 +984,35 @@ These fields are optionally available:
 
 
 
+### wp theme mod
+
+Sets, gets, and removes theme mods.
+
+~~~
+wp theme mod
+~~~
+
+**EXAMPLES**
+
+    # Set the 'background_color' theme mod to '000000'.
+    $ wp theme mod set background_color 000000
+    Success: Theme mod background_color set to 000000
+
+    # Get single theme mod in JSON format.
+    $ wp theme mod get background_color --format=json
+    [{"key":"background_color","value":"dd3333"}]
+
+    # Remove all theme mods.
+    $ wp theme mod remove --all
+    Success: Theme mods removed.
+
+
+
+
+
 ### wp theme mod get
 
-Get one or more theme mods.
+Gets one or more theme mods.
 
 ~~~
 wp theme mod get [<mod>...] [--field=<field>] [--all] [--format=<format>]
@@ -964,7 +1073,7 @@ wp theme mod get [<mod>...] [--field=<field>] [--all] [--format=<format>]
 
 ### wp theme mod set
 
-Set the value of a theme mod.
+Sets the value of a theme mod.
 
 ~~~
 wp theme mod set <mod> <value>
@@ -988,7 +1097,7 @@ wp theme mod set <mod> <value>
 
 ### wp theme mod remove
 
-Remove one or more theme mods.
+Removes one or more theme mods.
 
 ~~~
 wp theme mod remove [<mod>...] [--all]
@@ -1020,7 +1129,7 @@ wp theme mod remove [<mod>...] [--all]
 
 ### wp theme path
 
-Get the path to a theme or to the theme directory.
+Gets the path to a theme or to the theme directory.
 
 ~~~
 wp theme path [<theme>] [--dir]
@@ -1049,7 +1158,7 @@ wp theme path [<theme>] [--dir]
 
 ### wp theme search
 
-Search the WordPress.org theme directory.
+Searches the WordPress.org theme directory.
 
 ~~~
 wp theme search <search> [--per-page=<per-page>] [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -1114,7 +1223,7 @@ search query.
 
 ### wp theme status
 
-See the status of one or all themes.
+Reveals the status of one or all themes.
 
 ~~~
 wp theme status [<theme>]
@@ -1138,7 +1247,7 @@ wp theme status [<theme>]
 
 ### wp theme update
 
-Update one or more themes.
+Updates one or more themes.
 
 ~~~
 wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--format=<format>] [--version=<version>] [--dry-run]
