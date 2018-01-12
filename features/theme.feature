@@ -236,7 +236,7 @@ Feature: Manage WordPress themes
 
     When I try `wp option get allowedthemes`
     Then the return code should be 1
-    And STDERR should be empty
+    # STDERR may or may not be empty, depending on WP-CLI version.
     And STDOUT should be empty
 
     When I run `wp theme enable biker`
