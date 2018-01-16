@@ -144,8 +144,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **sections**: Plugin Readme Sections: description, installation, FAQ, screenshots, other notes, and changelog
 	 *     **downloaded**: Plugin Download Count
 	 *     **last_updated**: Plugin's Last Update
-   *     **added**: Plugin's Date Added to wordpress.org Repository
-   *     **tags**: Plugin's Tags
+	 *     **added**: Plugin's Date Added to wordpress.org Repository
+	 *     **tags**: Plugin's Tags
 	 *     **versions**: Plugin's Available Versions with D/L Link
 	 *     **donate_link**: Plugin's Donation Link
 	 *     **banners**: Plugin's Banner Image Link
