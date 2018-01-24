@@ -491,7 +491,7 @@ Feature: Manage WordPress plugins
     When I try `wp plugin install ''`
     Then STDERR should contain:
       """
-      Warning: Ignoring ambigious empty slug value.
+      Warning: Ignoring ambiguous empty slug value.
       """
     And STDOUT should not contain:
       """
