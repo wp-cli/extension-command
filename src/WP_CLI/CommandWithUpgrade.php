@@ -128,53 +128,52 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		foreach ( $args as $slug ) {
 
 			if ( empty( $slug ) ) {
-				WP_CLI::warning( "Ignoring ambigious empty slug value." );
+				WP_CLI::warning( "Ignoring ambiguous empty slug value." );
 				continue;
 			}
 
-			$local_or_remote_zip_file = false;
 			$result = false;
 
-			// Check if a URL to a remote or local zip has been specified
-			if ( strpos( $slug, '://' ) !== false || ( pathinfo( $slug, PATHINFO_EXTENSION ) === 'zip' && is_file( $slug ) ) ) {
-				$local_or_remote_zip_file = $slug;
-			}
+			$is_remote = false !== strpos( $slug, '://' );
 
-			if ( $local_or_remote_zip_file ) {
+			// Check if a URL to a remote or local zip has been specified
+			if ( $is_remote || ( pathinfo( $slug, PATHINFO_EXTENSION ) === 'zip' && is_file( $slug ) ) ) {
 				// Install from local or remote zip file
 				$file_upgrader = $this->get_upgrader( $assoc_args );
 
 				$filter = false;
-				if ( strpos( $local_or_remote_zip_file, '://' ) !== false
-						&& 'github.com' === parse_url( $local_or_remote_zip_file, PHP_URL_HOST ) ) {
-					$filter = function( $source, $remote_source, $upgrader ) use ( $local_or_remote_zip_file ) {
-						// Don't attempt to rename ZIPs uploaded to the releases page
-						if ( preg_match( '#github\.com/([^/]+)/([^/]+)/releases/download/#', $local_or_remote_zip_file ) || preg_match( '#github\.com/([^/]+)/([^/]+)/raw/#', $local_or_remote_zip_file ) ) {
+				// If a Github URL, do some guessing as to the correct plugin/theme directory.
+				if ( $is_remote && 'github.com' === parse_url( $slug, PHP_URL_HOST )
+						// Don't attempt to rename ZIPs uploaded to the releases page or coming from a raw source.
+						&& ! preg_match( '#github\.com/[^/]+/[^/]+/(?:releases/download|raw)/#', $slug ) ) {
+
+					$filter = function( $source, $remote_source, $upgrader ) use ( $slug ) {
+
+						$slug_dir = Utils\basename( parse_url( $slug, PHP_URL_PATH ), '.zip' );
+
+						// Don't use the zip name if archive attached to release, as name likely to contain version tag/branch.
+						if ( preg_match( '#github\.com/[^/]+/([^/]+)/archive/#', $slug, $matches ) ) {
+							// Note this will be wrong if the project name isn't the same as the plugin/theme slug name.
+							$slug_dir = $matches[1];
+						}
+
+						$source_dir = Utils\basename( $source ); // `$source` is trailing-slashed path to the unzipped archive directory, so basename returns the unslashed directory.
+						if ( $source_dir === $slug_dir ) {
 							return $source;
 						}
+						$new_path = substr_replace( $source, $slug_dir, strrpos( $source, $source_dir ), strlen( $source_dir ) );
 
-						$branch_name = pathinfo( $local_or_remote_zip_file, PATHINFO_FILENAME );
-
-						// Always be attached "archive" into release tag and tag on github.
-						if ( preg_match( '#github\.com/([^/]+)/([^/]+)/archive/#', $local_or_remote_zip_file ) ) {
-							$path_array = explode( "/", pathinfo( $local_or_remote_zip_file, PATHINFO_DIRNAME) );
-							array_pop( $path_array );
-							$branch_name = end( $path_array );
-						}
-
-						$new_path = str_replace( pathinfo( $source, PATHINFO_BASENAME ), $branch_name, $source );
 						if ( $GLOBALS['wp_filesystem']->move( $source, $new_path ) ) {
-							WP_CLI::log( "Renamed Github-based project from '" . Utils\basename( $source ) . "' to '" . Utils\basename( $new_path ) . "'." );
+							WP_CLI::log( sprintf( "Renamed Github-based project from '%s' to '%s'.", $source_dir, $slug_dir ) );
 							return $new_path;
-						} else {
-							return new \WP_Error( 'wpcli_install_github', "Couldn't move Github-based project to appropriate directory." );
 						}
-						return $source;
+
+						return new \WP_Error( 'wpcli_install_github', "Couldn't move Github-based project to appropriate directory." );
 					};
 					add_filter( 'upgrader_source_selection', $filter, 10, 3 );
 				}
 
-				if ( $file_upgrader->install( $local_or_remote_zip_file ) ) {
+				if ( $file_upgrader->install( $slug ) ) {
 					$slug = $file_upgrader->result['destination_name'];
 					$result = true;
 					if ( $filter ) {

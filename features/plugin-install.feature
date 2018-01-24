@@ -5,9 +5,9 @@ Feature: Install WordPress plugins
 
     When I run `wp plugin install https://github.com/runcommand/one-time-login/archive/master.zip --activate`
     Then STDOUT should contain:
-      """"
+      """
       Downloading install
-      """"
+      """
     And STDOUT should contain:
       """
       package from https://github.com/runcommand/one-time-login/archive/master.zip
@@ -20,7 +20,6 @@ Feature: Install WordPress plugins
       """
       Plugin installed successfully.
       """
-    And STDERR should be empty
     And the wp-content/plugins/one-time-login directory should exist
     And the wp-content/plugins/one-time-login-master directory should not exist
 
@@ -45,6 +44,20 @@ Feature: Install WordPress plugins
     And the wp-content/plugins/one-time-login directory should exist
     And the wp-content/plugins/one-time-login-master directory should not exist
 
+    # However if the plugin slug ('modern-framework') does not match the project name then it's downloaded to wrong directory.
+    When I run `wp plugin install https://github.com/Miller-Media/modern-wordpress/archive/master.zip`
+    Then STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And STDOUT should contain:
+      """
+      Renamed Github-based project from 'modern-wordpress-master' to 'modern-wordpress'.
+      """
+    # Wrong directory.
+    And the wp-content/plugins/modern-wordpress directory should exist
+    And the wp-content/plugins/modern-framework directory should not exist
+
   Scenario: Don't attempt to rename ZIPs uploaded to GitHub's releases page
     Given a WP install
 
@@ -55,9 +68,8 @@ Feature: Install WordPress plugins
       """
     And STDOUT should not contain:
       """
-      Renamed Github-based project from
+      Renamed Github-based project from 'one-time-login.0.1.2' to 'one-time-login'.
       """
-    And STDERR should be empty
     And the wp-content/plugins/one-time-login directory should exist
 
   Scenario: Don't attempt to rename ZIPs coming from a GitHub raw source
@@ -70,9 +82,8 @@ Feature: Install WordPress plugins
       """
     And STDOUT should not contain:
       """
-      Renamed Github-based project from
+      Renamed Github-based project from 'modern-framework-stable' to 'modern-framework'.
       """
-    And STDERR should be empty
     And the wp-content/plugins/modern-framework directory should exist
 
   Scenario: Installing respects WP_PROXY_HOST and WP_PROXY_PORT
@@ -101,7 +112,6 @@ Feature: Install WordPress plugins
       """
       Plugin installed successfully.
       """
-    And STDERR should be empty
 
   Scenario: Return code is 1 when one or more plugin installations fail
     Given a WP install
@@ -161,7 +171,7 @@ Feature: Install WordPress plugins
       """
     And the return code should be 1
 
-  Scenario: Don't attempt to rename ZIPs coming from a GitHub archive release/tag
+  Scenario: For Github archive URLs use the Github project name as the plugin directory
     Given a WP install
 
     When I run `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/archive/v0.1.0.zip`
@@ -177,11 +187,23 @@ Feature: Install WordPress plugins
       """
       Renamed Github-based project from 'generic-example-plugin-0.1.0' to 'generic-example-plugin'.
       """
-    And STDOUT should contain:
-      """
-      Plugin installed successfully.
-      """
-    And STDERR should be empty
     And the wp-content/plugins/generic-example-plugin directory should exist
     And the wp-content/plugins/generic-example-plugi directory should not exist
     And the wp-content/plugins/generic-example-plugin-0.1.0 directory should not exist
+
+    When I run `wp plugin install https://github.com/Automattic/sensei/archive/version/1.9.19.zip`
+    Then STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And STDOUT should contain:
+      """
+      package from https://github.com/Automattic/sensei/archive/version/1.9.19.zip
+      """
+    And STDOUT should contain:
+      """
+      Renamed Github-based project from 'sensei-version-1.9.19' to 'sensei'.
+      """
+    And the wp-content/plugins/sensei directory should exist
+    And the wp-content/plugins/archive directory should not exist
+    And the wp-content/plugins/sensei-version-1.9.19 directory should not exist
