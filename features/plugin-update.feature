@@ -108,3 +108,86 @@ Feature: Update WordPress plugins
       """
       2.6.1
       """
+
+  Scenario: Not giving a slug on update should throw an error unless --all given
+    Given a WP install
+    And I run `wp plugin path`
+    And save STDOUT as {PLUGIN_DIR}
+    And an empty {PLUGIN_DIR} directory
+
+    # No plugins installed. Don't give an error if --all given for BC.
+    When I run `wp plugin update --all`
+    Then STDOUT should be:
+      """
+      Success: No plugins installed.
+      """
+
+    When I run `wp plugin update --version=0.6 --all`
+    Then STDOUT should be:
+      """
+      Success: No plugins installed.
+      """
+
+    # One plugin installed.
+    Given I run `wp plugin install wordpress-importer --version=0.5 --force`
+
+    When I try `wp plugin update`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Please specify one or more plugins, or use --all.
+      """
+    And STDOUT should be empty
+
+    When I run `wp plugin update --all`
+    Then STDOUT should contain:
+      """
+      Success: Updated
+      """
+
+    When I run the previous command again
+    Then STDOUT should be:
+      """
+      Success: Plugin already updated.
+      """
+
+    # Note: if given version then re-installs.
+    When I run `wp plugin update --version=0.6 --all`
+    Then STDOUT should contain:
+      """
+      Success: Installed 1 of 1 plugins.
+      """
+
+    When I run the previous command again
+    Then STDOUT should contain:
+      """
+      Success: Installed 1 of 1 plugins.
+      """
+
+    # Two plugins installed.
+    Given I run `wp plugin install akismet --version=2.5.4`
+
+    When I run `wp plugin update --all`
+    Then STDOUT should contain:
+      """
+      Success: Updated
+      """
+
+    When I run the previous command again
+    # BUG: note this message should be plural.
+    Then STDOUT should be:
+      """
+      Success: Plugin already updated.
+      """
+
+    # Using version with all rarely makes sense and should probably error and do nothing.
+    When I try `wp plugin update --version=2.5.4 --all`
+    Then the return code should be 1
+    And STDOUT should contain:
+      """
+      Success: Installed 1 of 1 plugins.
+      """
+    And STDERR should be:
+      """
+      Error: Can't find the requested plugin's version 2.5.4 in the WordPress.org plugin repository (HTTP code 404).
+      """

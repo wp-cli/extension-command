@@ -58,3 +58,21 @@ Feature: Deactivate WordPress plugins
     Plugin 'akismet' deactivated.
     """
 
+  Scenario: Not giving a slug on deactivate should throw an error unless --all given
+    When I try `wp plugin deactivate`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Please specify one or more plugins, or use --all.
+      """
+    And STDOUT should be empty
+
+    # But don't give an error if no plugins and --all given for BC.
+    Given I run `wp plugin path`
+    And save STDOUT as {PLUGIN_DIR}
+    And an empty {PLUGIN_DIR} directory
+    When I run `wp plugin deactivate --all`
+    Then STDOUT should be:
+      """
+      Success: No plugins installed.
+      """

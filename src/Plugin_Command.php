@@ -250,7 +250,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Activates a plugin.
+	 * Activates one or more plugins.
 	 *
 	 * ## OPTIONS
 	 *
@@ -279,10 +279,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
 		$all = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
 
-		if ( $all ) {
-			$args = array_map( function( $file ){
-				return Utils\get_plugin_name( $file );
-			}, array_keys( $this->get_all_plugins() ) );
+		if ( ! ( $args = $this->check_optional_args_and_all( $args, $all ) ) ) {
+			return;
 		}
 
 		$successes = $errors = 0;
@@ -325,7 +323,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Deactivates a plugin.
+	 * Deactivates one or more plugins.
 	 *
 	 * ## OPTIONS
 	 *
@@ -352,10 +350,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
 		$disable_all = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' );
 
-		if ( $disable_all ) {
-			$args = array_map( function( $file ){
-				return Utils\get_plugin_name( $file );
-			}, array_keys( $this->get_all_plugins() ) );
+		if ( ! ( $args = $this->check_optional_args_and_all( $args, $disable_all ) ) ) {
+			return;
 		}
 
 		$successes = $errors = 0;
@@ -610,6 +606,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @alias upgrade
 	 */
 	public function update( $args, $assoc_args ) {
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		if ( ! ( $args = $this->check_optional_args_and_all( $args, $all ) ) ) {
+			return;
+		}
+
 		if ( isset( $assoc_args['version'] ) ) {
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 				$assoc_args['force'] = 1;
@@ -662,12 +664,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Installs a plugin.
+	 * Installs one or more plugins.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <plugin|zip|url>...
-	 * : A plugin slug, the path to a local zip file, or URL to a remote zip file.
+	 * : One or more plugins to install. Accepts a plugin slug, the path to a local zip file, or a URL to a remote zip file.
 	 *
 	 * [--version=<version>]
 	 * : If set, get that particular version from wordpress.org, instead of the
@@ -804,7 +806,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Uninstalls a plugin.
+	 * Uninstalls one or more plugins.
 	 *
 	 * ## OPTIONS
 	 *
@@ -1071,5 +1073,29 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	private function get_all_plugins() {
 		return apply_filters( 'all_plugins', get_plugins() );
+	}
+
+	/**
+	 * If have optional args ([<plugin>...]) and an all option, then check have something to do.
+	 *
+	 * @param array $args Passed-in arguments.
+	 * @param bool $all All flag.
+	 * @return array Same as $args if not all, otherwise all slugs.
+	 */
+	private function check_optional_args_and_all( $args, $all ) {
+		if ( $all ) {
+			$args = array_map( function( $file ){
+				return Utils\get_plugin_name( $file );
+			}, array_keys( $this->get_all_plugins() ) );
+		}
+
+		if ( empty( $args ) ) {
+			if ( ! $all ) {
+				WP_CLI::error( 'Please specify one or more plugins, or use --all.' );
+			}
+			WP_CLI::success( 'No plugins installed.' ); // Don't error if --all given for BC.
+		}
+
+		return $args;
 	}
 }
