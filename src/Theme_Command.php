@@ -477,12 +477,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Installs a theme.
+	 * Installs one or more themes.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <theme|zip|url>...
-	 * : A theme slug, the path to a local zip file, or URL to a remote zip file.
+	 * : One or more themes to install. Accepts a theme slug, the path to a local zip file, or a URL to a remote zip file.
 	 *
 	 * [--version=<version>]
 	 * : If set, get that particular version from wordpress.org, instead of the
@@ -666,6 +666,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @alias upgrade
 	 */
 	public function update( $args, $assoc_args ) {
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		if ( ! ( $args = $this->check_optional_args_and_all( $args, $all ) ) ) {
+			return;
+		}
+
 		if ( isset( $assoc_args['version'] ) ) {
 			foreach ( $this->fetcher->get_many( $args ) as $theme ) {
 				$r = delete_theme( $theme->stylesheet );
@@ -711,9 +717,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Deletes a theme.
+	 * Deletes one or more themes.
 	 *
-	 * Removes the theme from the filesystem.
+	 * Removes the theme or themes from the filesystem.
 	 *
 	 * ## OPTIONS
 	 *
@@ -809,5 +815,29 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	public function list_( $_, $assoc_args ) {
 		parent::_list( $_, $assoc_args );
+	}
+
+	/**
+	 * If have optional args ([<theme>...]) and an all option, then check have something to do.
+	 *
+	 * @param array $args Passed-in arguments.
+	 * @param bool $all All flag.
+	 * @return array Same as $args if not all, otherwise all slugs.
+	 */
+	private function check_optional_args_and_all( $args, $all ) {
+		if ( $all ) {
+			$args = array_map( function( $item ){
+				return Utils\get_theme_name( $item );
+			}, array_keys( $this->get_all_items() ) );
+		}
+
+		if ( empty( $args ) ) {
+			if ( ! $all ) {
+				WP_CLI::error( 'Please specify one or more themes, or use --all.' );
+			}
+			WP_CLI::success( 'No themes installed.' ); // Don't error if --all given for BC.
+		}
+
+		return $args;
 	}
 }
