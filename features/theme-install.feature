@@ -4,9 +4,16 @@ Feature: Install WordPress themes
     Given a WP install
 
     When I try `wp theme install p2 p2-not-a-theme`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
-      Warning: Couldn't find 'p2-not-a-theme' in the WordPress.org theme directory.
+      Warning:
+      """
+    And STDERR should contain:
+      """
+      p2-not-a-theme
+      """
+    And STDERR should contain:
+      """
       Error: Only installed 1 of 2 themes.
       """
     And STDOUT should contain:
@@ -31,9 +38,16 @@ Feature: Install WordPress themes
     And the return code should be 0
 
     When I try `wp theme install p2-not-a-theme`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
-      Warning: Couldn't find 'p2-not-a-theme' in the WordPress.org theme directory.
+      Warning:
+      """
+    And STDERR should contain:
+      """
+      p2-not-a-theme
+      """
+    And STDERR should contain:
+      """
       Error: No themes installed.
       """
     And STDOUT should be empty
