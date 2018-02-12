@@ -42,6 +42,7 @@ Feature: Uninstall a WordPress plugin
     Then STDOUT should be:
       """
       Uninstalled and deleted 'akismet' plugin.
-      Success: Uninstalled 1 of 1 plugins.
+      Uninstalled and deleted 'hello.php' plugin.
+      Success: Uninstalled 2 of 2 plugins.
       """
     And the return code should be 0
