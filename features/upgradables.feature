@@ -171,10 +171,10 @@ Feature: Manage WordPress themes and plugins
       """
     And the <file_to_check> file should not exist
 
-    When I run `wp <type> search <item> --per-page=2 --fields=name,slug`
-    Then STDOUT should contain:
+    When I run `wp <type> list --fields=name`
+    Then STDOUT should not contain:
       """
-      Showing 2 of
+      <item>
       """
 
     When I try `wp <type> install an-impossible-slug-because-abc3fr`
