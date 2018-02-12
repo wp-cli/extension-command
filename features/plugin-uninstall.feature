@@ -36,3 +36,12 @@ Feature: Uninstall a WordPress plugin
       Warning: The 'edit-flow' plugin could not be found.
       """
     And the return code should be 0
+
+  Scenario: Uninstall all installed plugin
+    When I run `wp plugin uninstall --all`
+    Then STDOUT should be:
+      """
+      Uninstalled and deleted 'akismet' plugin.
+      Success: Uninstalled 1 of 1 plugins.
+      """
+    And the return code should be 0
