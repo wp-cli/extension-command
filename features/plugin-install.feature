@@ -50,10 +50,7 @@ Feature: Install WordPress plugins
       """
       Plugin installed successfully.
       """
-    And STDOUT should contain:
-      """
-      Renamed Github-based project from 'modern-wordpress-master' to 'modern-wordpress'.
-      """
+    And STDOUT should match /Renamed Github-based project from 'modern-(?:wordpress|framework)-master' to 'modern-wordpress'/
     # Wrong directory.
     And the wp-content/plugins/modern-wordpress directory should exist
     And the wp-content/plugins/modern-framework directory should not exist
