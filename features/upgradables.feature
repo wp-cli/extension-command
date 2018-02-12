@@ -180,9 +180,13 @@ Feature: Manage WordPress themes and plugins
     When I try `wp <type> install an-impossible-slug-because-abc3fr`
     Then STDERR should contain:
       """
-      Warning: Couldn't find 'an-impossible-slug-because-abc3fr' in the WordPress.org <type> directory.
+      Warning:
       """
-    Then STDERR should contain:
+    And STDERR should contain:
+      """
+      an-impossible-slug-because-abc3fr
+      """
+    And STDERR should contain:
       """
       Error: No <type>s installed.
       """

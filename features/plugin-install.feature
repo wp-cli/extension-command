@@ -114,9 +114,16 @@ Feature: Install WordPress plugins
     Given a WP install
 
     When I try `wp plugin install user-switching user-switching-not-a-plugin`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
-      Warning: Couldn't find 'user-switching-not-a-plugin' in the WordPress.org plugin directory.
+      Warning:
+      """
+    And STDERR should contain:
+      """
+      user-switching-not-a-plugin
+      """
+    And STDERR should contain:
+      """
       Error: Only installed 1 of 2 plugins.
       """
     And STDOUT should contain:
@@ -141,9 +148,16 @@ Feature: Install WordPress plugins
     And the return code should be 0
 
     When I try `wp plugin install user-switching-not-a-plugin`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
-      Warning: Couldn't find 'user-switching-not-a-plugin' in the WordPress.org plugin directory.
+      Warning:
+      """
+    And STDERR should contain:
+      """
+      user-switching-not-a-plugin
+      """
+    And STDERR should contain:
+      """
       Error: No plugins installed.
       """
     And the return code should be 1
