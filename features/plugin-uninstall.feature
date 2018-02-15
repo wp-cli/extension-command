@@ -52,3 +52,21 @@ Feature: Uninstall a WordPress plugin
       """
       Success: Plugin already uninstalled.
       """
+
+  Scenario:  Uninstall all installed plugins when one or more activated
+    And I run `wp plugin activate --all`
+    Then STDOUT should contain:
+      """
+      Success: Activated 2 of 2 plugins.
+      """
+    And I run `wp plugin uninstall --all`
+    Then STDERR should contain:
+      """
+      Warning: The 'akismet' plugin is active.
+      """
+    And the return code should be 1
+    And I run `wp plugin uninstall --deactivate --all`
+    Then STDOUT should contain:
+      """
+      Success: Uninstalled 3 of 3 plugins.
+      """
