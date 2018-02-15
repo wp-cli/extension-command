@@ -37,7 +37,7 @@ Feature: Uninstall a WordPress plugin
       """
     And the return code should be 0
 
-  Scenario: Uninstall all installed plugin
+  Scenario: Uninstall all installed plugins
     When I run `wp plugin uninstall --all`
     Then STDOUT should be:
       """
@@ -46,3 +46,9 @@ Feature: Uninstall a WordPress plugin
       Success: Uninstalled 2 of 2 plugins.
       """
     And the return code should be 0
+
+    When I run the previous command again
+    Then STDOUT should be:
+      """
+      Success: Plugin already uninstalled.
+      """
