@@ -821,7 +821,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * will be run.
 	 *
 	 * [--all]
-	 * : If set, all deactive plugins will be uninstalled.
+	 * : If set, all plugins will be uninstalled.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -830,11 +830,19 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Success: Installed 1 of 1 plugins.
 	 */
 	public function uninstall( $args, $assoc_args = array() ) {
-		$successes = $errors = 0;
 
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
+		// Check if plugin names of --all is passed.
+		if ( ! ( $args = $this->check_optional_args_and_all( $args, $all ) ) ) {
+			return;
+		}
+
+		$successes = $errors = 0;
 		$plugins = $this->fetcher->get_many( $args );
+		if ( count( $plugins ) < count( $args ) ) {
+			$errors = count( $args ) - count( $plugins );
+		}
 
 		// If get all parameter from command, then uninstall all deactive plugins.
 		if ( $all ) {
@@ -882,7 +890,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$successes++;
 		}
 		if ( ! $this->chained_command ) {
-			Utils\report_batch_operation_results( 'plugin', 'uninstall', count( $plugins ), $successes, $errors );
+			Utils\report_batch_operation_results( 'plugin', 'uninstall', count( $args ), $successes, $errors );
 		}
 	}
 
