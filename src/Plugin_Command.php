@@ -844,28 +844,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$errors = count( $args ) - count( $plugins );
 		}
 
-		// If get all parameter from command, then uninstall all deactive plugins.
-		if ( $all ) {
-
-			// Initialize array.
-			$plugins = array();
-
-			// Get all plugins list.
-			$all_plugins = array_keys( $this->get_all_plugins() );
-
-			foreach ( $all_plugins as $key => $plugin ) {
-
-				// Object initialization.
-				$plugins[ $key ] = new \stdClass();
-
-				// Get the plufin slug.
-				$plugins[ $key ]->name = explode( '/', $plugin )[0];
-
-				// Get plugin file.
-				$plugins[ $key ]->file = $plugin;
-			}
-		}
-
 		foreach ( $plugins as $plugin ) {
 			if ( is_plugin_active( $plugin->file ) && ! WP_CLI\Utils\get_flag_value( $assoc_args, 'deactivate' ) ) {
 				WP_CLI::warning( "The '{$plugin->name}' plugin is active." );

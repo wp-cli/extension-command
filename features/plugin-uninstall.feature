@@ -39,7 +39,7 @@ Feature: Uninstall a WordPress plugin
     Then STDOUT should be:
       """
       Uninstalled and deleted 'akismet' plugin.
-      Uninstalled and deleted 'hello.php' plugin.
+      Uninstalled and deleted 'hello' plugin.
       Success: Uninstalled 2 of 2 plugins.
       """
     And the return code should be 0
@@ -56,16 +56,16 @@ Feature: Uninstall a WordPress plugin
       """
       Success: Activated 2 of 2 plugins.
       """
-    And I run `wp plugin uninstall --all`
+    And I try `wp plugin uninstall --all`
     And STDERR should be:
       """
       Warning: The 'akismet' plugin is active.
-      Warning: The 'hello.php' plugin is active.
+      Warning: The 'hello' plugin is active.
       Error: No plugins uninstalled.
       """
     And the return code should be 1
     And I run `wp plugin uninstall --deactivate --all`
     Then STDOUT should contain:
       """
-      Success: Uninstalled 3 of 3 plugins.
+      Success: Uninstalled 2 of 2 plugins.
       """
