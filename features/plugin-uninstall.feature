@@ -47,7 +47,7 @@ Feature: Uninstall a WordPress plugin
     When I run the previous command again
     Then STDOUT should be:
       """
-      Success: No plugins installed.
+      Success: No plugins uninstalled.
       """
 
   Scenario:  Uninstall all installed plugins when one or more activated
