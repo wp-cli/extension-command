@@ -27,7 +27,7 @@ Feature: Uninstall a WordPress plugin
 
   Scenario: Attempting to uninstall a plugin that doesn't exist
     When I try `wp plugin uninstall edit-flow`
-    And STDERR should be:
+    Then STDERR should be:
       """
       Warning: The 'edit-flow' plugin could not be found.
       Error: No plugins uninstalled.
@@ -51,20 +51,22 @@ Feature: Uninstall a WordPress plugin
       """
 
   Scenario:  Uninstall all installed plugins when one or more activated
-    And I run `wp plugin activate --all`
+    When I run `wp plugin activate --all`
     Then STDOUT should contain:
       """
       Success: Activated 2 of 2 plugins.
       """
-    And I try `wp plugin uninstall --all`
-    And STDERR should be:
+
+    When I try `wp plugin uninstall --all`
+    Then STDERR should be:
       """
       Warning: The 'akismet' plugin is active.
       Warning: The 'hello' plugin is active.
       Error: No plugins uninstalled.
       """
     And the return code should be 1
-    And I run `wp plugin uninstall --deactivate --all`
+
+    When I run `wp plugin uninstall --deactivate --all`
     Then STDOUT should contain:
       """
       Success: Uninstalled 2 of 2 plugins.
