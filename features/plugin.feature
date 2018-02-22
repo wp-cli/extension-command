@@ -67,15 +67,11 @@ Feature: Manage WordPress plugins
       | Zombieland | active | none   | 0.1.0   |
 
     When I try `wp plugin uninstall Zombieland`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
-      The 'Zombieland' plugin is active.
-      """
-    And STDERR should contain:
-      """
+      Warning: The 'Zombieland' plugin is active.
       Error: No plugins uninstalled.
       """
-    And STDOUT should be empty
     And the return code should be 1
 
     When I run `wp plugin deactivate Zombieland`
