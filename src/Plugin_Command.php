@@ -810,7 +810,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <plugin>...
+	 * [<plugin>...]
 	 * : One or more plugins to uninstall.
 	 *
 	 * [--deactivate]
@@ -820,6 +820,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : If set, the plugin files will not be deleted. Only the uninstall procedure
 	 * will be run.
 	 *
+	 * [--all]
+	 * : If set, all plugins will be uninstalled.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp plugin uninstall hello
@@ -827,8 +830,20 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Success: Installed 1 of 1 plugins.
 	 */
 	public function uninstall( $args, $assoc_args = array() ) {
+
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		// Check if plugin names of --all is passed.
+		if ( ! ( $args = $this->check_optional_args_and_all( $args, $all, 'uninstall' ) ) ) {
+			return;
+		}
+
 		$successes = $errors = 0;
 		$plugins = $this->fetcher->get_many( $args );
+		if ( count( $plugins ) < count( $args ) ) {
+			$errors = count( $args ) - count( $plugins );
+		}
+
 		foreach ( $plugins as $plugin ) {
 			if ( is_plugin_active( $plugin->file ) && ! WP_CLI\Utils\get_flag_value( $assoc_args, 'deactivate' ) ) {
 				WP_CLI::warning( "The '{$plugin->name}' plugin is active." );
@@ -1082,7 +1097,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @param bool $all All flag.
 	 * @return array Same as $args if not all, otherwise all slugs.
 	 */
-	private function check_optional_args_and_all( $args, $all ) {
+	private function check_optional_args_and_all( $args, $all, $verb = 'install' ) {
 		if ( $all ) {
 			$args = array_map( function( $file ){
 				return Utils\get_plugin_name( $file );
@@ -1093,7 +1108,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			if ( ! $all ) {
 				WP_CLI::error( 'Please specify one or more plugins, or use --all.' );
 			}
-			WP_CLI::success( 'No plugins installed.' ); // Don't error if --all given for BC.
+
+			$past_tense_verb = Utils\past_tense_verb( $verb );
+			WP_CLI::success( "No plugins {$past_tense_verb}." ); // Don't error if --all given for BC.
 		}
 
 		return $args;

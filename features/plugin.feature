@@ -67,15 +67,11 @@ Feature: Manage WordPress plugins
       | Zombieland | active | none   | 0.1.0   |
 
     When I try `wp plugin uninstall Zombieland`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
-      The 'Zombieland' plugin is active.
-      """
-    And STDERR should contain:
-      """
+      Warning: The 'Zombieland' plugin is active.
       Error: No plugins uninstalled.
       """
-    And STDOUT should be empty
     And the return code should be 1
 
     When I run `wp plugin deactivate Zombieland`
@@ -96,15 +92,20 @@ Feature: Manage WordPress plugins
     And the {PLUGIN_DIR}/zombieland file should not exist
 
     When I try the previous command again
-    Then STDERR should be:
+    Then STDERR should contain:
       """
-      Warning: The 'Zombieland' plugin could not be found.
+      Warning:
       """
-    And STDOUT should be:
+    And STDERR should contain:
       """
-      Success: Plugin already uninstalled.
+      Zombieland
       """
-    And the return code should be 0
+    And STDERR should contain:
+      """
+      Error: No plugins uninstalled.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
 
   Scenario: Install a plugin, activate, then force install an older version of the plugin
     Given a WP install
