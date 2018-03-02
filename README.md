@@ -54,7 +54,7 @@ See the WordPress [Plugin Handbook](https://developer.wordpress.org/plugins/) de
 
 ### wp plugin activate
 
-Activates a plugin.
+Activates one or more plugins.
 
 ~~~
 wp plugin activate [<plugin>...] [--all] [--network]
@@ -87,7 +87,7 @@ wp plugin activate [<plugin>...] [--all] [--network]
 
 ### wp plugin deactivate
 
-Deactivates a plugin.
+Deactivates one or more plugins.
 
 ~~~
 wp plugin deactivate [<plugin>...] [--uninstall] [--all] [--network]
@@ -182,7 +182,7 @@ wp plugin get <plugin> [--field=<field>] [--fields=<fields>] [--format=<format>]
 
 ### wp plugin install
 
-Installs a plugin.
+Installs one or more plugins.
 
 ~~~
 wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--activate] [--activate-network]
@@ -191,7 +191,7 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--activat
 **OPTIONS**
 
 	<plugin|zip|url>...
-		A plugin slug, the path to a local zip file, or URL to a remote zip file.
+		One or more plugins to install. Accepts a plugin slug, the path to a local zip file, or a URL to a remote zip file.
 
 	[--version=<version>]
 		If set, get that particular version from wordpress.org, instead of the
@@ -434,11 +434,23 @@ search query.
     **requires**: Plugin Minimum Requirements
     **tested**: Plugin Tested Up To
     **compatibility**: Plugin Compatible With
-    **rating**: Plugin Rating
+    **rating**: Plugin Rating in Percent and Total Number
+    **ratings**: Plugin Ratings for each star (1-5)
     **num_ratings**: Number of Plugin Ratings
     **homepage**: Plugin Author's Homepage
     **description**: Plugin's Description
     **short_description**: Plugin's Short Description
+    **sections**: Plugin Readme Sections: description, installation, FAQ, screenshots, other notes, and changelog
+    **downloaded**: Plugin Download Count
+    **last_updated**: Plugin's Last Update
+    **added**: Plugin's Date Added to wordpress.org Repository
+    **tags**: Plugin's Tags
+    **versions**: Plugin's Available Versions with D/L Link
+    **donate_link**: Plugin's Donation Link
+    **banners**: Plugin's Banner Image Link
+    **icons**: Plugin's Icon Image Link
+    **active_installs**: Plugin's Number of Active Installs
+    **contributors**: Plugin's List of Contributors
 
 	[--format=<format>]
 		Render output in a particular format.
@@ -541,15 +553,15 @@ inactive, then it will be activated.
 
 ### wp plugin uninstall
 
-Uninstalls a plugin.
+Uninstalls one or more plugins.
 
 ~~~
-wp plugin uninstall <plugin>... [--deactivate] [--skip-delete]
+wp plugin uninstall [<plugin>...] [--deactivate] [--skip-delete] [--all]
 ~~~
 
 **OPTIONS**
 
-	<plugin>...
+	[<plugin>...]
 		One or more plugins to uninstall.
 
 	[--deactivate]
@@ -558,6 +570,9 @@ wp plugin uninstall <plugin>... [--deactivate] [--skip-delete]
 	[--skip-delete]
 		If set, the plugin files will not be deleted. Only the uninstall procedure
 		will be run.
+
+	[--all]
+		If set, all plugins will be uninstalled.
 
 **EXAMPLES**
 
@@ -721,13 +736,13 @@ wp theme activate <theme>
 
 ### wp theme delete
 
-Deletes a theme.
+Deletes one or more themes.
 
 ~~~
 wp theme delete <theme>...
 ~~~
 
-Removes the theme from the filesystem.
+Removes the theme or themes from the filesystem.
 
 **OPTIONS**
 
@@ -860,7 +875,7 @@ wp theme get <theme> [--field=<field>] [--fields=<fields>] [--format=<format>]
 
 ### wp theme install
 
-Installs a theme.
+Installs one or more themes.
 
 ~~~
 wp theme install <theme|zip|url>... [--version=<version>] [--force] [--activate]
@@ -869,7 +884,7 @@ wp theme install <theme|zip|url>... [--version=<version>] [--force] [--activate]
 **OPTIONS**
 
 	<theme|zip|url>...
-		A theme slug, the path to a local zip file, or URL to a remote zip file.
+		One or more themes to install. Accepts a theme slug, the path to a local zip file, or a URL to a remote zip file.
 
 	[--version=<version>]
 		If set, get that particular version from wordpress.org, instead of the
