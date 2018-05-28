@@ -158,10 +158,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		if ( ! array_key_exists( 'all', $assoc_args ) ) {
 			$assoc_args['all'] = 1;
 		}
-		// If no format was given ,set to default 'table'.
-		if ( ! array_key_exists( 'format', $assoc_args ) ) {
-			$assoc_args['format'] = 'table';
-		}
+
 		$this->get( $args, $assoc_args );
 	}
 
