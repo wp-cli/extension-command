@@ -122,12 +122,9 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Gets all theme mods.
+	 * Gets a list of theme mods.
 	 *
 	 * ## OPTIONS
-	 *
-	 * [<mod>...]
-	 * : One or more mods to get.
 	 *
 	 * [--field=<field>]
 	 * : Returns the value of a single field.
@@ -145,7 +142,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Get all theme mods.
+	 *     # Gets a list of theme mods.
 	 *     $ wp theme mod list
 	 *     +------------------+---------+
 	 *     | key              | value   |
@@ -155,8 +152,9 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 *     | main_text_color  | #8224e3 |
 	 *     +------------------+---------+
 	 *
+	 * @subcommand list
 	 */
-	public function list( $args = array(), $assoc_args = array() ) {
+	public function list_( $args = array(), $assoc_args = array() ) {
 		if ( ! array_key_exists( 'all', $assoc_args ) ) {
 			$assoc_args['all'] = 1;
 		}
