@@ -63,7 +63,8 @@
             "theme path",
             "theme search",
             "theme status",
-            "theme update"
+            "theme update",
+            "theme mod list"
         ]
     }
 }
