@@ -155,9 +155,8 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args = array(), $assoc_args = array() ) {
-		if ( ! array_key_exists( 'all', $assoc_args ) ) {
-			$assoc_args['all'] = 1;
-		}
+
+		$assoc_args['all'] = 1;
 
 		$this->get( $args, $assoc_args );
 	}
