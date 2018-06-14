@@ -13,6 +13,11 @@ Feature: Manage WordPress themes and plugins
     And STDERR should be empty
     And STDOUT should be empty
 
+    When I try `wp <type> is-active <item>`
+    Then the return code should be 1
+    And STDERR should be empty
+    And STDOUT should be empty
+
     When I try `wp <type> get <item>`
     Then the return code should be 1
     And STDERR should not be empty

@@ -900,6 +900,37 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
+	 * Checks if a given plugin is active.
+	 *
+	 * Returns exit code 0 when active, 1 when not active.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check whether plugin is Active; exit status 0 if active, otherwise 1
+	 *     $ wp plugin is-active hello
+	 *     $ echo $?
+	 *     1
+	 *
+	 * @subcommand is-active
+	 */
+	public function is_active( $args, $assoc_args = array() ) {
+		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
+
+		$plugin = $this->fetcher->get( $args[0] );
+
+		if ( ! $plugin ) {
+			WP_CLI::halt( 1 );
+		}
+
+		$this->check_active( $plugin->file, $network_wide ) ? WP_CLI::halt( 0 ) : WP_CLI::halt( 1 );
+	}
+
+	/**
 	 * Deletes plugin files without deactivating or uninstalling.
 	 *
 	 * ## OPTIONS
