@@ -904,8 +904,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <plugin>...
+	 * [<plugin>...]
 	 * : One or more plugins to delete.
+     *
+     * [--all]
+     * : If set, all plugins will be deleted.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -920,7 +923,20 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Success: Deleted 1 of 1 plugins.
 	 */
 	public function delete( $args, $assoc_args = array() ) {
+        $all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+        // Check if plugin names of --all is passed.
+        if ( ! ( $args = $this->check_optional_args_and_all( $args, $all, 'delete' ) ) ) {
+            return;
+        }
+
 		$successes = $errors = 0;
+
+        $plugins = $this->fetcher->get_many( $args );
+        if ( count( $plugins ) < count( $args ) ) {
+            $errors = count( $args ) - count( $plugins );
+        }
+        
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			if ( $this->_delete( $plugin ) ) {
 				WP_CLI::log( "Deleted '{$plugin->name}' plugin." );
