@@ -736,8 +736,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @subcommand is-active
 	 */
 	public function is_active( $args, $assoc_args = array() ) {
-		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
-
 		$theme = wp_get_theme( $args[0] );
 
 		if ( ! $theme->exists() ) {
