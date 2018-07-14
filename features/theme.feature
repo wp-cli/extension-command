@@ -231,73 +231,73 @@ Feature: Manage WordPress themes
 
   Scenario: Enabling and disabling a theme
   	Given a WP multisite install
-    And I run `wp theme install jolene`
-    And I run `wp theme install biker`
+    And I run `wp theme install stargazer`
+    And I run `wp theme install buntu`
 
     When I try `wp option get allowedthemes`
     Then the return code should be 1
     # STDERR may or may not be empty, depending on WP-CLI version.
     And STDOUT should be empty
 
-    When I run `wp theme enable biker`
+    When I run `wp theme enable buntu`
     Then STDOUT should contain:
        """
-       Success: Enabled the 'Biker' theme.
+       Success: Enabled the 'Buntu' theme.
        """
 
     When I run `wp option get allowedthemes`
     Then STDOUT should contain:
        """
-       'biker' => true
+       'buntu' => true
        """
 
-    When I run `wp theme disable biker`
+    When I run `wp theme disable buntu`
     Then STDOUT should contain:
        """
-       Success: Disabled the 'Biker' theme.
+       Success: Disabled the 'Buntu' theme.
        """
 
     When I run `wp option get allowedthemes`
     Then STDOUT should not contain:
        """
-       'biker' => true
+       'buntu' => true
        """
 
-    When I run `wp theme enable biker --activate`
+    When I run `wp theme enable buntu --activate`
     Then STDOUT should contain:
        """
-       Success: Enabled the 'Biker' theme.
-       Success: Switched to 'Biker' theme.
+       Success: Enabled the 'Buntu' theme.
+       Success: Switched to 'Buntu' theme.
        """
 
     When I run `wp network-meta get 1 allowedthemes`
     Then STDOUT should not contain:
        """
-       'biker' => true
+       'buntu' => true
        """
 
-    When I run `wp theme enable biker --network`
+    When I run `wp theme enable buntu --network`
     Then STDOUT should contain:
        """
-       Success: Network enabled the 'Biker' theme.
+       Success: Network enabled the 'Buntu' theme.
        """
 
     When I run `wp network-meta get 1 allowedthemes`
     Then STDOUT should contain:
        """
-       'biker' => true
+       'buntu' => true
        """
 
-    When I run `wp theme disable biker --network`
+    When I run `wp theme disable buntu --network`
     Then STDOUT should contain:
        """
-       Success: Network disabled the 'Biker' theme.
+       Success: Network disabled the 'Buntu' theme.
        """
 
     When I run `wp network-meta get 1 allowedthemes`
     Then STDOUT should not contain:
        """
-       'biker' => true
+       'buntu' => true
        """
 
   Scenario: Enabling and disabling a theme without multisite
@@ -335,27 +335,27 @@ Feature: Manage WordPress themes
 
   Scenario: Install and attempt to activate a child theme without its parent
     Given a WP install
-    And I run `wp theme install biker`
-    And I run `rm -rf wp-content/themes/jolene`
+    And I run `wp theme install buntu`
+    And I run `rm -rf wp-content/themes/stargazer`
 
-    When I try `wp theme activate biker`
+    When I try `wp theme activate buntu`
     Then STDERR should contain:
       """
-      Error: The parent theme is missing. Please install the "jolene" parent theme.
+      Error: The parent theme is missing. Please install the "stargazer" parent theme.
       """
     And STDOUT should be empty
     And the return code should be 1
 
   Scenario: List an active theme with its parent
     Given a WP install
-    And I run `wp theme install jolene`
-    And I run `wp theme install --activate biker`
+    And I run `wp theme install stargazer`
+    And I run `wp theme install --activate buntu`
 
     When I run `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name          | status   |
-      | biker         | active   |
-      | jolene        | parent   |
+      | buntu         | active   |
+      | stargazer        | parent   |
 
   Scenario: When updating a theme --format should be the same when using --dry-run
     Given a WP install
