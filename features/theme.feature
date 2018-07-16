@@ -355,7 +355,7 @@ Feature: Manage WordPress themes
     Then STDOUT should be a table containing rows:
       | name          | status   |
       | buntu         | active   |
-      | stargazer        | parent   |
+      | stargazer     | parent   |
 
   Scenario: When updating a theme --format should be the same when using --dry-run
     Given a WP install
