@@ -613,6 +613,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$items = $api->$plural;
 
+		// Add `url` for plugin or theme on wordpress.org.
+		foreach ( $items as $index => $item_object ) {
+			$item_object->url = "https://wordpress.org/{$plural}/{$item_object->slug}/";
+		}
+
 		if ( 'table' === $format ) {
 			$count = \WP_CLI\Utils\get_flag_value( $api->info, 'results', 'unknown' );
 			\WP_CLI::success( sprintf( 'Showing %s of %s %s.', count( $items ), $count, $plural ) );
