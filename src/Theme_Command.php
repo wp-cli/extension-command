@@ -166,7 +166,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( $this->has_update( $theme->get_stylesheet() ) )
 			$version .= ' (%gUpdate available%n)';
 
-		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( 'theme-status.mustache', array(
+		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( dirname( __DIR__ ) . 'theme-status.mustache', array(
 			'slug' => $theme->get_stylesheet(),
 			'status' => $status,
 			'version' => $version,
