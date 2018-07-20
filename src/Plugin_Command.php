@@ -198,7 +198,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( $this->has_update( $file ) )
 			$version .= ' (%gUpdate available%n)';
 
-		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( 'plugin-status.mustache', array(
+		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( dirname( __DIR__ ) . '/templates/plugin-status.mustache', array(
 			'slug' => Utils\get_plugin_name( $file ),
 			'status' => $status,
 			'version' => $version,
