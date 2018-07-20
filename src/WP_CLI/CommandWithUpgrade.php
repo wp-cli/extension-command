@@ -615,7 +615,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// Add `url` for plugin or theme on wordpress.org.
 		foreach ( $items as $index => $item_object ) {
-			$item_object->url = "https://wordpress.org/{$plural}/{$item_object->slug}/";
+			if ( $item_object instanceof \stdClass ) {
+				$item_object->url = "https://wordpress.org/{$plural}/{$item_object->slug}/";
+			}
 		}
 
 		if ( 'table' === $format ) {
