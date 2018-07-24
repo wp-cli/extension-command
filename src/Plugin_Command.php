@@ -198,7 +198,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( $this->has_update( $file ) )
 			$version .= ' (%gUpdate available%n)';
 
-		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( dirname( __DIR__ ) . '/templates/plugin-status.mustache', array(
+		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( self::get_template_path( 'plugin-status.mustache' ), array(
 			'slug' => Utils\get_plugin_name( $file ),
 			'status' => $status,
 			'version' => $version,
@@ -1073,6 +1073,20 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		return 'inactive';
 	}
 
+	/**
+	 * Gets the template path based on installation type.
+	 */
+	 
+	private static function get_template_path( $template ) {
+		$command_root = Utils\phar_safe_path( dirname( __DIR__ ) );
+		$template_path = "{$command_root}/templates/{$template}";
+		
+		if ( ! file_exists( $template_path ) ) {
+			WP_CLI::error( "Couldn't find {$template}" );
+		}
+		
+		return $template_path;
+	}
 	/**
 	 * Gets the details of a plugin.
 	 *
