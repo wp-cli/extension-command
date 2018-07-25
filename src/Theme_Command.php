@@ -166,7 +166,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( $this->has_update( $theme->get_stylesheet() ) )
 			$version .= ' (%gUpdate available%n)';
 
-		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( dirname( __DIR__ ) . '/templates/theme-status.mustache', array(
+		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( self::get_template_path( 'theme-status.mustache' ), array(
 			'slug' => $theme->get_stylesheet(),
 			'status' => $status,
 			'version' => $version,
@@ -868,5 +868,19 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		return $args;
+	}
+	
+	/**
+	 * Gets the template path based on installation type.
+	 */
+	private static function get_template_path( $template ) {
+		$command_root = Utils\phar_safe_path( dirname( __DIR__ ) );
+		$template_path = "{$command_root}/templates/{$template}";
+		
+		if ( ! file_exists( $template_path ) ) {
+			WP_CLI::error( "Couldn't find {$template}" );
+		}
+		
+		return $template_path;
 	}
 }
