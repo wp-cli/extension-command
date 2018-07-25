@@ -1075,8 +1075,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Gets the template path based on installation type.
-	 */
-	 
+	 */	 
 	private static function get_template_path( $template ) {
 		$command_root = Utils\phar_safe_path( dirname( __DIR__ ) );
 		$template_path = "{$command_root}/templates/{$template}";
@@ -1087,6 +1086,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		
 		return $template_path;
 	}
+
 	/**
 	 * Gets the details of a plugin.
 	 *
