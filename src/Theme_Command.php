@@ -125,6 +125,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **num_ratings**: Number of Theme Ratings
 	 *     **homepage**: Theme Author's Homepage
 	 *     **description**: Theme Description
+	 *     **url**: Theme's URL on wordpress.org
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
