@@ -936,8 +936,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <plugin>...
+	 * [<plugin>...]
 	 * : One or more plugins to delete.
+     *
+     * [--all]
+     * : If set, all plugins will be deleted.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -952,7 +955,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Success: Deleted 1 of 1 plugins.
 	 */
 	public function delete( $args, $assoc_args = array() ) {
+        $all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+        // Check if plugin names of --all is passed.
+        if ( ! ( $args = $this->check_optional_args_and_all( $args, $all, 'delete' ) ) ) {
+            return;
+        }
+
 		$successes = $errors = 0;
+
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			if ( $this->_delete( $plugin ) ) {
 				WP_CLI::log( "Deleted '{$plugin->name}' plugin." );
@@ -1076,15 +1087,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Gets the template path based on installation type.
-	 */	 
+	 */
 	private static function get_template_path( $template ) {
 		$command_root = Utils\phar_safe_path( dirname( __DIR__ ) );
 		$template_path = "{$command_root}/templates/{$template}";
-		
+
 		if ( ! file_exists( $template_path ) ) {
 			WP_CLI::error( "Couldn't find {$template}" );
 		}
-		
+
 		return $template_path;
 	}
 

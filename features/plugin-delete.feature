@@ -12,6 +12,22 @@ Feature: Delete WordPress plugins
       """
     And the return code should be 0
 
+  Scenario: Delete all installed plugins
+    When I run `wp plugin delete --all`
+    Then STDOUT should be:
+      """
+      Deleted 'akismet' plugin.
+      Deleted 'hello' plugin.
+      Success: Deleted 2 of 2 plugins.
+      """
+    And the return code should be 0
+
+    When I run the previous command again
+    Then STDOUT should be:
+      """
+      Success: No plugins deleted.
+      """
+
   Scenario: Attempting to delete a plugin that doesn't exist
     When I try `wp plugin delete edit-flow`
     Then STDOUT should be:
