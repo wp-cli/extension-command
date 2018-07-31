@@ -964,11 +964,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$successes = $errors = 0;
 
-        $plugins = $this->fetcher->get_many( $args );
-        if ( count( $plugins ) < count( $args ) ) {
-            $errors = count( $args ) - count( $plugins );
-        }
-        
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			if ( $this->_delete( $plugin ) ) {
 				WP_CLI::log( "Deleted '{$plugin->name}' plugin." );
@@ -1092,15 +1087,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Gets the template path based on installation type.
-	 */	 
+	 */
 	private static function get_template_path( $template ) {
 		$command_root = Utils\phar_safe_path( dirname( __DIR__ ) );
 		$template_path = "{$command_root}/templates/{$template}";
-		
+
 		if ( ! file_exists( $template_path ) ) {
 			WP_CLI::error( "Couldn't find {$template}" );
 		}
-		
+
 		return $template_path;
 	}
 
