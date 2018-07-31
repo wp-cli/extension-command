@@ -152,6 +152,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **icons**: Plugin's Icon Image Link
 	 *     **active_installs**: Plugin's Number of Active Installs
 	 *     **contributors**: Plugin's List of Contributors
+	 *     **url**: Plugin's URL on wordpress.org
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -198,7 +199,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( $this->has_update( $file ) )
 			$version .= ' (%gUpdate available%n)';
 
-		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( 'plugin-status.mustache', array(
+		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( self::get_template_path( 'plugin-status.mustache' ), array(
 			'slug' => Utils\get_plugin_name( $file ),
 			'status' => $status,
 			'version' => $version,
@@ -900,6 +901,37 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
+	 * Checks if a given plugin is active.
+	 *
+	 * Returns exit code 0 when active, 1 when not active.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check whether plugin is Active; exit status 0 if active, otherwise 1
+	 *     $ wp plugin is-active hello
+	 *     $ echo $?
+	 *     1
+	 *
+	 * @subcommand is-active
+	 */
+	public function is_active( $args, $assoc_args = array() ) {
+		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
+
+		$plugin = $this->fetcher->get( $args[0] );
+
+		if ( ! $plugin ) {
+			WP_CLI::halt( 1 );
+		}
+
+		$this->check_active( $plugin->file, $network_wide ) ? WP_CLI::halt( 0 ) : WP_CLI::halt( 1 );
+	}
+
+	/**
 	 * Deletes plugin files without deactivating or uninstalling.
 	 *
 	 * ## OPTIONS
@@ -1056,6 +1088,20 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			return 'active';
 
 		return 'inactive';
+	}
+
+	/**
+	 * Gets the template path based on installation type.
+	 */	 
+	private static function get_template_path( $template ) {
+		$command_root = Utils\phar_safe_path( dirname( __DIR__ ) );
+		$template_path = "{$command_root}/templates/{$template}";
+		
+		if ( ! file_exists( $template_path ) ) {
+			WP_CLI::error( "Couldn't find {$template}" );
+		}
+		
+		return $template_path;
 	}
 
 	/**
