@@ -125,6 +125,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **num_ratings**: Number of Theme Ratings
 	 *     **homepage**: Theme Author's Homepage
 	 *     **description**: Theme Description
+	 *     **url**: Theme's URL on wordpress.org
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -166,7 +167,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( $this->has_update( $theme->get_stylesheet() ) )
 			$version .= ' (%gUpdate available%n)';
 
-		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( 'theme-status.mustache', array(
+		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( self::get_template_path( 'theme-status.mustache' ), array(
 			'slug' => $theme->get_stylesheet(),
 			'status' => $status,
 			'version' => $version,
@@ -597,7 +598,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--all]
 	 * : If set, all themes that have updates will be updated.
-	 * 
+	 *
 	 * [--exclude=<theme-names>]
 	 * : Comma separated list of theme names that should be excluded from updating.
 	 *
@@ -639,7 +640,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     | twentysixteen | 1.1         | 1.2         | Updated |
 	 *     +---------------+-------------+-------------+---------+
 	 *     Success: Updated 2 of 2 themes.
-	 * 
+	 *
 	 *     # Exclude themes updates when bulk updating the themes
 	 *     $ wp theme update --all --exclude=twentyfifteen
 	 *     Downloading update from https://downloads.wordpress.org/theme/astra.1.0.5.1.zip...
@@ -714,6 +715,35 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		} else {
 			WP_CLI::halt( 1 );
 		}
+	}
+
+	/**
+	 * Checks if a given theme is active.
+	 *
+	 * Returns exit code 0 when active, 1 when not active.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The plugin to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check whether theme is Active; exit status 0 if active, otherwise 1
+	 *     $ wp theme is-active twentyfifteen
+	 *     $ echo $?
+	 *     1
+	 *
+	 * @subcommand is-active
+	 */
+	public function is_active( $args, $assoc_args = array() ) {
+		$theme = wp_get_theme( $args[0] );
+
+		if ( ! $theme->exists() ) {
+			WP_CLI::halt( 1 );
+		}
+
+		$this->is_active_theme( $theme ) ? WP_CLI::halt( 0 ) : WP_CLI::halt( 1 );
 	}
 
 	/**
@@ -839,5 +869,19 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		return $args;
+	}
+	
+	/**
+	 * Gets the template path based on installation type.
+	 */
+	private static function get_template_path( $template ) {
+		$command_root = Utils\phar_safe_path( dirname( __DIR__ ) );
+		$template_path = "{$command_root}/templates/{$template}";
+		
+		if ( ! file_exists( $template_path ) ) {
+			WP_CLI::error( "Couldn't find {$template}" );
+		}
+		
+		return $template_path;
 	}
 }
