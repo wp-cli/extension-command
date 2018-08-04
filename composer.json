@@ -1,11 +1,8 @@
 {
     "name": "wp-cli/extension-command",
-    "description": "Manages plugins and themes, including installs, activations, and updates.",
     "type": "wp-cli-package",
+    "description": "Manages plugins and themes, including installs, activations, and updates.",
     "homepage": "https://github.com/wp-cli/extension-command",
-    "support": {
-        "issues": "https://github.com/wp-cli/extension-command/issues"
-    },
     "license": "MIT",
     "authors": [
         {
@@ -14,19 +11,14 @@
             "homepage": "https://runcommand.io"
         }
     ],
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "autoload": {
-        "psr-4": {
-            "": "src/"
-        },
-        "files": [ "extension-command.php" ]
-    },
     "require": {
         "wp-cli/wp-cli": "^2"
     },
     "require-dev": {
         "wp-cli/wp-cli-tests": "^0"
+    },
+    "config": {
+        "sort-packages": true
     },
     "extra": {
         "branch-alias": {
@@ -68,11 +60,21 @@
             "theme mod list"
         ]
     },
+    "autoload": {
+        "psr-4": {
+            "": "src/"
+        },
+        "files": [
+            "extension-command.php"
+        ]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "scripts": {
+        "behat": "run-behat-tests",
         "lint": "run-linter-tests",
         "phpcs": "run-phpcs-tests",
         "phpunit": "run-php-unit-tests",
-        "behat": "run-behat-tests",
         "prepare-tests": "install-package-tests",
         "test": [
             "@lint",
@@ -80,5 +82,8 @@
             "@phpunit",
             "@behat"
         ]
+    },
+    "support": {
+        "issues": "https://github.com/wp-cli/extension-command/issues"
     }
 }
