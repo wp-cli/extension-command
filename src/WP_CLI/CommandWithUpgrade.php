@@ -22,6 +22,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			remove_action( 'upgrader_process_complete', array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 );
 		}, 1 );
 
+		add_filter( 'http_request_timeout', function () {
+			return 1 * MINUTE_IN_SECONDS;
+		}, 999 );
+
 		$this->fetcher = new \WP_CLI\Fetchers\Plugin;
 	}
 
