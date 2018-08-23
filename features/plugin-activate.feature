@@ -80,3 +80,17 @@ Feature: Activate WordPress plugins
       """
       Success: No plugins installed.
       """
+
+  Scenario: Using a non-lowercase slug should not find a plugin
+    When I try `wp plugin activate Akismet`
+    Then STDOUT should be empty
+    And STDERR should contain:
+      """
+      The 'Akismet' plugin could not be found.
+      """
+
+    When I run `wp plugin activate akismet`
+    Then STDOUT should contain:
+      """
+      Plugin 'akismet' activated.
+      """

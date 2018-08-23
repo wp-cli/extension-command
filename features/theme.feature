@@ -517,3 +517,20 @@ Feature: Manage WordPress themes
       """
       Error: Can't find the requested theme's version 1.4.2 in the WordPress.org theme repository (HTTP code 404).
       """
+
+  @require-wp-4.4
+  Scenario: Using a non-lowercase slug should not find a theme
+    Given a WP install
+
+    When I try `wp theme activate TwentySixteen`
+    Then STDOUT should be empty
+    And STDERR should contain:
+      """
+      The 'TwentySixteen' theme could not be found.
+      """
+
+    When I run `wp theme activate twentysixteen`
+    Then STDOUT should be:
+      """
+      Success: Switched to 'Twenty Sixteen' theme.
+      """
