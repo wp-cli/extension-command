@@ -518,6 +518,7 @@ Feature: Manage WordPress themes
       Error: Can't find the requested theme's version 1.4.2 in the WordPress.org theme repository (HTTP code 404).
       """
 
+  @require-wp-4.4
   Scenario: Using a non-lowercase slug should not find a theme
     Given a WP install
 
