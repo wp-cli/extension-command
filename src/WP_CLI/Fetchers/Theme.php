@@ -19,10 +19,6 @@ class Theme extends Base {
 	 * @return object|false
 	 */
 	public function get( $name ) {
-		// To avoid later issues, we force slugs to be lowercase.
-		if( strtolower( $name ) !== $name ) {
-			return false;
-		}
 
 		$theme = wp_get_theme( $name );
 
@@ -33,4 +29,3 @@ class Theme extends Base {
 		return $theme;
 	}
 }
-
