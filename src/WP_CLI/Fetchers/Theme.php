@@ -14,16 +14,11 @@ class Theme extends Base {
 
 	/**
 	 * Get a theme object by name
-	 *
+	 * 
 	 * @param string $name
 	 * @return object|false
 	 */
 	public function get( $name ) {
-		// To avoid later issues, we force slugs to be lowercase.
-		if( strtolower( $name ) !== $name ) {
-			return false;
-		}
-
 		$theme = wp_get_theme( $name );
 
 		if ( !$theme->exists() ) {
