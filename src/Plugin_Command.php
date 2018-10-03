@@ -1132,7 +1132,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$command = 'rm -rf ';
 		}
 
-		return ! WP_CLI::launch( $command . $path );
+		return ! WP_CLI::launch( $command . escapeshellarg( $path ) );
 	}
 
 	/**
