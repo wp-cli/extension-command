@@ -267,7 +267,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	public function enable( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
-			WP_CLI::error( 'This is not a multisite install.' );
+			WP_CLI::error( 'This is not a multisite installation.' );
 		}
 
 		$theme = $this->fetcher->get_check( $args[0] );
@@ -322,7 +322,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	public function disable( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
-			WP_CLI::error( 'This is not a multisite install.' );
+			WP_CLI::error( 'This is not a multisite installation.' );
 		}
 
 		$theme = $this->fetcher->get_check( $args[0] );
