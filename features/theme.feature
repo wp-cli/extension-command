@@ -304,17 +304,17 @@ Feature: Manage WordPress themes
   	Given a WP install
 
     When I try `wp theme enable p2`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
-      Error: This is not a multisite install.
+      Error: This is not a multisite install
       """
     And STDOUT should be empty
     And the return code should be 1
 
     When I try `wp theme disable p2`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
-      Error: This is not a multisite install.
+      Error: This is not a multisite install
       """
     And STDOUT should be empty
     And the return code should be 1
