@@ -401,6 +401,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						'new_version' => $info['update_version'],
 						'status' => $result[ $info['update_id'] ] !== null ? 'Updated' : 'Error',
 					);
+					if ( $result[ $info['update_id'] ] == null ) {
+						$errors++;
+					}
 				}
 
 				$format = 'table';
