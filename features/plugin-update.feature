@@ -196,11 +196,14 @@ Feature: Update WordPress plugins
     Given a WP install
     And I run `wp plugin install --force akismet --version=4.0`
     And I run `chmod -w wp-content/plugins/akismet`
-    When I try `wp plugin update akismet`
+    And I try `wp plugin update akismet`
+    And save STDERR as {ERROR}
+    And I run `chmod +w wp-content/plugins/akismet`
 
-    Then STDERR should contain:
+    And I run `echo "{ERROR}"`
+    Then STDOUT should contain:
       """
       Error: 
       """
 
-    And I run `chmod +w wp-content/plugins/akismet`
+    
