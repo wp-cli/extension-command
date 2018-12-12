@@ -191,3 +191,20 @@ Feature: Update WordPress plugins
       """
       Error: Can't find the requested plugin's version 2.5.4 in the WordPress.org plugin repository (HTTP code 404).
       """
+
+  @require-wp-4.7
+  Scenario: Plugin updates that error should not report a success
+    Given a WP install
+    And I run `wp plugin install --force akismet --version=4.0`
+    And I run `chmod -w wp-content/plugins/akismet`
+    And I try `wp plugin update akismet`
+    And save STDERR as {ERROR}
+    And I run `chmod +w wp-content/plugins/akismet`
+
+    And I run `echo "{ERROR}"`
+    Then STDOUT should contain:
+      """
+      Error: 
+      """
+
+    
