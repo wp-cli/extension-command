@@ -337,6 +337,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--all]
 	 * : If set, all plugins will be deactivated.
 	 *
+	 * [--exclude=<name>]
+	 * : Comma separated list of plugin names that should be excluded from deactivation.
+	 *
 	 * [--network]
 	 * : If set, the plugin will be deactivated for the entire multisite network.
 	 *
@@ -346,10 +349,17 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     $ wp plugin deactivate hello
 	 *     Plugin 'hello' deactivated.
 	 *     Success: Deactivated 1 of 1 plugins.
+	 *
+	 *     # Deactivate all plugins with exclusion
+	 *     $ wp plugin deactivate --all --exclude=hello,wordpress-seo
+	 *     Plugin 'contact-form-7' deactivated.
+	 *     Plugin 'ninja-forms' deactivated.
+	 *     Success: Deactivated 2 of 4 plugins.
 	 */
 	public function deactivate( $args, $assoc_args = array() ) {
 		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
 		$disable_all = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' );
+		$disable_all_exclude = \WP_CLI\Utils\get_flag_value( $assoc_args, 'exclude' );
 
 		if ( ! ( $args = $this->check_optional_args_and_all( $args, $disable_all ) ) ) {
 			return;
@@ -359,6 +369,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$plugins = $this->fetcher->get_many( $args );
 		if ( count( $plugins ) < count( $args ) ) {
 			$errors = count( $args ) - count( $plugins );
+		}
+
+		// If exclude argument is present, split to array and unset from $plugins
+		if ( $disable_all_exclude ) {
+			$to_exclude = explode( ',', trim( $disable_all_exclude, ',' ) );
+			$get_plugin_names = array_column( $plugins, 'name' );
+			foreach ( $to_exclude as $exclude ) {
+				$key = array_search( $exclude, $get_plugin_names, true );
+				unset( $plugins[ $key ] );
+			}
 		}
 
 		foreach ( $plugins as $plugin ) {
