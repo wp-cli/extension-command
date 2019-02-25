@@ -210,7 +210,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			}
 
-			if ( ! is_wp_error( $result ) && ! empty( $this->fetcher->get_many( array( $slug ) ) ) ) {
+			// Check plugin is available or not.
+			$plugin = $this->fetcher->get_many( array( $slug ) );
+
+			if ( ! is_wp_error( $result ) && count( $plugin ) > 0 ) {
 				$this->chained_command = true;
 				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate-network' ) ) {
 					\WP_CLI::log( "Network-activating '$slug'..." );
