@@ -579,7 +579,7 @@ wp plugin uninstall [<plugin>...] [--deactivate] [--skip-delete] [--all]
 
     $ wp plugin uninstall hello
     Uninstalled and deleted 'hello' plugin.
-    Success: Installed 1 of 1 plugins.
+    Success: Uninstalled 1 of 1 plugins.
 
 
 
