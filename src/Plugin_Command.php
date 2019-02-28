@@ -828,7 +828,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     $ wp plugin uninstall hello
 	 *     Uninstalled and deleted 'hello' plugin.
-	 *     Success: Installed 1 of 1 plugins.
+	 *     Success: Uninstalled 1 of 1 plugins.
 	 */
 	public function uninstall( $args, $assoc_args = array() ) {
 
