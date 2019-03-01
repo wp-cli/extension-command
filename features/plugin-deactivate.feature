@@ -76,3 +76,22 @@ Feature: Deactivate WordPress plugins
       """
       Success: No plugins installed.
       """
+      
+  Scenario: Adding --exclude with plugin deactivate --all should exclude the plugins specified via --exclude
+    When I try `wp plugin deactivate --all --exclude=hello`
+    Then STDOUT should be:
+      """
+      Plugin 'akismet' deactivated.
+      Success: Deactivated 1 of 1 plugins.
+      """
+    And the return code should be 0
+
+  Scenario: Adding --exclude with plugin deactivate should throw an error unless --all given
+    When I try `wp plugin deactivate --exclude=hello`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Please specify one or more plugins, or use --all.
+      """
+    And STDOUT should be empty
+    

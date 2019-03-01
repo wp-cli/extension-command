@@ -347,6 +347,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--all]
 	 * : If set, all plugins will be deactivated.
 	 *
+	 * [--exclude=<name>]
+	 * : Comma separated list of plugin names that should be excluded from deactivation.
+	 *
 	 * [--network]
 	 * : If set, the plugin will be deactivated for the entire multisite network.
 	 *
@@ -356,12 +359,19 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     $ wp plugin deactivate hello
 	 *     Plugin 'hello' deactivated.
 	 *     Success: Deactivated 1 of 1 plugins.
+	 *
+	 *     # Deactivate all plugins with exclusion
+	 *     $ wp plugin deactivate --all --exclude=hello,wordpress-seo
+	 *     Plugin 'contact-form-7' deactivated.
+	 *     Plugin 'ninja-forms' deactivated.
+	 *     Success: Deactivated 2 of 2 plugins.
 	 */
 	public function deactivate( $args, $assoc_args = array() ) {
-		$network_wide = Utils\get_flag_value( $assoc_args, 'network' );
-		$disable_all  = Utils\get_flag_value( $assoc_args, 'all' );
+		$network_wide        = Utils\get_flag_value( $assoc_args, 'network' );
+		$disable_all         = Utils\get_flag_value( $assoc_args, 'all' );
+		$disable_all_exclude = Utils\get_flag_value( $assoc_args, 'exclude' );
 
-		$args = $this->check_optional_args_and_all( $args, $disable_all );
+		$args = $this->check_optional_args_and_all( $args, $disable_all, null, $disable_all_exclude ) );
 		if ( ! $args ) {
 			return;
 		}
@@ -1195,9 +1205,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @param array $args Passed-in arguments.
 	 * @param bool $all All flag.
+	 * @param string $exclude Comma separated list of plugin slugs.
 	 * @return array Same as $args if not all, otherwise all slugs.
 	 */
-	private function check_optional_args_and_all( $args, $all, $verb = 'install' ) {
+	private function check_optional_args_and_all( $args, $all, $verb = 'install', $exclude = null ) {
+		// Workaround for optional argument $verb
+		if ( empty( $verb ) ) {
+			$verb = 'install';
+		}
+
 		if ( $all ) {
 			$args = array_map(
 				function( $file ) {
@@ -1205,6 +1221,17 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				},
 				array_keys( $this->get_all_plugins() )
 			);
+		}
+
+		// If $all & $exclude are present, remove specified slugs from $args.
+		if ( $all && $exclude ) {
+			$exclude_list = explode( ',', trim( $exclude, ',' ) );
+			foreach ( $exclude_list as $exclude_item ) {
+				$exclude_index = array_search( $exclude_item, $args, true );
+				if ( false !== $exclude_index ) {
+					unset( $args[ $exclude_index ] );
+				}
+			}
 		}
 
 		if ( empty( $args ) ) {
