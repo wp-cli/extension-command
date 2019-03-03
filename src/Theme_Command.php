@@ -436,7 +436,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				$network_enabled = array();
 		}
 
-		foreach ( wp_get_themes() as $key => $theme ) {
+		foreach ( wp_get_themes( array( 'errors' => null ) ) as $key => $theme ) {
 			$file = $theme->get_stylesheet_directory();
 			$update_info = $this->get_update_info( $theme->get_stylesheet() );
 
