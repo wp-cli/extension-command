@@ -19,11 +19,15 @@ class Theme extends Base {
 	 * @return object|false
 	 */
 	public function get( $name ) {
-		$theme = wp_get_theme( $name );
-
-		if ( !$theme->exists() ) {
+		// Workaround to equalize folder naming conventions across Win/Mac/Linux
+		// Returns false if theme stylesheet doesn't exactly match existing themes.
+		$existing_themes = wp_get_themes();
+		$existing_stylesheets = array_keys( $existing_themes );
+		if ( ! in_array( $name, $existing_stylesheets, true ) ) {
 			return false;
 		}
+
+		$theme = $existing_themes[ $name ];
 
 		return $theme;
 	}
