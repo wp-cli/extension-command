@@ -753,8 +753,11 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <theme>...
+	 * [<theme>...]
 	 * : One or more themes to delete.
+	 *
+	 * [--all]
+	 * : If set, all themes will be deleted except active theme.
 	 *
 	 * [--force]
 	 * : To delete active theme use this.
@@ -768,6 +771,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @alias uninstall
 	 */
 	public function delete( $args, $assoc_args ) {
+
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		if ( ! ( $args = $this->check_optional_args_and_all( $args, $all, 'delete' ) ) ) {
+			return;
+		}
 
 		$force = Utils\get_flag_value( $assoc_args, 'force', false );
 
