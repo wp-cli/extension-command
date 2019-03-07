@@ -471,17 +471,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	/**
 	 * Get the available update info
 	 *
-	 * @param string $slug The plugin/theme slug
-	 *
-	 * @return array|null
+	 * @return array
 	 */
-	protected function get_update_info( $slug ) {
-		$update_list = get_site_transient( $this->upgrade_transient );
-
-		if ( !isset( $update_list->response[ $slug ] ) )
-			return null;
-
-		return (array) $update_list->response[ $slug ];
+	protected function get_update_info() {
+		return get_site_transient( $this->upgrade_transient );
 	}
 
 	private $map = array(
