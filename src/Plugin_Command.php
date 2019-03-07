@@ -628,7 +628,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		foreach ( $this->get_all_plugins() as $file => $details ) {
 			$all_update_info = $this->get_update_info();
-			$update_info     = ( null !== $all_update_info->response[$file] ) ? (array) $all_update_info->response[$file] : null;
+			$update_info     = ( isset( $all_update_info->response[$file] ) && null !== $all_update_info->response[$file] ) ? (array) $all_update_info->response[$file] : null;
 			$name            = Utils\get_plugin_name( $file );
 
 			if ( ! isset( $duplicate_names[ $name ] ) ) {
@@ -651,7 +651,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			if ( null === $update_info ) {
 
 				// Get all plugin info that don't have an update.
-				$plugin_update_info = $all_update_info->no_update[$file];
+				$plugin_update_info = ( isset( $all_update_info->no_update[$file] ) ) ? $all_update_info->no_update[$file] : null;
 
 				// Compare version and update information in plugin list.
 				if ( null !== $plugin_update_info && version_compare($details['Version'], $plugin_update_info->new_version, '>') ) {
