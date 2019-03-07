@@ -13,6 +13,23 @@ Feature: Delete WordPress themes
       """
     And the return code should be 0
 
+  Scenario: Delete an active theme
+    When I run `wp theme activate p2`
+    Then STDOUT should not be empty
+
+    When I try `wp theme delete p2`
+    Then STDERR should be:
+    """
+    Warning: Can't delete the currently active theme: p2
+    Error: No themes deleted.
+    """
+
+    When I try `wp theme delete p2 --force`
+    Then STDOUT should contain:
+    """
+    Deleted 'p2' theme.
+    """
+
   Scenario: Attempting to delete a theme that doesn't exist
     When I run `wp theme delete p2`
     Then STDOUT should not be empty
