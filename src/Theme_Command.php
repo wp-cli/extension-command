@@ -440,7 +440,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			$file = $theme->get_stylesheet_directory();
 
 			$all_update_info = $this->get_update_info();
-			$update_info     = ( null !== $all_update_info->response[$theme->get_stylesheet()] ) ? (array) $all_update_info->response[$theme->get_stylesheet()] : null;
+			$update_info     = ( isset( $all_update_info->response[$theme->get_stylesheet()]) && null !== $all_update_info->response[$theme->get_stylesheet()] ) ? (array) $all_update_info->response[$theme->get_stylesheet()] : null;
 
 			$items[ $file ] = array(
 				'name' => $key,
