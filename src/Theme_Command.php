@@ -438,7 +438,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		foreach ( wp_get_themes() as $key => $theme ) {
 			$file = $theme->get_stylesheet_directory();
-			$update_info = $this->get_update_info( $theme->get_stylesheet() );
+
+			$all_update_info = $this->get_update_info();
+			$update_info     = ( null !== $all_update_info->response[$theme->get_stylesheet()] ) ? (array) $all_update_info->response[$theme->get_stylesheet()] : null;
 
 			$items[ $file ] = array(
 				'name' => $key,
@@ -870,18 +872,18 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		return $args;
 	}
-	
+
 	/**
 	 * Gets the template path based on installation type.
 	 */
 	private static function get_template_path( $template ) {
 		$command_root = Utils\phar_safe_path( dirname( __DIR__ ) );
 		$template_path = "{$command_root}/templates/{$template}";
-		
+
 		if ( ! file_exists( $template_path ) ) {
 			WP_CLI::error( "Couldn't find {$template}" );
 		}
-		
+
 		return $template_path;
 	}
 }

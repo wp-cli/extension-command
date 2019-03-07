@@ -627,12 +627,14 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$items = $duplicate_names = array();
 
 		foreach ( $this->get_all_plugins() as $file => $details ) {
-			$update_info = $this->get_update_info( $file );
+			$all_update_info = $this->get_update_info();
+			$update_info     = ( null !== $all_update_info->response[$file] ) ? (array) $all_update_info->response[$file] : null;
+			$name            = Utils\get_plugin_name( $file );
 
-			$name = Utils\get_plugin_name( $file );
 			if ( ! isset( $duplicate_names[ $name ] ) ) {
 				$duplicate_names[ $name ] = array();
 			}
+
 			$duplicate_names[ $name ][] = $file;
 			$items[ $file ] = array(
 				'name' => $name,
@@ -645,6 +647,17 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'title' => $details['Name'],
 				'description' => wordwrap( $details['Description'] ),
 			);
+
+			if ( null === $update_info ) {
+
+				// Get all plugin info that don't have an update.
+				$plugin_update_info = $all_update_info->no_update[$file];
+
+				// Compare version and update information in plugin list.
+				if ( null !== $plugin_update_info && version_compare($details['Version'], $plugin_update_info->new_version, '>') ) {
+					$items[ $file ]['update'] = 'This version is higher than expected!';
+				}
+			}
 		}
 
 		foreach( $duplicate_names as $name => $files ) {
