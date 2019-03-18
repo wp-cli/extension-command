@@ -438,7 +438,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		$all_update_info = $this->get_update_info();
-		$checked_themes  = $all_update_info->checked;
+		$checked_themes  = ( isset( $all_update_info->checked ) ) ? $all_update_info->checked : array();
 
 		if ( ! empty( $checked_themes ) ) {
 			foreach ( $checked_themes as $slug => $version ) {
