@@ -172,7 +172,7 @@ Feature: Manage WordPress plugins
       """
     And STDERR should contain:
       """
-      Error: Only updated 1 of 3 plugins.
+      Error: Only updated 2 of 3 plugins.
       """
     And the return code should be 1
 
