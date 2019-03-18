@@ -13,6 +13,46 @@ Feature: Delete WordPress themes
       """
     And the return code should be 0
 
+  Scenario: Delete an active theme
+    When I run `wp theme activate p2`
+    Then STDOUT should not be empty
+
+    When I try `wp theme delete p2`
+    Then STDERR should be:
+    """
+    Warning: Can't delete the currently active theme: p2
+    Error: No themes deleted.
+    """
+
+    When I try `wp theme delete p2 --force`
+    Then STDOUT should contain:
+    """
+    Deleted 'p2' theme.
+    """
+
+  Scenario: Delete all installed themes
+    When I run `wp theme list --status=active --field=name --porcelain`
+    And save STDOUT as {ACTIVE_THEME}
+
+    When I try `wp theme delete --all`
+    Then STDERR should contain:
+    """
+    Warning: Can't delete the currently active theme: {ACTIVE_THEME}
+    """
+
+    When I run `wp theme delete --all --force`
+    Then STDOUT should be:
+      """
+      Deleted '{ACTIVE_THEME}' theme.
+      Success: Deleted 1 of 1 themes.
+      """
+
+    When I try the previous command again
+    Then STDOUT should be:
+    """
+    Success: No themes installed.
+    """
+
   Scenario: Attempting to delete a theme that doesn't exist
     When I run `wp theme delete p2`
     Then STDOUT should not be empty
