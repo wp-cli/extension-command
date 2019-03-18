@@ -424,7 +424,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function get_item_list() {
-		$items = array();
+		$items              = array();
+		$theme_version_info = array();
 
 		if ( is_multisite() ) {
 			$site_enabled = get_option( 'allowedthemes' );
@@ -436,11 +437,19 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				$network_enabled = array();
 		}
 
+		$all_update_info = $this->get_update_info();
+		$checked_themes  = $all_update_info->checked;
+
+		if ( ! empty( $checked_themes ) ) {
+			foreach ( $checked_themes as $slug => $version ) {
+				$theme_version_info[$slug] = $this->is_theme_version_valid( $slug, $version );
+			}
+		}
+
 		foreach ( wp_get_themes() as $key => $theme ) {
 			$file = $theme->get_stylesheet_directory();
 
-			$all_update_info = $this->get_update_info();
-			$update_info     = ( isset( $all_update_info->response[$theme->get_stylesheet()]) && null !== $all_update_info->response[$theme->get_stylesheet()] ) ? (array) $all_update_info->response[$theme->get_stylesheet()] : null;
+			$update_info = ( isset( $all_update_info->response[$theme->get_stylesheet()]) && null !== $all_update_info->response[$theme->get_stylesheet()] ) ? (array) $all_update_info->response[$theme->get_stylesheet()] : null;
 
 			$items[ $file ] = array(
 				'name' => $key,
@@ -454,6 +463,11 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'description' => wordwrap( $theme->get('Description') ),
 				'author' => $theme->get('Author'),
 			);
+
+			// Compare version and update information in theme list.
+			if ( isset( $theme_version_info[ $key ] ) && false === $theme_version_info[ $key ] ) {
+				$items[ $file ]['update'] = 'This version is higher than expected!';
+			}
 
 			if ( is_multisite() ) {
 				if ( ! empty( $site_enabled[ $key ] ) && ! empty( $network_enabled[ $key ] ) )
@@ -885,5 +899,31 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		return $template_path;
+	}
+
+	/**
+	 * Check if current version of the theme is higher than the one available at WP.org
+	 *
+	 * @param string $slug Theme slug.
+	 * @param string $version Theme current version.
+	 *
+	 * @return bool|string
+	 */
+	protected function is_theme_version_valid( $slug, $version ) {
+		// Get Theme Info.
+		$theme_info = themes_api( 'theme_information', array( 'slug' => $slug ) );
+
+		// Return empty string for themes not on WP.org
+		if ( is_wp_error( $theme_info ) ) {
+			return '';
+		}
+
+		// Compare theme version info.
+		if ( version_compare( $version, $theme_info->version, '>' ) ) {
+			return false;
+		} else {
+			return true;
+		}
+
 	}
 }
