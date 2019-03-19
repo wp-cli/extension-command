@@ -107,6 +107,7 @@ Feature: Manage WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
+  @require-wp-4.0
   Scenario: Install a plugin, activate, then force install an older version of the plugin
     Given a WP install
 
