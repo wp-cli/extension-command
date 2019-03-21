@@ -563,9 +563,12 @@ Feature: Manage WordPress plugins
        */
 
       add_filter( 'site_transient_update_plugins', function( $value ) {
-          if ( isset( $value->no_update['hello-dolly/hello.php'] ) ) {
-                  $value->no_update['hello-dolly/hello.php']->new_version = '1.5';
-          }
+          	if ( isset( $value->response ) ) {
+              unset ( $value->response['hello-dolly/hello.php'] );
+            }
+            if ( isset( $value->no_update ) && isset( $value->no_update['hello-dolly/hello.php'] ) ) {
+              $value->no_update['hello-dolly/hello.php']->new_version = '1.5';
+            }
           return $value;
        } );
       ?>
