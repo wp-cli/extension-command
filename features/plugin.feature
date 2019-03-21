@@ -548,3 +548,30 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name         | title | description                    |
       | db-error.php |       | Custom database error message. |
+
+  @require-wp-4.0
+  Scenario: Validate installed plugin's version.
+    Given a WP installation
+    And I run `wp plugin install hello-dolly`
+    And a wp-content/mu-plugins/test-plugin-update.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Test Plugin Update
+       * Description: Fakes installed plugin's data to verify plugin version mismatch
+       * Author: WP-CLI tests
+       */
+
+      add_filter( 'site_transient_update_plugins', function( $value ) {
+          if ( isset( $value->no_update['hello-dolly/hello.php'] ) ) {
+                  $value->no_update['hello-dolly/hello.php']->new_version = '1.5';
+          }
+          return $value;
+       } );
+      ?>
+      """
+
+    When I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name               | status   | update                       | version |
+      | hello-dolly        | inactive | version higher than expected | 1.6     |
