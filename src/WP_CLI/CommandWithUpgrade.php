@@ -471,7 +471,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	/**
 	 * Get the available update info
 	 *
-	 * @return array
+	 * @return mixed
 	 */
 	protected function get_update_info() {
 		return get_site_transient( $this->upgrade_transient );

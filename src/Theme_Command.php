@@ -438,7 +438,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		$all_update_info = $this->get_update_info();
-		$checked_themes  = ( isset( $all_update_info->checked ) ) ? $all_update_info->checked : array();
+		$checked_themes  = isset( $all_update_info->checked ) ? $all_update_info->checked : array();
 
 		if ( ! empty( $checked_themes ) ) {
 			foreach ( $checked_themes as $slug => $version ) {
@@ -449,7 +449,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		foreach ( wp_get_themes() as $key => $theme ) {
 			$file = $theme->get_stylesheet_directory();
 
-			$update_info = ( isset( $all_update_info->response[$theme->get_stylesheet()]) && null !== $all_update_info->response[$theme->get_stylesheet()] ) ? (array) $all_update_info->response[$theme->get_stylesheet()] : null;
+			$update_info = ( isset( $all_update_info->response[ $theme->get_stylesheet() ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
 
 			$items[ $file ] = array(
 				'name' => $key,
@@ -466,7 +466,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 			// Compare version and update information in theme list.
 			if ( isset( $theme_version_info[ $key ] ) && false === $theme_version_info[ $key ] ) {
-				$items[ $file ]['update'] = 'This version is higher than expected!';
+				$items[ $file ]['update'] = 'version higher than expected';
 			}
 
 			if ( is_multisite() ) {
@@ -917,7 +917,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Check if current version of the theme is higher than the one available at WP.org
+	 * Check if current version of the theme is higher than the one available at WP.org.
 	 *
 	 * @param string $slug Theme slug.
 	 * @param string $version Theme current version.
@@ -928,17 +928,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		// Get Theme Info.
 		$theme_info = themes_api( 'theme_information', array( 'slug' => $slug ) );
 
-		// Return empty string for themes not on WP.org
+		// Return empty string for themes not on WP.org.
 		if ( is_wp_error( $theme_info ) ) {
 			return '';
 		}
 
 		// Compare theme version info.
-		if ( version_compare( $version, $theme_info->version, '>' ) ) {
-			return false;
-		} else {
-			return true;
-		}
+		return ! version_compare( $version, $theme_info->version, '>' );
 
 	}
 }
