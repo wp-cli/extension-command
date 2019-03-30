@@ -107,6 +107,7 @@ Feature: Manage WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
+  @require-wp-4.0
   Scenario: Install a plugin, activate, then force install an older version of the plugin
     Given a WP install
 
@@ -172,7 +173,7 @@ Feature: Manage WordPress plugins
       """
     And STDERR should contain:
       """
-      Error: Only updated 1 of 3 plugins.
+      Error: Only updated 2 of 3 plugins.
       """
     And the return code should be 1
 
@@ -547,3 +548,34 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name         | title | description                    |
       | db-error.php |       | Custom database error message. |
+
+  @require-wp-4.0
+  Scenario: Validate installed plugin's version.
+    Given a WP installation
+    And I run `wp plugin install hello-dolly`
+    And a wp-content/mu-plugins/test-plugin-update.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Test Plugin Update
+       * Description: Fakes installed plugin's data to verify plugin version mismatch
+       * Author: WP-CLI tests
+       */
+
+      add_filter( 'site_transient_update_plugins', function( $value ) {
+          if ( ! is_object( $value ) ) {
+              return $value;
+          }
+
+          unset( $value->response['hello-dolly/hello.php'] );
+          $value->no_update['hello-dolly/hello.php']->new_version = '1.5';
+
+          return $value;
+      } );
+      ?>
+      """
+
+    When I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name               | status   | update                       | version |
+      | hello-dolly        | inactive | version higher than expected | 1.6     |
