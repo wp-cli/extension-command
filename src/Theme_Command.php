@@ -105,7 +105,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * <search>
 	 * : The string to search for.
-	 *
+     *
+     * [--page=<page>]
+     * : Optional page to display.
+     * ---
+     * default: 1
+     * ---
+     *
 	 * [--per-page=<per-page>]
 	 * : Optional number of results to display. Defaults to 10.
 	 *
