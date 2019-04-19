@@ -32,24 +32,24 @@ use WP_CLI\Utils;
  *     # Get status of theme
  *     $ wp theme status twentysixteen
  *     Theme twentysixteen details:
- *     		Name: Twenty Sixteen
- *     		Status: Active
- *     		Version: 1.2
- *     		Author: the WordPress team
+ *          Name: Twenty Sixteen
+ *          Status: Active
+ *          Version: 1.2
+ *          Author: the WordPress team
  *
  * @package wp-cli
  */
 class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
-	protected $item_type = 'theme';
-	protected $upgrade_refresh = 'wp_update_themes';
+	protected $item_type         = 'theme';
+	protected $upgrade_refresh   = 'wp_update_themes';
 	protected $upgrade_transient = 'update_themes';
 
 	protected $obj_fields = array(
 		'name',
 		'status',
 		'update',
-		'version'
+		'version',
 	);
 
 	public function __construct() {
@@ -58,7 +58,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 		parent::__construct();
 
-		$this->fetcher = new \WP_CLI\Fetchers\Theme;
+		$this->fetcher = new \WP_CLI\Fetchers\Theme();
 	}
 
 	protected function get_upgrader_class( $force ) {
@@ -77,14 +77,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     $ wp theme status twentysixteen
 	 *     Theme twentysixteen details:
-	 *     		Name: Twenty Sixteen
-	 *     		Status: Inactive
-	 *     		Version: 1.2
-	 *     		Author: the WordPress team
+	 *          Name: Twenty Sixteen
+	 *          Status: Inactive
+	 *          Version: 1.2
+	 *          Author: the WordPress team
 	 */
 	public function status( $args ) {
 		if ( isset( $args[0] ) ) {
-			$theme = $this->fetcher->get_check( $args[0] );
+			$theme  = $this->fetcher->get_check( $args[0] );
 			$errors = $theme->errors();
 			if ( is_wp_error( $errors ) ) {
 				$message = $errors->get_error_message();
@@ -163,17 +163,23 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$status = $this->format_status( $this->get_status( $theme ), 'long' );
 
-		$version = $theme->get('Version');
-		if ( $this->has_update( $theme->get_stylesheet() ) )
+		$version = $theme->get( 'Version' );
+		if ( $this->has_update( $theme->get_stylesheet() ) ) {
 			$version .= ' (%gUpdate available%n)';
+		}
 
-		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( self::get_template_path( 'theme-status.mustache' ), array(
-			'slug' => $theme->get_stylesheet(),
-			'status' => $status,
-			'version' => $version,
-			'name' => $theme->get('Name'),
-			'author' => $theme->get('Author'),
-		) ) );
+		echo WP_CLI::colorize(
+			\WP_CLI\Utils\mustache_render(
+				self::get_template_path( 'theme-status.mustache' ),
+				array(
+					'slug'    => $theme->get_stylesheet(),
+					'status'  => $status,
+					'version' => $version,
+					'name'    => $theme->get( 'Name' ),
+					'author'  => $theme->get( 'Author' ),
+				)
+			)
+		);
 	}
 
 	protected function get_all_items() {
@@ -183,7 +189,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	protected function get_status( $theme ) {
 		if ( $this->is_active_theme( $theme ) ) {
 			return 'active';
-		} else if ( $theme->get_stylesheet_directory() === get_template_directory() ) {
+		} elseif ( $theme->get_stylesheet_directory() === get_template_directory() ) {
 			return 'parent';
 		} else {
 			return 'inactive';
@@ -212,14 +218,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			WP_CLI::error( $message );
 		}
 
-		$name = $theme->get('Name');
+		$name = $theme->get( 'Name' );
 
 		if ( 'active' === $this->get_status( $theme ) ) {
 			WP_CLI::warning( "The '$name' theme is already active." );
 			return;
 		}
 
-		if ( $theme->get_stylesheet() != $theme->get_template() && ! $this->fetcher->get( $theme->get_template() ) ) {
+		if ( $theme->get_stylesheet() !== $theme->get_template() && ! $this->fetcher->get( $theme->get_template() ) ) {
 			WP_CLI::error( "The '{$theme->get_stylesheet()}' theme cannot be activated without its parent, '{$theme->get_template()}'." );
 		}
 
@@ -271,22 +277,24 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		$theme = $this->fetcher->get_check( $args[0] );
-		$name = $theme->get( 'Name' );
+		$name  = $theme->get( 'Name' );
 
 		# If the --network flag is set, we'll be calling the (get|update)_site_option functions
 		$_site = ! empty( $assoc_args['network'] ) ? '_site' : '';
 
 		# Add the current theme to the allowed themes option or site option
 		$allowed_themes = call_user_func( "get{$_site}_option", 'allowedthemes' );
-		if ( empty( $allowed_themes ) )
+		if ( empty( $allowed_themes ) ) {
 			$allowed_themes = array();
+		}
 		$allowed_themes[ $theme->get_stylesheet() ] = true;
 		call_user_func( "update{$_site}_option", 'allowedthemes', $allowed_themes );
 
-		if ( ! empty( $assoc_args['network'] ) )
+		if ( ! empty( $assoc_args['network'] ) ) {
 			WP_CLI::success( "Network enabled the '$name' theme." );
-		else
+		} else {
 			WP_CLI::success( "Enabled the '$name' theme." );
+		}
 
 		# If the --activate flag is set, activate the theme for the current site
 		if ( ! empty( $assoc_args['activate'] ) ) {
@@ -326,25 +334,27 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		$theme = $this->fetcher->get_check( $args[0] );
-		$name = $theme->get( 'Name' );
+		$name  = $theme->get( 'Name' );
 
 		# If the --network flag is set, we'll be calling the (get|update)_site_option functions
 		$_site = ! empty( $assoc_args['network'] ) ? '_site' : '';
 
 		# Add the current theme to the allowed themes option or site option
 		$allowed_themes = call_user_func( "get{$_site}_option", 'allowedthemes' );
-		if ( ! empty( $allowed_themes[ $theme->get_stylesheet() ] ) )
+		if ( ! empty( $allowed_themes[ $theme->get_stylesheet() ] ) ) {
 			unset( $allowed_themes[ $theme->get_stylesheet() ] );
+		}
 		call_user_func( "update{$_site}_option", 'allowedthemes', $allowed_themes );
 
-		if ( ! empty( $assoc_args['network'] ) )
+		if ( ! empty( $assoc_args['network'] ) ) {
 			WP_CLI::success( "Network disabled the '$name' theme." );
-		else
+		} else {
 			WP_CLI::success( "Disabled the '$name' theme." );
+		}
 	}
 
 	private function is_active_theme( $theme ) {
-		return $theme->get_stylesheet_directory() == get_stylesheet_directory();
+		return $theme->get_stylesheet_directory() === get_stylesheet_directory();
 	}
 
 	/**
@@ -377,8 +387,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 			$path = $theme->get_stylesheet_directory();
 
-			if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'dir' ) )
+			if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'dir' ) ) {
 				$path .= '/style.css';
+			}
 		}
 
 		WP_CLI::line( $path );
@@ -403,13 +414,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			}
 			// Clear cache so WP_Theme doesn't create a "missing theme" object.
 			$cache_hash = md5( $theme->theme_root . '/' . $theme->stylesheet );
-			foreach( array( 'theme', 'screenshot', 'headers', 'page_templates' ) as $key ) {
+			foreach ( array( 'theme', 'screenshot', 'headers', 'page_templates' ) as $key ) {
 				wp_cache_delete( $key . '-' . $cache_hash, 'themes' );
 			}
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', html_entity_decode( $api->name, ENT_QUOTES ), $api->version ) );
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'version' ) != 'dev' ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'version' ) !== 'dev' ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $api->download_link, $this->item_type, $api->slug, $api->version );
 		}
 
@@ -429,12 +440,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( is_multisite() ) {
 			$site_enabled = get_option( 'allowedthemes' );
-			if ( empty( $site_enabled ) )
+			if ( empty( $site_enabled ) ) {
 				$site_enabled = array();
+			}
 
 			$network_enabled = get_site_option( 'allowedthemes' );
-			if ( empty( $network_enabled ) )
+			if ( empty( $network_enabled ) ) {
 				$network_enabled = array();
+			}
 		}
 
 		$all_update_info = $this->get_update_info();
@@ -442,7 +455,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( ! empty( $checked_themes ) ) {
 			foreach ( $checked_themes as $slug => $version ) {
-				$theme_version_info[$slug] = $this->is_theme_version_valid( $slug, $version );
+				$theme_version_info[ $slug ] = $this->is_theme_version_valid( $slug, $version );
 			}
 		}
 
@@ -452,16 +465,16 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			$update_info = ( isset( $all_update_info->response[ $theme->get_stylesheet() ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
 
 			$items[ $file ] = array(
-				'name' => $key,
-				'status' => $this->get_status( $theme ),
-				'update' => (bool) $update_info,
+				'name'           => $key,
+				'status'         => $this->get_status( $theme ),
+				'update'         => (bool) $update_info,
 				'update_version' => $update_info['new_version'],
 				'update_package' => $update_info['package'],
-				'version' => $theme->get('Version'),
-				'update_id' => $theme->get_stylesheet(),
-				'title' => $theme->get('Name'),
-				'description' => wordwrap( $theme->get('Description') ),
-				'author' => $theme->get('Author'),
+				'version'        => $theme->get( 'Version' ),
+				'update_id'      => $theme->get_stylesheet(),
+				'title'          => $theme->get( 'Name' ),
+				'description'    => wordwrap( $theme->get( 'Description' ) ),
+				'author'         => $theme->get( 'Author' ),
 			);
 
 			// Compare version and update information in theme list.
@@ -470,14 +483,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			}
 
 			if ( is_multisite() ) {
-				if ( ! empty( $site_enabled[ $key ] ) && ! empty( $network_enabled[ $key ] ) )
+				if ( ! empty( $site_enabled[ $key ] ) && ! empty( $network_enabled[ $key ] ) ) {
 					$items[ $file ]['enabled'] = 'network,site';
-				elseif ( ! empty( $network_enabled[ $key ] ) )
+				} elseif ( ! empty( $network_enabled[ $key ] ) ) {
 					$items[ $file ]['enabled'] = 'network';
-				elseif ( ! empty( $site_enabled[ $key ] ) )
+				} elseif ( ! empty( $site_enabled[ $key ] ) ) {
 					$items[ $file ]['enabled'] = 'site';
-				else
+				} else {
 					$items[ $file ]['enabled'] = 'no';
+				}
 			}
 		}
 
@@ -587,9 +601,23 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		// WP_Theme object employs magic getter, unfortunately
-		$theme_vars = array( 'name', 'title', 'version', 'parent_theme', 'template_dir', 'stylesheet_dir', 'template', 'stylesheet', 'screenshot', 'description', 'author', 'tags', 'theme_root', 'theme_root_uri',
+		$theme_vars = array(
+			'name',
+			'title',
+			'version',
+			'parent_theme',
+			'template_dir',
+			'stylesheet_dir',
+			'template',
+			'stylesheet',
+			'screenshot',
+			'description',
+			'author',
+			'tags',
+			'theme_root',
+			'theme_root_uri',
 		);
-		$theme_obj = new stdClass;
+		$theme_obj  = new stdClass();
 		foreach ( $theme_vars as $var ) {
 			$theme_obj->$var = $theme->$var;
 		}
@@ -685,7 +713,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	public function update( $args, $assoc_args ) {
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
-		if ( ! ( $args = $this->check_optional_args_and_all( $args, $all ) ) ) {
+		$args = $this->check_optional_args_and_all( $args, $all );
+		if ( ! $args ) {
 			return;
 		}
 
@@ -790,13 +819,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
-		if ( ! ( $args = $this->check_optional_args_and_all( $args, $all, 'delete' ) ) ) {
+		$args = $this->check_optional_args_and_all( $args, $all, 'delete' );
+		if ( ! $args ) {
 			return;
 		}
 
 		$force = Utils\get_flag_value( $assoc_args, 'force', false );
 
-		$successes = $errors = 0;
+		$successes = 0;
+		$errors    = 0;
 		foreach ( $this->fetcher->get_many( $args ) as $theme ) {
 			$theme_slug = $theme->get_stylesheet();
 
@@ -887,9 +918,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	private function check_optional_args_and_all( $args, $all ) {
 		if ( $all ) {
-			$args = array_map( function( $item ){
-				return Utils\get_theme_name( $item );
-			}, array_keys( $this->get_all_items() ) );
+			$args = array_map(
+				function( $item ) {
+						return Utils\get_theme_name( $item );
+				},
+				array_keys( $this->get_all_items() )
+			);
 		}
 
 		if ( empty( $args ) ) {
@@ -906,7 +940,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * Gets the template path based on installation type.
 	 */
 	private static function get_template_path( $template ) {
-		$command_root = Utils\phar_safe_path( dirname( __DIR__ ) );
+		$command_root  = Utils\phar_safe_path( dirname( __DIR__ ) );
 		$template_path = "{$command_root}/templates/{$template}";
 
 		if ( ! file_exists( $template_path ) ) {
