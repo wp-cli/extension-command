@@ -62,6 +62,9 @@
 		<exclude-pattern>*/src/WP_CLI/(CommandWith|DestructivePlugin|DestructiveTheme)Upgrader\.php$</exclude-pattern>
 	</rule>
 
-
+	<!-- Exclude classes from UselessOverridingMethod sniff as the method is used for generating docs. -->
+	<rule ref="Generic.CodeAnalysis.UselessOverridingMethod.Found">
+		<exclude-pattern>*/src/(Plugin_|Theme_(Mod_)?)Command\.php$</exclude-pattern>
+	</rule>
 
 </ruleset>
