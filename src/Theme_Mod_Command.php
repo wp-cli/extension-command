@@ -21,7 +21,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 
 	private $fields = array(
 		'key',
-		'value'
+		'value',
 	);
 
 	/**
@@ -81,7 +81,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	public function get( $args = array(), $assoc_args = array() ) {
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
-			WP_CLI::error( "You must specify at least one mod or use --all." );
+			WP_CLI::error( 'You must specify at least one mod or use --all.' );
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
@@ -96,23 +96,36 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		}
 		foreach ( $mods as $k => $v ) {
 			// if mods were given, skip the others
-			if ( ! empty( $args ) && ! in_array( $k, $args ) ) continue;
-
-			if ( is_array( $v ) ) {
-				$list[] = array( 'key' => $k, 'value' => '=>' );
-				foreach ( $v as $_k => $_v ) {
-					$list[] = array( 'key' => "    $_k", 'value' => $_v );
-				}
-			} else {
-				$list[] = array( 'key' => $k, 'value' => $v );
+			if ( ! empty( $args ) && ! in_array( $k, $args, true ) ) {
+				continue;
 			}
 
+			if ( is_array( $v ) ) {
+				$list[] = array(
+					'key'   => $k,
+					'value' => '=>',
+				);
+				foreach ( $v as $_k => $_v ) {
+					$list[] = array(
+						'key'   => "    $_k",
+						'value' => $_v,
+					);
+				}
+			} else {
+				$list[] = array(
+					'key'   => $k,
+					'value' => $v,
+				);
+			}
 		}
 
 		// For unset mods, show blank value
 		foreach ( $args as $mod ) {
 			if ( ! isset( $mods[ $mod ] ) ) {
-				$list[] = array( 'key' => $mod, 'value' => '' );
+				$list[] = array(
+					'key'   => $mod,
+					'value' => '',
+				);
 			}
 		}
 
@@ -189,7 +202,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	public function remove( $args = array(), $assoc_args = array() ) {
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
-			WP_CLI::error( "You must specify at least one mod or use --all." );
+			WP_CLI::error( 'You must specify at least one mod or use --all.' );
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
@@ -202,7 +215,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 			remove_theme_mod( $mod );
 		}
 
-		$count = count( $args );
+		$count           = count( $args );
 		$success_message = ( 1 === $count ) ? '%d mod removed.' : '%d mods removed.';
 		WP_CLI::success( sprintf( $success_message, $count ) );
 
@@ -230,10 +243,10 @@ class Theme_Mod_Command extends WP_CLI_Command {
 
 		set_theme_mod( $mod, $value );
 
-		if ( $value == get_theme_mod( $mod ) ) {
-			WP_CLI::success( sprintf( "Theme mod %s set to %s.", $mod, $value ) );
+		if ( get_theme_mod( $mod ) === $value ) {
+			WP_CLI::success( sprintf( 'Theme mod %s set to %s.', $mod, $value ) );
 		} else {
-			WP_CLI::success( sprintf( "Could not update theme mod %s.", $mod ) );
+			WP_CLI::success( sprintf( 'Could not update theme mod %s.', $mod ) );
 		}
 	}
 
