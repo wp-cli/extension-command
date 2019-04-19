@@ -446,7 +446,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 	}
 
-	protected function _list( $_, $assoc_args ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Whitelisting to provide backward compatibility to classes possibly extending this class.
+	// phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Whitelisting to provide backward compatibility to classes possibly extending this class.
+	protected function _list( $_, $assoc_args ) {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
@@ -601,7 +602,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * @param  array $args       A arguments array containing the search term in the first element.
 	 * @param  array $assoc_args Data passed in from command.
 	 */
-	protected function _search( $args, $assoc_args ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Whitelisting to provide backward compatibility to classes possibly extending this class.
+	// phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Whitelisting to provide backward compatibility to classes possibly extending this class.
+	protected function _search( $args, $assoc_args ) {
 		$term = $args[0];
 
 		$defaults   = array(
@@ -688,7 +690,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * @return string
 	 */
 	private function parse_url_host_component( $url, $component ) {
-		return function_exists( 'wp_parse_url' ) ? wp_parse_url( $url, $component ) : parse_url( $url, $component ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- parse_url will only be used in absence of wp_parse_url.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- parse_url will only be used in absence of wp_parse_url.
+		return function_exists( 'wp_parse_url' ) ? wp_parse_url( $url, $component ) : parse_url( $url, $component );
 	}
 
 }

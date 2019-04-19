@@ -1182,7 +1182,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @return array
 	 */
 	private function get_all_plugins() {
-		return apply_filters( 'all_plugins', get_plugins() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling native WordPress hook.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling native WordPress hook.
+		return apply_filters( 'all_plugins', get_plugins() );
 	}
 
 	/**
