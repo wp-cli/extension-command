@@ -13,11 +13,6 @@
 	<!-- What to scan. -->
 	<file>.</file>
 
-	<!-- Ignoring select files/folders.
-		 https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-files-and-folders -->
-	<exclude-pattern>*/node_modules/*</exclude-pattern>
-	<exclude-pattern>*/vendor/*</exclude-pattern>
-
 	<!-- Show progress. -->
 	<arg value="p"/>
 
@@ -29,11 +24,11 @@
 
 	<!--
 	#############################################################################
-	USE THE WPCliCS RULESET
+	USE THE WP_CLI_CS RULESET
 	#############################################################################
 	-->
 
-	<rule ref="WPCliCS"/>
+	<rule ref="WP_CLI_CS"/>
 
 	<!--
 	#############################################################################
