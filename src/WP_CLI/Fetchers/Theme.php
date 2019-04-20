@@ -21,7 +21,7 @@ class Theme extends Base {
 	public function get( $name ) {
 		$theme = wp_get_theme( $name );
 
-		if ( !$theme->exists() ) {
+		if ( ! $theme->exists() ) {
 			return false;
 		}
 
