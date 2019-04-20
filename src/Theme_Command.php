@@ -45,12 +45,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	protected $upgrade_refresh   = 'wp_update_themes';
 	protected $upgrade_transient = 'update_themes';
 
-	protected $obj_fields = array(
-		'name',
-		'status',
-		'update',
-		'version',
-	);
+	protected $obj_fields = [ 'name', 'status', 'update', 'version' ];
 
 	public function __construct() {
 		if ( is_multisite() ) {
@@ -58,7 +53,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 		parent::__construct();
 
-		$this->fetcher = new \WP_CLI\Fetchers\Theme();
+		$this->fetcher = new WP_CLI\Fetchers\Theme();
 	}
 
 	protected function get_upgrader_class( $force ) {
@@ -169,15 +164,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		echo WP_CLI::colorize(
-			\WP_CLI\Utils\mustache_render(
+			Utils\mustache_render(
 				self::get_template_path( 'theme-status.mustache' ),
-				array(
+				[
 					'slug'    => $theme->get_stylesheet(),
 					'status'  => $status,
 					'version' => $version,
 					'name'    => $theme->get( 'Name' ),
 					'author'  => $theme->get( 'Author' ),
-				)
+				]
 			)
 		);
 	}
@@ -387,7 +382,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 			$path = $theme->get_stylesheet_directory();
 
-			if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'dir' ) ) {
+			if ( ! Utils\get_flag_value( $assoc_args, 'dir' ) ) {
 				$path .= '/style.css';
 			}
 		}
@@ -406,7 +401,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			self::alter_api_response( $api, $assoc_args['version'] );
 		}
 
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
+		if ( ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
 			$theme = wp_get_theme( $slug );
 			if ( $theme->exists() ) {
 				// We know this will fail, so avoid a needless download of the package.
@@ -414,13 +409,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			}
 			// Clear cache so WP_Theme doesn't create a "missing theme" object.
 			$cache_hash = md5( $theme->theme_root . '/' . $theme->stylesheet );
-			foreach ( array( 'theme', 'screenshot', 'headers', 'page_templates' ) as $key ) {
+			foreach ( [ 'theme', 'screenshot', 'headers', 'page_templates' ] as $key ) {
 				wp_cache_delete( $key . '-' . $cache_hash, 'themes' );
 			}
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', html_entity_decode( $api->name, ENT_QUOTES ), $api->version ) );
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'version' ) !== 'dev' ) {
+		if ( Utils\get_flag_value( $assoc_args, 'version' ) !== 'dev' ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $api->download_link, $this->item_type, $api->slug, $api->version );
 		}
 
@@ -464,7 +459,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 			$update_info = ( isset( $all_update_info->response[ $theme->get_stylesheet() ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
 
-			$items[ $file ] = array(
+			$items[ $file ] = [
 				'name'           => $key,
 				'status'         => $this->get_status( $theme ),
 				'update'         => (bool) $update_info,
@@ -475,7 +470,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'title'          => $theme->get( 'Name' ),
 				'description'    => wordwrap( $theme->get( 'Description' ) ),
 				'author'         => $theme->get( 'Author' ),
-			);
+			];
 
 			// Compare version and update information in theme list.
 			if ( isset( $theme_version_info[ $key ] ) && false === $theme_version_info[ $key ] ) {
@@ -504,7 +499,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			$theme_files[] = $this->fetcher->get_check( $arg )->get_stylesheet_directory();
 		}
 
-		return \WP_CLI\Utils\pick_fields( $items, $theme_files );
+		return Utils\pick_fields( $items, $theme_files );
 	}
 
 	/**
@@ -601,7 +596,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		// WP_Theme object employs magic getter, unfortunately
-		$theme_vars = array(
+		$theme_vars = [
 			'name',
 			'title',
 			'version',
@@ -616,7 +611,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			'tags',
 			'theme_root',
 			'theme_root_uri',
-		);
+		];
 		$theme_obj  = new stdClass();
 		foreach ( $theme_vars as $var ) {
 			$theme_obj->$var = $theme->$var;
