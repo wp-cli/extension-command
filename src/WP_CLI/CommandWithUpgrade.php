@@ -547,7 +547,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$wporg_url = sprintf( 'https://api.wordpress.org/plugins/info/1.0/%s.json', $item['name'] );
 			$response  = Utils\http_request( 'GET', $wporg_url );
 			// Must not be hosted on wp.org
-			if ( 20 !== substr( $response->status_code, 0, 2 ) ) {
+			if ( 20 !== absint( substr( $response->status_code, 0, 2 ) ) ) {
 				unset( $items[ $i ] );
 				continue;
 			}
