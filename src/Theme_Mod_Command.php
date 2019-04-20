@@ -19,10 +19,7 @@
  */
 class Theme_Mod_Command extends WP_CLI_Command {
 
-	private $fields = array(
-		'key',
-		'value',
-	);
+	private $fields = [ 'key', 'value' ];
 
 	/**
 	 * Gets one or more theme mods.
@@ -101,31 +98,31 @@ class Theme_Mod_Command extends WP_CLI_Command {
 			}
 
 			if ( is_array( $v ) ) {
-				$list[] = array(
+				$list[] = [
 					'key'   => $k,
 					'value' => '=>',
-				);
+				];
 				foreach ( $v as $_k => $_v ) {
-					$list[] = array(
+					$list[] = [
 						'key'   => "    $_k",
 						'value' => $_v,
-					);
+					];
 				}
 			} else {
-				$list[] = array(
+				$list[] = [
 					'key'   => $k,
 					'value' => $v,
-				);
+				];
 			}
 		}
 
 		// For unset mods, show blank value
 		foreach ( $args as $mod ) {
 			if ( ! isset( $mods[ $mod ] ) ) {
-				$list[] = array(
+				$list[] = [
 					'key'   => $mod,
 					'value' => '',
-				);
+				];
 			}
 		}
 
@@ -244,9 +241,9 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		set_theme_mod( $mod, $value );
 
 		if ( get_theme_mod( $mod ) === $value ) {
-			WP_CLI::success( sprintf( 'Theme mod %s set to %s.', $mod, $value ) );
+			WP_CLI::success( "Theme mod {$mod} set to {$value}." );
 		} else {
-			WP_CLI::success( sprintf( 'Could not update theme mod %s.', $mod ) );
+			WP_CLI::success( "Could not update theme mod {$mod}." );
 		}
 	}
 

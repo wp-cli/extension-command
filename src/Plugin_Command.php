@@ -1,6 +1,6 @@
 <?php
 
-use \WP_CLI\Utils;
+use WP_CLI\Utils;
 
 /**
  * Manages plugins, including installs, activations, and updates.
@@ -57,7 +57,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		parent::__construct();
 
-		$this->fetcher = new \WP_CLI\Fetchers\Plugin();
+		$this->fetcher = new WP_CLI\Fetchers\Plugin();
 	}
 
 	protected function get_upgrader_class( $force ) {
@@ -201,16 +201,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		echo WP_CLI::colorize(
-			\WP_CLI\Utils\mustache_render(
+			Utils\mustache_render(
 				self::get_template_path( 'plugin-status.mustache' ),
-				array(
+				[
 					'slug'        => Utils\get_plugin_name( $file ),
 					'status'      => $status,
 					'version'     => $version,
 					'name'        => $details['Name'],
 					'author'      => $details['Author'],
 					'description' => $details['Description'],
-				)
+				]
 			)
 		);
 	}
@@ -241,7 +241,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$raw_data  = _get_dropins();
 		foreach ( $raw_items as $name => $item_data ) {
 			$description    = ! empty( $raw_data[ $name ][0] ) ? $raw_data[ $name ][0] : '';
-			$items[ $name ] = array(
+			$items[ $name ] = [
 				'name'           => $name,
 				'title'          => $item_data['Title'],
 				'description'    => $description,
@@ -250,7 +250,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_version' => null,
 				'update_package' => null,
 				'update_id'      => '',
-			);
+			];
 		}
 
 		return $items;
@@ -283,8 +283,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Success: Network activated 1 of 1 plugins.
 	 */
 	public function activate( $args, $assoc_args = array() ) {
-		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
-		$all          = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
+		$network_wide = Utils\get_flag_value( $assoc_args, 'network' );
+		$all          = Utils\get_flag_value( $assoc_args, 'all', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {
@@ -299,7 +299,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 		foreach ( $plugins as $plugin ) {
 			$status = $this->get_status( $plugin->file );
-			if ( $all && in_array( $status, array( 'active', 'active-network' ), true ) ) {
+			if ( $all && in_array( $status, [ 'active', 'active-network' ], true ) ) {
 				continue;
 			}
 			// Network-active is the highest level of activation status
@@ -356,8 +356,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Success: Deactivated 1 of 1 plugins.
 	 */
 	public function deactivate( $args, $assoc_args = array() ) {
-		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
-		$disable_all  = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' );
+		$network_wide = Utils\get_flag_value( $assoc_args, 'network' );
+		$disable_all  = Utils\get_flag_value( $assoc_args, 'all' );
 
 		$args = $this->check_optional_args_and_all( $args, $disable_all );
 		if ( ! $args ) {
@@ -374,7 +374,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		foreach ( $plugins as $plugin ) {
 
 			$status = $this->get_status( $plugin->file );
-			if ( $disable_all && ! in_array( $status, array( 'active', 'active-network' ), true ) ) {
+			if ( $disable_all && ! in_array( $status, [ 'active', 'active-network' ], true ) ) {
 				continue;
 			}
 
@@ -385,7 +385,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				continue;
 			}
 
-			if ( ! in_array( $status, array( 'active', 'active-network' ), true ) ) {
+			if ( ! in_array( $status, [ 'active', 'active-network' ], true ) ) {
 				WP_CLI::warning( "Plugin '{$plugin->name}' isn't active." );
 				continue;
 			}
@@ -407,7 +407,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$this->active_output( $plugin->name, $plugin->file, $network_wide, 'deactivate' );
 			$successes++;
 
-			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'uninstall' ) ) {
+			if ( Utils\get_flag_value( $assoc_args, 'uninstall' ) ) {
 				WP_CLI::log( "Uninstalling '{$plugin->name}'..." );
 				$this->chained_command = true;
 				$this->uninstall( array( $plugin->name ) );
@@ -449,7 +449,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Success: Toggled 1 of 1 plugins.
 	 */
 	public function toggle( $args, $assoc_args = array() ) {
-		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
+		$network_wide = Utils\get_flag_value( $assoc_args, 'network' );
 
 		$successes = 0;
 		$errors    = 0;
@@ -495,7 +495,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$plugin = $this->fetcher->get_check( $args[0] );
 			$path  .= '/' . $plugin->file;
 
-			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'dir' ) ) {
+			if ( Utils\get_flag_value( $assoc_args, 'dir' ) ) {
 				$path = dirname( $path );
 			}
 		}
@@ -516,13 +516,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$status = install_plugin_install_status( $api );
 
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && 'install' !== $status['status'] ) {
+		if ( ! Utils\get_flag_value( $assoc_args, 'force' ) && 'install' !== $status['status'] ) {
 			// We know this will fail, so avoid a needless download of the package.
 			return new WP_Error( 'already_installed', 'Plugin already installed.' );
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', html_entity_decode( $api->name, ENT_QUOTES ), $api->version ) );
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'version' ) !== 'dev' ) {
+		if ( Utils\get_flag_value( $assoc_args, 'version' ) !== 'dev' ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $api->download_link, $this->item_type, $api->slug, $api->version );
 		}
 
@@ -653,7 +653,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			}
 
 			$duplicate_names[ $name ][] = $file;
-			$items[ $file ]             = array(
+			$items[ $file ]             = [
 				'name'           => $name,
 				'status'         => $this->get_status( $file ),
 				'update'         => (bool) $update_info,
@@ -663,7 +663,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_id'      => $file,
 				'title'          => $details['Name'],
 				'description'    => wordwrap( $details['Description'] ),
-			);
+			];
 
 			if ( null === $update_info ) {
 
@@ -691,7 +691,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	protected function filter_item_list( $items, $args ) {
 		$basenames = wp_list_pluck( $this->fetcher->get_many( $args ), 'file' );
-		return \WP_CLI\Utils\pick_fields( $items, $basenames );
+		return Utils\pick_fields( $items, $basenames );
 	}
 
 	/**
@@ -818,14 +818,14 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
 
-		$plugin_obj = (object) array(
+		$plugin_obj = (object) [
 			'name'        => Utils\get_plugin_name( $file ),
 			'title'       => $plugin_data['Name'],
 			'author'      => $plugin_data['Author'],
 			'version'     => $plugin_data['Version'],
 			'description' => wordwrap( $plugin_data['Description'] ),
 			'status'      => $this->get_status( $file ),
-		);
+		];
 
 		if ( empty( $assoc_args['fields'] ) ) {
 			$plugin_array         = get_object_vars( $plugin_obj );
@@ -884,7 +884,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				continue;
 			}
 
-			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'deactivate' ) ) {
+			if ( Utils\get_flag_value( $assoc_args, 'deactivate' ) ) {
 				WP_CLI::log( "Deactivating '{$plugin->name}'..." );
 				$this->chained_command = true;
 				$this->deactivate( array( $plugin->name ) );
@@ -893,7 +893,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 			uninstall_plugin( $plugin->file );
 
-			if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-delete' ) && $this->delete_plugin( $plugin ) ) {
+			if ( ! Utils\get_flag_value( $assoc_args, 'skip-delete' ) && $this->delete_plugin( $plugin ) ) {
 				WP_CLI::log( "Uninstalled and deleted '$plugin->name' plugin." );
 			} else {
 				WP_CLI::log( "Ran uninstall procedure for '$plugin->name' plugin without deleting." );
@@ -952,7 +952,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @subcommand is-active
 	 */
 	public function is_active( $args, $assoc_args = array() ) {
-		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
+		$network_wide = Utils\get_flag_value( $assoc_args, 'network' );
 
 		$plugin = $this->fetcher->get( $args[0] );
 
@@ -1157,7 +1157,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$path = path_join( WP_PLUGIN_DIR, $plugin_dir );
 
-		if ( \WP_CLI\Utils\is_windows() ) {
+		if ( Utils\is_windows() ) {
 			// Handles plugins that are not in own folders
 			// e.g. Hello Dolly -> plugins/hello.php
 			if ( is_file( $path ) ) {

@@ -21,7 +21,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		add_action(
 			'upgrader_process_complete',
 			function() {
-				remove_action( 'upgrader_process_complete', array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 );
+				remove_action( 'upgrader_process_complete', [ 'Language_Pack_Upgrader', 'async_upgrade' ], 20 );
 			},
 			1
 		);
@@ -34,7 +34,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			999
 		);
 
-		$this->fetcher = new \WP_CLI\Fetchers\Plugin();
+		$this->fetcher = new WP_CLI\Fetchers\Plugin();
 	}
 
 	abstract protected function get_upgrader_class( $force );
@@ -72,8 +72,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$n = count( $items );
 
-		// Not interested in the translation, just the number logic
-		\WP_CLI::log(
+		WP_CLI::log(
 			sprintf( '%d installed %s:', $n, Utils\pluralize( $this->item_type, absint( $n ) ) )
 		);
 
@@ -205,9 +204,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					$errors++;
 				} elseif ( is_wp_error( $result ) ) {
 					$key = $result->get_error_code();
-					if ( in_array( $key, array( 'plugins_api_failed', 'themes_api_failed' ), true )
-						&& ! empty( $result->error_data[ $key ] ) && in_array( $result->error_data[ $key ], array( 'N;', 'b:0;' ), true ) ) {
-						\WP_CLI::warning( "Couldn't find '$slug' in the WordPress.org {$this->item_type} directory." );
+					if ( in_array( $key, [ 'plugins_api_failed', 'themes_api_failed' ], true )
+						&& ! empty( $result->error_data[ $key ] ) && in_array( $result->error_data[ $key ], [ 'N;', 'b:0;' ], true ) ) {
+						WP_CLI::warning( "Couldn't find '$slug' in the WordPress.org {$this->item_type} directory." );
 						$errors++;
 					} else {
 						\WP_CLI::warning( "$slug: " . $result->get_error_message() );
@@ -225,12 +224,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 			if ( ! is_wp_error( $result ) && count( $extension ) > 0 ) {
 				$this->chained_command = true;
-				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate-network' ) ) {
+				if ( Utils\get_flag_value( $assoc_args, 'activate-network' ) ) {
 					\WP_CLI::log( "Network-activating '$slug'..." );
 					$this->activate( array( $slug ), array( 'network' => true ) );
 				}
 
-				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
+				if ( Utils\get_flag_value( $assoc_args, 'activate' ) ) {
 					\WP_CLI::log( "Activating '$slug'..." );
 					$this->activate( array( $slug ) );
 				}
@@ -281,7 +280,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				} else {
 					$error_msg = sprintf( 'HTTP code %d', $response_code );
 				}
-				\WP_CLI::error(
+				WP_CLI::error(
 					sprintf(
 						"Can't find the requested %s's version %s in the WordPress.org %s repository (%s).",
 						$download_type,
@@ -295,19 +294,19 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	protected function get_upgrader( $assoc_args ) {
-		$upgrader_class = $this->get_upgrader_class( \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) );
-		return \WP_CLI\Utils\get_upgrader( $upgrader_class );
+		$upgrader_class = $this->get_upgrader_class( Utils\get_flag_value( $assoc_args, 'force' ) );
+		return Utils\get_upgrader( $upgrader_class );
 	}
 
 	protected function update_many( $args, $assoc_args ) {
 		call_user_func( $this->upgrade_refresh );
 
-		if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], array( 'json', 'csv' ), true ) ) {
+		if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], [ 'json', 'csv' ], true ) ) {
 			$logger = new \WP_CLI\Loggers\Quiet();
-			\WP_CLI::set_logger( $logger );
+			WP_CLI::set_logger( $logger );
 		}
 
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
+		if ( ! Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
 			\WP_CLI::error( "Please specify one or more {$this->item_type}s, or use --all." );
 		}
 
@@ -318,17 +317,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$items = $this->get_item_list();
 
 		$errors = 0;
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+		if ( ! Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			$items  = $this->filter_item_list( $items, $args );
 			$errors = count( $args ) - count( $items );
 		}
 
-		$items_to_update = wp_list_filter(
-			$items,
-			array(
-				'update' => true,
-			)
-		);
+		$items_to_update = wp_list_filter( $items, [ 'update' => true ] );
 
 		if ( 'plugin' === $this->item_type
 			&& ( Utils\get_flag_value( $assoc_args, 'minor' )
@@ -352,7 +346,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'dry-run' ) ) {
 			if ( empty( $items_to_update ) ) {
 				\WP_CLI::log( "No {$this->item_type} updates available." );
 
@@ -363,8 +357,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				return;
 			}
 
-			if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], array( 'json', 'csv' ), true ) ) {
-				\WP_CLI\Utils\format_items( $assoc_args['format'], $items_to_update, array( 'name', 'status', 'version', 'update_version' ) );
+			if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], [ 'json', 'csv' ], true ) ) {
+				WP_CLI\Utils\format_items( $assoc_args['format'], $items_to_update, [ 'name', 'status', 'version', 'update_version' ] );
 			} elseif ( ! empty( $assoc_args['format'] ) && 'summary' === $assoc_args['format'] ) {
 				\WP_CLI::log( "Available {$this->item_type} updates:" );
 				foreach ( $items_to_update as $item_to_update => $info ) {
@@ -372,7 +366,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			} else {
 				\WP_CLI::log( "Available {$this->item_type} updates:" );
-				\WP_CLI\Utils\format_items( 'table', $items_to_update, array( 'name', 'status', 'version', 'update_version' ) );
+				Utils\format_items( 'table', $items_to_update, [ 'name', 'status', 'version', 'update_version' ] );
 			}
 
 			if ( null !== $exclude ) {
@@ -419,23 +413,23 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			} else {
 				$status = array();
 				foreach ( $items_to_update as $item_to_update => $info ) {
-					$status[ $item_to_update ] = array(
+					$status[ $item_to_update ] = [
 						'name'        => $info['name'],
 						'old_version' => $info['version'],
 						'new_version' => $info['update_version'],
 						'status'      => null !== $result[ $info['update_id'] ] ? 'Updated' : 'Error',
-					);
+					];
 					if ( null === $result[ $info['update_id'] ] ) {
 						$errors++;
 					}
 				}
 
 				$format = 'table';
-				if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], array( 'json', 'csv' ), true ) ) {
+				if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], [ 'json', 'csv' ], true ) ) {
 					$format = $assoc_args['format'];
 				}
 
-				\WP_CLI\Utils\format_items( $format, $status, array( 'name', 'old_version', 'new_version', 'status' ) );
+				Utils\format_items( $format, $status, [ 'name', 'old_version', 'new_version', 'status' ] );
 			}
 		}
 
@@ -505,38 +499,38 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		return get_site_transient( $this->upgrade_transient );
 	}
 
-	private $map = array(
-		'short' => array(
+	private $map = [
+		'short' => [
 			'inactive'       => 'I',
 			'active'         => 'A',
 			'active-network' => 'N',
 			'must-use'       => 'M',
 			'parent'         => 'P',
 			'dropin'         => 'D',
-		),
-		'long'  => array(
+		],
+		'long'  => [
 			'inactive'       => 'Inactive',
 			'active'         => 'Active',
 			'active-network' => 'Network Active',
 			'must-use'       => 'Must Use',
 			'parent'         => 'Parent',
 			'dropin'         => 'Drop-In',
-		),
-	);
+		],
+	];
 
 	protected function format_status( $status, $format ) {
 		return $this->get_color( $status ) . $this->map[ $format ][ $status ];
 	}
 
 	private function get_color( $status ) {
-		static $colors = array(
+		static $colors = [
 			'inactive'       => '',
 			'active'         => '%g',
 			'active-network' => '%g',
 			'must-use'       => '%c',
 			'parent'         => '%p',
 			'dropin'         => '%B',
-		);
+		];
 
 		return $colors[ $status ];
 	}
@@ -606,11 +600,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected function _search( $args, $assoc_args ) {
 		$term = $args[0];
 
-		$defaults   = array(
+		$defaults   = [
 			'per-page' => 10,
 			'page'     => 1,
-			'fields'   => implode( ',', array( 'name', 'slug', 'rating' ) ),
-		);
+			'fields'   => implode( ',', [ 'name', 'slug', 'rating' ] ),
+		];
 		$assoc_args = array_merge( $defaults, $assoc_args );
 		$fields     = array();
 		foreach ( explode( ',', $assoc_args['fields'] ) as $field ) {
@@ -620,12 +614,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$format    = ! empty( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
 		$formatter = $this->get_formatter( $assoc_args );
 
-		$api_args = array(
+		$api_args = [
 			'per_page' => (int) $assoc_args['per-page'],
 			'page'     => (int) $assoc_args['page'],
 			'search'   => $term,
 			'fields'   => $fields,
-		);
+		];
 
 		if ( 'plugin' === $this->item_type ) {
 			$api = plugins_api( 'query_plugins', $api_args );
@@ -653,7 +647,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 
 		if ( 'table' === $format ) {
-			$count = \WP_CLI\Utils\get_flag_value( $api->info, 'results', 'unknown' );
+			$count = Utils\get_flag_value( $api->info, 'results', 'unknown' );
 			\WP_CLI::success( sprintf( 'Showing %s of %s %s.', count( $items ), $count, $plural ) );
 		}
 
