@@ -121,13 +121,16 @@ wp plugin deactivate [<plugin>...] [--uninstall] [--all] [--network]
 Deletes plugin files without deactivating or uninstalling.
 
 ~~~
-wp plugin delete <plugin>...
+wp plugin delete [<plugin>...] [--all]
 ~~~
 
 **OPTIONS**
 
-	<plugin>...
+	[<plugin>...]
 		One or more plugins to delete.
+
+	[--all]
+		If set, all plugins will be deleted.
 
 **EXAMPLES**
 
@@ -740,15 +743,21 @@ wp theme activate <theme>
 Deletes one or more themes.
 
 ~~~
-wp theme delete <theme>...
+wp theme delete [<theme>...] [--all] [--force]
 ~~~
 
 Removes the theme or themes from the filesystem.
 
 **OPTIONS**
 
-	<theme>...
+	[<theme>...]
 		One or more themes to delete.
+
+	[--all]
+		If set, all themes will be deleted except active theme.
+
+	[--force]
+		To delete active theme use this.
 
 **EXAMPLES**
 
@@ -1177,7 +1186,7 @@ wp theme path [<theme>] [--dir]
 Searches the WordPress.org theme directory.
 
 ~~~
-wp theme search <search> [--per-page=<per-page>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp theme search <search> [--page=<page>] [--per-page=<per-page>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 Displays themes in the WordPress.org theme directory matching a given
@@ -1187,6 +1196,12 @@ search query.
 
 	<search>
 		The string to search for.
+
+	[--page=<page>]
+		Optional page to display.
+		---
+		default: 1
+		---
 
 	[--per-page=<per-page>]
 		Optional number of results to display. Defaults to 10.
