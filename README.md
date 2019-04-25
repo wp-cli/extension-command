@@ -711,10 +711,10 @@ See the WordPress [Theme Handbook](https://developer.wordpress.org/themes/) deve
     # Get status of theme
     $ wp theme status twentysixteen
     Theme twentysixteen details:
-    		Name: Twenty Sixteen
-    		Status: Active
-    		Version: 1.2
-    		Author: the WordPress team
+         Name: Twenty Sixteen
+         Status: Active
+         Version: 1.2
+         Author: the WordPress team
 
 
 
@@ -1270,10 +1270,10 @@ wp theme status [<theme>]
 
     $ wp theme status twentysixteen
     Theme twentysixteen details:
-    		Name: Twenty Sixteen
-    		Status: Inactive
-    		Version: 1.2
-    		Author: the WordPress team
+         Name: Twenty Sixteen
+         Status: Inactive
+         Version: 1.2
+         Author: the WordPress team
 
 
 
