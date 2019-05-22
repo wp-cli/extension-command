@@ -606,6 +606,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			'name',
 			'title',
 			'version',
+			'status',
 			'parent_theme',
 			'template_dir',
 			'stylesheet_dir',
@@ -623,6 +624,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			$theme_obj->$var = $theme->$var;
 		}
 
+		$theme_obj->status      = $this->get_status( $theme );
 		$theme_obj->description = wordwrap( $theme_obj->description );
 
 		if ( empty( $assoc_args['fields'] ) ) {
