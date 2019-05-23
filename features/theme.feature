@@ -517,3 +517,24 @@ Feature: Manage WordPress themes
       """
       Error: Can't find the requested theme's version 1.4.2 in the WordPress.org theme repository (HTTP code 404).
       """
+
+  Scenario: Get status field in theme detail
+    Given a WP install
+
+    When I run `wp theme install p2`
+    Then STDOUT should not be empty
+
+    When I run `wp theme get p2 --field=status`
+    Then STDOUT should contain:
+       """
+       inactive
+       """
+
+    When I run `wp theme activate p2`
+    Then STDOUT should not be empty
+
+    When I run `wp theme get p2 --field=status`
+    Then STDOUT should contain:
+       """
+       active
+       """
