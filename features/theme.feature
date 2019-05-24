@@ -524,8 +524,14 @@ Feature: Manage WordPress themes
     When I run `wp theme install p2`
     Then STDOUT should not be empty
 
-    When I run `wp theme get p2 --field=status`
+    When I run `wp theme get p2`
     Then STDOUT should contain:
+       """
+       status
+       """
+
+    When I run `wp theme get p2 --field=status`
+    Then STDOUT should be:
        """
        inactive
        """
@@ -534,7 +540,7 @@ Feature: Manage WordPress themes
     Then STDOUT should not be empty
 
     When I run `wp theme get p2 --field=status`
-    Then STDOUT should contain:
+    Then STDOUT should be:
        """
        active
        """
