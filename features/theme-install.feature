@@ -86,3 +86,22 @@ Feature: Install WordPress themes
       """
       Using cached file
       """
+
+  Scenario: Verify installed theme activation
+    Given a WP install
+
+    When I run `wp theme install p2`
+    Then STDOUT should not be empty
+
+    When I try `wp theme install p2 --activate`
+    Then STDERR should contain:
+    """
+    Warning: p2: Theme already installed.
+    """
+
+    And STDOUT should contain:
+    """
+    Activating 'p2'...
+    Success: Switched to 'P2' theme.
+    Success: Theme already installed.
+    """
