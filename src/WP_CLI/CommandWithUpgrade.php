@@ -222,7 +222,15 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			// Check extension is available or not.
 			$extension = $this->fetcher->get_many( array( $slug ) );
 
-			if ( ( is_wp_error( $result ) && 'already_installed' === $result->get_error_code() ) && count( $extension ) > 0 ) {
+			// If installation goes well $result will be true.
+			$allow_activation = $result;
+
+			// Allow installation for installed extension.
+			if ( is_wp_error( $result ) && 'already_installed' === $result->get_error_code() ) {
+				$allow_activation = true;
+			}
+
+			if ( true === $allow_activation && count( $extension ) > 0 ) {
 				$this->chained_command = true;
 				if ( Utils\get_flag_value( $assoc_args, 'activate-network' ) ) {
 					\WP_CLI::log( "Network-activating '$slug'..." );
