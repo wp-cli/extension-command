@@ -525,10 +525,9 @@ Feature: Manage WordPress themes
     Then STDOUT should not be empty
 
     When I run `wp theme get p2`
-    Then STDOUT should contain:
-       """
-       status
-       """
+    Then STDOUT should be a table containing rows:
+    | Field   | Value     |
+    | status  | inactive  |
 
     When I run `wp theme get p2 --field=status`
     Then STDOUT should be:
