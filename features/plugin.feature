@@ -581,8 +581,10 @@ Feature: Manage WordPress plugins
       ?>
       """
 
-    When I run `wp plugin list --name=hello-dolly  --field=update_version`
-    And save STDOUT as {PLUGIN_UPDATE_VERSION}
+    When I run `wp plugin list --name=hello-dolly  --field=version`
+    And save STDOUT as {PLUGIN_VERSION}
+
+    When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update                       | version                 |
-      | hello-dolly        | inactive | version higher than expected | {PLUGIN_UPDATE_VERSION} |
+      | name               | status   | update                       | version          |
+      | hello-dolly        | inactive | version higher than expected | {PLUGIN_VERSION} |
