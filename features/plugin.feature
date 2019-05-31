@@ -129,6 +129,9 @@ Feature: Manage WordPress plugins
     When I run `wp plugin install wordpress-importer --version=0.5 --force`
     Then STDOUT should not be empty
 
+    When I run `wp plugin list --name=wordpress-importer  --field=update_version`
+    And save STDOUT as {PLUGIN_UPDATE_VERSION}
+
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
       | name               | status   | update    | version |
@@ -142,10 +145,13 @@ Feature: Manage WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
-    When I run `wp plugin update --all --format=summary | grep 'updated successfully from'`
+    When I run `wp plugin update --all --format=summary | grep 'Updated *' | cut -d ' ' -f 3`
+    And save STDOUT as {PLUGIN_UPDATE_COUNT}
+
+    When I run `wp plugin list --name=wordpress-importer --field=version`
     Then STDOUT should contain:
       """
-      WordPress Importer updated successfully from version 0.5 to version
+      {PLUGIN_UPDATE_VERSION}
       """
 
     When I try `wp plugin update xxx yyy`
@@ -173,7 +179,7 @@ Feature: Manage WordPress plugins
       """
     And STDERR should contain:
       """
-      Error: Only updated 2 of 3 plugins.
+      Error: Only updated {PLUGIN_UPDATE_COUNT} of 3 plugins.
       """
     And the return code should be 1
 
@@ -575,7 +581,8 @@ Feature: Manage WordPress plugins
       ?>
       """
 
-    When I run `wp plugin list`
+    When I run `wp plugin list --name=hello-dolly  --field=update_version`
+    And save STDOUT as {PLUGIN_UPDATE_VERSION}
     Then STDOUT should be a table containing rows:
-      | name               | status   | update                       | version |
-      | hello-dolly        | inactive | version higher than expected | 1.6     |
+      | name               | status   | update                       | version                 |
+      | hello-dolly        | inactive | version higher than expected | {PLUGIN_UPDATE_VERSION} |
