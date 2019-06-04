@@ -218,3 +218,22 @@ Feature: Install WordPress plugins
     And the wp-content/plugins/sensei directory should exist
     And the wp-content/plugins/archive directory should not exist
     And the wp-content/plugins/sensei-version-1.9.19 directory should not exist
+
+  Scenario: Verify installed plugin activation
+    Given a WP install
+
+    When I run `wp plugin install user-switching`
+    Then STDOUT should not be empty
+
+    When I try `wp plugin install user-switching --activate`
+    Then STDERR should contain:
+    """
+    Warning: user-switching: Plugin already installed.
+    """
+
+    And STDOUT should contain:
+    """
+    Activating 'user-switching'...
+    Plugin 'user-switching' activated.
+    Success: Plugin already installed.
+    """
