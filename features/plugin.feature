@@ -172,14 +172,18 @@ Feature: Manage WordPress plugins
     When I run `wp plugin install wordpress-importer --version=0.5 --force`
     Then STDOUT should not be empty
 
-    When I try `wp plugin update wordpress-importer hello xxx`
+    When I try `wp plugin update xxx wordpress-importer yyy`
     Then STDERR should contain:
       """
       Warning: The 'xxx' plugin could not be found.
       """
+    Then STDERR should contain:
+      """
+      Warning: The 'yyy' plugin could not be found.
+      """
     And STDERR should contain:
       """
-      Error: Only updated {PLUGIN_UPDATE_COUNT} of 3 plugins.
+      Error: Only updated 1 of 3 plugins.
       """
     And the return code should be 1
 
