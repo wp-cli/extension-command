@@ -129,9 +129,6 @@ Feature: Manage WordPress plugins
     When I run `wp plugin install wordpress-importer --version=0.5 --force`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list --name=wordpress-importer  --field=update_version`
-    And save STDOUT as {PLUGIN_UPDATE_VERSION}
-
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
       | name               | status   | update    | version |
@@ -145,13 +142,10 @@ Feature: Manage WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
-    When I run `wp plugin update --all --format=summary | grep 'Updated *' | cut -d ' ' -f 3`
-    And save STDOUT as {PLUGIN_UPDATE_COUNT}
-
-    When I run `wp plugin list --name=wordpress-importer --field=version`
+    When I run `wp plugin update --all --format=summary | grep 'updated successfully from'`
     Then STDOUT should contain:
       """
-      {PLUGIN_UPDATE_VERSION}
+      WordPress Importer updated successfully from version 0.5 to version
       """
 
     When I try `wp plugin update xxx yyy`
