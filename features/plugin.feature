@@ -166,14 +166,18 @@ Feature: Manage WordPress plugins
     When I run `wp plugin install wordpress-importer --version=0.5 --force`
     Then STDOUT should not be empty
 
-    When I try `wp plugin update wordpress-importer hello xxx`
+    When I try `wp plugin update xxx wordpress-importer yyy`
     Then STDERR should contain:
       """
       Warning: The 'xxx' plugin could not be found.
       """
+    Then STDERR should contain:
+      """
+      Warning: The 'yyy' plugin could not be found.
+      """
     And STDERR should contain:
       """
-      Error: Only updated 2 of 3 plugins.
+      Error: Only updated 1 of 3 plugins.
       """
     And the return code should be 1
 
@@ -575,7 +579,10 @@ Feature: Manage WordPress plugins
       ?>
       """
 
+    When I run `wp plugin list --name=hello-dolly  --field=version`
+    And save STDOUT as {PLUGIN_VERSION}
+
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update                       | version |
-      | hello-dolly        | inactive | version higher than expected | 1.6     |
+      | name               | status   | update                       | version          |
+      | hello-dolly        | inactive | version higher than expected | {PLUGIN_VERSION} |
