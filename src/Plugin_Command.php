@@ -234,6 +234,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_id'      => '',
 				'title'          => '',
 				'description'    => '',
+				'file'           => $file,
 			);
 		}
 
@@ -250,6 +251,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_version' => null,
 				'update_package' => null,
 				'update_id'      => '',
+				'file'           => $name,
 			];
 		}
 
@@ -653,7 +655,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			}
 
 			$duplicate_names[ $name ][] = $file;
-			$items[ $file ]             = [
+			$items[ $file ] = [
 				'name'           => $name,
 				'status'         => $this->get_status( $file ),
 				'update'         => (bool) $update_info,
@@ -663,6 +665,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_id'      => $file,
 				'title'          => $details['Name'],
 				'description'    => wordwrap( $details['Description'] ),
+				'file'           => $file,
 			];
 
 			if ( null === $update_info ) {
@@ -1058,6 +1061,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * * update_id
 	 * * title
 	 * * description
+	 * * file
 	 *
 	 * ## EXAMPLES
 	 *
