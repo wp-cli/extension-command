@@ -234,6 +234,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_id'      => '',
 				'title'          => '',
 				'description'    => '',
+				'slug'           => $file,
 			);
 		}
 
@@ -250,6 +251,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_version' => null,
 				'update_package' => null,
 				'update_id'      => '',
+				'slug'           => $file,
 			];
 		}
 
@@ -663,6 +665,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_id'      => $file,
 				'title'          => $details['Name'],
 				'description'    => wordwrap( $details['Description'] ),
+				'slug'           => $file,
 			];
 
 			if ( null === $update_info ) {
@@ -1058,6 +1061,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * * update_id
 	 * * title
 	 * * description
+	 * * slug
 	 *
 	 * ## EXAMPLES
 	 *
