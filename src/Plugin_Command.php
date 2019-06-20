@@ -655,7 +655,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			}
 
 			$duplicate_names[ $name ][] = $file;
-			$items[ $file ] =             [
+			$items[ $file ]             = [
 				'name'           => $name,
 				'status'         => $this->get_status( $file ),
 				'update'         => (bool) $update_info,
