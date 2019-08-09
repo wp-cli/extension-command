@@ -586,3 +586,17 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name               | status   | update                       | version          |
       | hello-dolly        | inactive | version higher than expected | {PLUGIN_VERSION} |
+
+    When I try `wp plugin update --all`
+    Then STDERR should be:
+    """
+    Warning: hello-dolly: version higher than expected.
+    Error: No plugins updated.
+    """
+
+    When I try `wp plugin update hello-dolly`
+    Then STDERR should be:
+    """
+    Warning: hello-dolly: version higher than expected.
+    Error: No plugins updated.
+    """
