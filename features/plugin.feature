@@ -556,7 +556,7 @@ Feature: Manage WordPress plugins
   @require-wp-4.0
   Scenario: Validate installed plugin's version.
     Given a WP installation
-    And I run `wp plugin uninstall akismet`
+    And I run `wp plugin uninstall --all`
     And I run `wp plugin install hello-dolly`
     And a wp-content/mu-plugins/test-plugin-update.php file:
       """
