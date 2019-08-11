@@ -233,10 +233,10 @@ Feature: Manage WordPress plugins
       Success: Activated 1 of 1 plugins.
       """
 
-    When I run `wp plugin list --fields=name,status`
+    When I run `wp plugin list --fields=name,status,file`
     Then STDOUT should be a table containing rows:
-      | name            | status           |
-      | akismet         | active           |
+      | name            | status           | file                |
+      | akismet         | active           | akismet/akismet.php |
 
     When I try `wp plugin activate akismet`
     Then STDERR should contain:
@@ -304,10 +304,10 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list --status=inactive --field=name`
     Then STDOUT should be empty
 
-    When I run `wp plugin list --status=active --fields=name,status`
+    When I run `wp plugin list --status=active --fields=name,status,file`
     Then STDOUT should be a table containing rows:
-      | name       | status   |
-      | akismet    | active   |
+      | name       | status   | file                |
+      | akismet    | active   | akismet/akismet.php |
 
   Scenario: Install a plugin when directory doesn't yet exist
     Given a WP install
@@ -319,10 +319,10 @@ Feature: Manage WordPress plugins
     When I run `wp plugin install wordpress-importer --activate`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list --status=active --fields=name,status`
+    When I run `wp plugin list --status=active --fields=name,status,file`
     Then STDOUT should be a table containing rows:
-      | name               | status   |
-      | wordpress-importer | active   |
+      | name               | status   | file                                      |
+      | wordpress-importer | active   | wordpress-importer/wordpress-importer.php |
 
   Scenario: Plugin name with HTML entities
     Given a WP install
@@ -462,20 +462,20 @@ Feature: Manage WordPress plugins
        */
       """
 
-    When I run `wp plugin list --fields=name,status`
+    When I run `wp plugin list --fields=name,status,file`
     Then STDOUT should be a table containing rows:
-      | name                             | status   |
-      | handbook/handbook                | inactive |
-      | handbook/functionality-for-pages | inactive |
+      | name                             | status   | file                                 |
+      | handbook/handbook                | inactive | handbook/handbook.php                |
+      | handbook/functionality-for-pages | inactive | handbook/functionality-for-pages.php |
 
     When I run `wp plugin activate handbook/functionality-for-pages`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list --fields=name,status`
+    When I run `wp plugin list --fields=name,status,file`
     Then STDOUT should be a table containing rows:
-      | name                             | status   |
-      | handbook/handbook                | inactive |
-      | handbook/functionality-for-pages | active   |
+      | name                             | status   | file                                 |
+      | handbook/handbook                | inactive | handbook/handbook.php                |
+      | handbook/functionality-for-pages | active   | handbook/functionality-for-pages.php |
 
   Scenario: Install a plugin, then update to a specific version of that plugin
     Given a WP install
@@ -486,10 +486,10 @@ Feature: Manage WordPress plugins
     When I run `wp plugin update akismet --version=2.6.0`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list --fields=name,version`
+    When I run `wp plugin list --fields=name,version,file`
     Then STDOUT should be a table containing rows:
-      | name       | version   |
-      | akismet    | 2.6.0     |
+      | name       | version   | file                |
+      | akismet    | 2.6.0     | akismet/akismet.php |
 
   Scenario: Ignore empty slugs
     Given a WP install
@@ -548,10 +548,10 @@ Feature: Manage WordPress plugins
       db-error.php
       """
 
-    When I run `wp plugin list --status=dropin --fields=name,title,description`
+    When I run `wp plugin list --status=dropin --fields=name,title,description,file`
     Then STDOUT should be a table containing rows:
-      | name         | title | description                    |
-      | db-error.php |       | Custom database error message. |
+      | name         | title | description                    | file         |
+      | db-error.php |       | Custom database error message. | db-error.php |
 
   @require-wp-4.0
   Scenario: Validate installed plugin's version.
