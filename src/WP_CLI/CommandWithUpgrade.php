@@ -359,8 +359,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// Check for items to update and remove extensions that have version higher than expected.
 		foreach ( $items_to_update as $item_key => $item_info ) {
-			if ( self::INVALID_VERSION_MESSAGE === $item_info['update'] ) {
-				WP_CLI::warning( "{$item_info['name']}: " . self::INVALID_VERSION_MESSAGE . '.' );
+			if ( static::INVALID_VERSION_MESSAGE === $item_info['update'] ) {
+				WP_CLI::warning( "{$item_info['name']}: " . static::INVALID_VERSION_MESSAGE . '.' );
 				$errors++;
 				unset( $items_to_update[ $item_key ] );
 			}
