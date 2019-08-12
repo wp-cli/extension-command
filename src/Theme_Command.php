@@ -480,7 +480,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 			// Compare version and update information in theme list.
 			if ( isset( $theme_version_info[ $key ] ) && false === $theme_version_info[ $key ] ) {
-				$items[ $file ]['update'] = $this->invalid_version_message;
+				$items[ $file ]['update'] = self::INVALID_VERSION_MESSAGE;
 			}
 
 			if ( is_multisite() ) {
