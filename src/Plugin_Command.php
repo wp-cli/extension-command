@@ -675,7 +675,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 				// Compare version and update information in plugin list.
 				if ( null !== $plugin_update_info && version_compare( $details['Version'], $plugin_update_info->new_version, '>' ) ) {
-					$items[ $file ]['update'] = 'version higher than expected';
+					$items[ $file ]['update'] = static::INVALID_VERSION_MESSAGE;
 				}
 			}
 		}
