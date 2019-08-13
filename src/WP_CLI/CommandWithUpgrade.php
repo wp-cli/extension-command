@@ -16,6 +16,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected $chained_command = false;
 
+	// Invalid version message.
+	const INVALID_VERSION_MESSAGE = 'version higher than expected';
+
 	public function __construct() {
 		// Do not automatically check translations updates after updating plugins/themes.
 		add_action(
@@ -351,6 +354,15 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					$theme_root = get_theme_root() . '/' . $item;
 					unset( $items_to_update[ $theme_root ] );
 				}
+			}
+		}
+
+		// Check for items to update and remove extensions that have version higher than expected.
+		foreach ( $items_to_update as $item_key => $item_info ) {
+			if ( static::INVALID_VERSION_MESSAGE === $item_info['update'] ) {
+				WP_CLI::warning( "{$item_info['name']}: " . static::INVALID_VERSION_MESSAGE . '.' );
+				$errors++;
+				unset( $items_to_update[ $item_key ] );
 			}
 		}
 
