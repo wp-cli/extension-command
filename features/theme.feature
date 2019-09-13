@@ -550,7 +550,7 @@ Feature: Manage WordPress themes
     When I try `wp theme activate TwentySeventeen`
     Then STDERR should contain:
       """
-      Error: The 'TwentySeventeen' theme could not be found.
+      Error: The 'TwentySeventeen' theme could not be found. Did you mean 'twentyseventeen'?
       """
     And STDOUT should be empty
     And the return code should be 1
