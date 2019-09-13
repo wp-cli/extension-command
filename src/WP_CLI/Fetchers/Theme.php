@@ -24,12 +24,34 @@ class Theme extends Base {
 		$existing_themes      = wp_get_themes( array( 'errors' => null ) );
 		$existing_stylesheets = array_keys( $existing_themes );
 		if ( ! in_array( $name, $existing_stylesheets, true ) ) {
+			$inexact_match = $this->find_inexact_match( $name, $existing_themes );
+			if ( false !== $inexact_match ) {
+				$this->msg .= sprintf( " Did you mean '%s'?", $inexact_match );
+			}
 			return false;
 		}
 
 		$theme = $existing_themes[ $name ];
 
 		return $theme;
+	}
+
+	/**
+	 * Find and return the key in $existing_themes that matches $name with
+	 * a case insensitive string comparison.
+	 *
+	 * @param string $name Name of theme received by command.
+	 * @param array  $existing_themes Key/value pair of existing themes, key is
+	 *               a case sensitive name.
+	 * @return string|boolean Case sensitive name if match found, otherwise false.
+	 */
+	private function find_inexact_match( $name, $existing_themes ) {
+		foreach ( $existing_themes as $key => $value ) {
+			if ( strtolower( $key ) === strtolower( $name ) ) {
+				return $key;
+			}
+		}
+		return false;
 	}
 }
 
