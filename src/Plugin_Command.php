@@ -371,7 +371,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$disable_all         = Utils\get_flag_value( $assoc_args, 'all' );
 		$disable_all_exclude = Utils\get_flag_value( $assoc_args, 'exclude' );
 
-		$args = $this->check_optional_args_and_all( $args, $disable_all, null, $disable_all_exclude ) );
+		$args = $this->check_optional_args_and_all( $args, $disable_all, null, $disable_all_exclude );
 		if ( ! $args ) {
 			return;
 		}
