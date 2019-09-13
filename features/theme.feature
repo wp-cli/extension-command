@@ -517,3 +517,14 @@ Feature: Manage WordPress themes
       """
       Error: Can't find the requested theme's version 1.4.2 in the WordPress.org theme repository (HTTP code 404).
       """
+
+  Scenario: Theme activation fails when slug does not match exactly
+    Given a WP install
+
+    When I try `wp theme activate TwentySeventeen`
+    Then STDERR should contain:
+      """
+      Error: The 'TwentySeventeen' theme could not be found.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
