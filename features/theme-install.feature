@@ -86,3 +86,14 @@ Feature: Install WordPress themes
       """
       Using cached file
       """
+  
+  Scenario: Activate theme with slug that does not match case sensitivity
+    Given a WP install
+
+    When I try `wp theme activate TwentySeventeen`
+    Then STDERR should contain:
+      """
+      Error: The 'TwentySeventeen' theme could not be found.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
