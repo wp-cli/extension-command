@@ -547,10 +547,10 @@ Feature: Manage WordPress themes
   Scenario: Theme activation fails when slug does not match exactly
     Given a WP install
 
-    When I try `wp theme activate TwentySeventeen`
+    When I try `wp theme activate TwentyThirteen`
     Then STDERR should contain:
       """
-      Error: The 'TwentySeventeen' theme could not be found. Did you mean 'twentyseventeen'?
+      Error: The 'TwentyThirteen' theme could not be found. Did you mean 'twentythirteen'?
       """
     And STDOUT should be empty
     And the return code should be 1
