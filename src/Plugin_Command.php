@@ -866,16 +866,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--all]
 	 * : If set, all plugins will be uninstalled.
-	 * 
+	 *
 	 * [--exclude=<name>]
 	 * : Comma separated list of plugin slugs to be excluded from uninstall.
-	 * 
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp plugin uninstall hello
 	 *     Uninstalled and deleted 'hello' plugin.
 	 *     Success: Uninstalled 1 of 1 plugins.
-	 * 
+	 *
 	 *     # Uninstall all plugins excluding specified ones
 	 *     $ wp plugin uninstall --all --exclude=hello-dolly,jetpack
 	 *     Uninstalled and deleted 'akismet' plugin.
@@ -999,7 +999,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--exclude=<name>]
 	 * : Comma separated list of plugin slugs to be excluded from deletion.
-	 * 
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Delete plugin
@@ -1011,7 +1011,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     $ wp plugin delete $(wp plugin list --status=inactive --field=name)
 	 *     Deleted 'tinymce-templates' plugin.
 	 *     Success: Deleted 1 of 1 plugins.
-	 * 
+	 *
 	 *     # Delete all plugins excluding specified ones
 	 *     $ wp plugin delete --all --exclude=hello-dolly,jetpack
 	 *     Deleted 'akismet' plugin.
