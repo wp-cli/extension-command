@@ -42,7 +42,7 @@ class Theme extends Base {
 	 *
 	 * @param string $name Name of theme received by command.
 	 * @param array  $existing_themes Key/value pair of existing themes, key is
-	 *               a case sensitive name.
+	 *                                a case sensitive name.
 	 * @return string|boolean Case sensitive name if match found, otherwise false.
 	 */
 	private function find_inexact_match( $name, $existing_themes ) {
