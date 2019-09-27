@@ -19,7 +19,7 @@ class Theme extends Base {
 	 * @return object|false
 	 */
 	public function get( $name ) {
-		// Workaround to equalize folder naming conventions across Win/Mac/Linux
+		// Workaround to equalize folder naming conventions across Win/Mac/Linux.
 		// Returns false if theme stylesheet doesn't exactly match existing themes.
 		$existing_themes      = wp_get_themes( array( 'errors' => null ) );
 		$existing_stylesheets = array_keys( $existing_themes );
