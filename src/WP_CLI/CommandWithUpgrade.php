@@ -486,7 +486,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 
 			foreach ( $this->obj_fields as $field ) {
-				if ( 'status' === $field ) {
+				if ( isset( $assoc_args[ $field ] ) && ( 'status' === $field ) ) {
 					$statuses = explode( ',', $assoc_args[ $field ] );
 
 					foreach ( $statuses as $status ) {
