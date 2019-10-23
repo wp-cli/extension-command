@@ -486,8 +486,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 
 			foreach ( $this->obj_fields as $field ) {
-                if ( 'status' === $field ) {
-                    $statuses = explode( ',', $assoc_args[ $field ] );
+				if ( 'status' === $field ) {
+					$statuses = explode( ',', $assoc_args[ $field ] );
 
 					foreach ( $statuses as $status ) {
 							$remove = false;
@@ -501,7 +501,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					if ( $remove ) {
 						unset( $all_items[ $key ] );
 					}
-                }
+				}
 			}
 		}
 
