@@ -309,6 +309,13 @@ Feature: Manage WordPress plugins
       | name       | status   | file                |
       | akismet    | active   | akismet/akismet.php |
 
+    When I run `wp plugin list --status=inactive,active --fields=name,status,file`
+    Then STDOUT should be a table containing rows:
+      | name        | status   | file                  |
+      | akismet     | active   | akismet/akismet.php   |
+      | hello-dolly | inactive | hello-dolly/hello.php |
+
+
   Scenario: Install a plugin when directory doesn't yet exist
     Given a WP install
 
