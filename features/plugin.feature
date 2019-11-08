@@ -356,6 +356,7 @@ Feature: Manage WordPress plugins
       active
       active
       must-use
+      must-use
       """
 
     When I run `wp plugin deactivate --all`
@@ -377,6 +378,7 @@ Feature: Manage WordPress plugins
       """
       inactive
       inactive
+      must-use
       must-use
       """
 
