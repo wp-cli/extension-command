@@ -557,3 +557,31 @@ Feature: Manage WordPress themes
       """
     And STDOUT should be empty
     And the return code should be 1
+
+    When I try `wp theme activate p3`
+    Then STDERR should contain:
+      """
+      Error: The 'p3' theme could not be found. Did you mean 'p2'?
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I try `wp theme activate pb2`
+    Then STDERR should contain:
+      """
+      Error: The 'pb2' theme could not be found. Did you mean 'p2'?
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I try `wp theme activate completelyoff`
+    Then STDERR should contain:
+      """
+      Error: The 'completelyoff' theme could not be found.
+      """
+    And STDERR should not contain:
+      """
+      Did you mean
+      """
+    And STDOUT should be empty
+    And the return code should be 1

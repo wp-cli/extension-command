@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Fetchers;
 
+use WP_CLI\Utils;
+
 /**
  * Fetch a WordPress theme based on one of its attributes.
  */
@@ -46,11 +48,19 @@ class Theme extends Base {
 	 * @return string|boolean Case sensitive name if match found, otherwise false.
 	 */
 	private function find_inexact_match( $name, $existing_themes ) {
-		foreach ( $existing_themes as $key => $value ) {
-			if ( strtolower( $key ) === strtolower( $name ) ) {
-				return $key;
-			}
+		$target = strtolower( $name );
+		$themes = array_map( 'strtolower', array_keys( $existing_themes ) );
+
+		if ( in_array( $target, $themes, true ) ) {
+			return $target;
 		}
+
+		$suggestion = Utils\get_suggestion( $target, $themes );
+
+		if ( '' !== $suggestion ) {
+			return $suggestion;
+		}
+
 		return false;
 	}
 }
