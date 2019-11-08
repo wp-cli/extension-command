@@ -543,3 +543,45 @@ Feature: Manage WordPress themes
        """
        active
        """
+
+  Scenario: Theme activation fails when slug does not match exactly
+    Given a WP install
+
+    When I run `wp theme install p2`
+    Then the return code should be 0
+
+    When I try `wp theme activate P2`
+    Then STDERR should contain:
+      """
+      Error: The 'P2' theme could not be found. Did you mean 'p2'?
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I try `wp theme activate p3`
+    Then STDERR should contain:
+      """
+      Error: The 'p3' theme could not be found. Did you mean 'p2'?
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I try `wp theme activate pb2`
+    Then STDERR should contain:
+      """
+      Error: The 'pb2' theme could not be found. Did you mean 'p2'?
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I try `wp theme activate completelyoff`
+    Then STDERR should contain:
+      """
+      Error: The 'completelyoff' theme could not be found.
+      """
+    And STDERR should not contain:
+      """
+      Did you mean
+      """
+    And STDOUT should be empty
+    And the return code should be 1
