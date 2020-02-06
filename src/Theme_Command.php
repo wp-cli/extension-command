@@ -478,9 +478,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'author'         => $theme->get( 'Author' ),
 			];
 
-			// Compare version and update information in theme list.
-			if ( isset( $theme_version_info[ $key ] ) && false === $theme_version_info[ $key ] ) {
-				$items[ $file ]['update'] = static::INVALID_VERSION_MESSAGE;
+			if ( null === $update_info ) {
+
+				// Get info for all themes that don't have an update.
+				$theme_update_info = isset( $all_update_info->no_update[ $file ] ) ? $all_update_info->no_update[ $file ] : null;
+
+				// Compare version and update information in theme list.
+				if ( null !== $theme_update_info && version_compare( $theme->get( 'Version' ), $theme_update_info->new_version, '>' ) ) {
+					$items[ $file ]['update'] = static::INVALID_VERSION_MESSAGE;
+				}
 			}
 
 			if ( is_multisite() ) {
