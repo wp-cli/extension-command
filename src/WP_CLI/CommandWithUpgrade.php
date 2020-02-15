@@ -60,7 +60,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	abstract protected function install_from_repo( $slug, $assoc_args );
 
 	public function status( $args ) {
-		// Force WordPress to check for updates
+		// Force WordPress to check for updates.
 		call_user_func( $this->upgrade_refresh );
 
 		if ( empty( $args ) ) {
@@ -152,13 +152,13 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 			$is_remote = false !== strpos( $slug, '://' );
 
-			// Check if a URL to a remote or local zip has been specified
+			// Check if a URL to a remote or local zip has been specified.
 			if ( $is_remote || ( pathinfo( $slug, PATHINFO_EXTENSION ) === 'zip' && is_file( $slug ) ) ) {
-				// Install from local or remote zip file
+				// Install from local or remote zip file.
 				$file_upgrader = $this->get_upgrader( $assoc_args );
 
 				$filter = false;
-				// If a Github URL, do some guessing as to the correct plugin/theme directory.
+				// If a GitHub URL, do some guessing as to the correct plugin/theme directory.
 				if ( $is_remote && 'github.com' === $this->parse_url_host_component( $slug, PHP_URL_HOST )
 						// Don't attempt to rename ZIPs uploaded to the releases page or coming from a raw source.
 						&& ! preg_match( '#github\.com/[^/]+/[^/]+/(?:releases/download|raw)/#', $slug ) ) {
@@ -200,7 +200,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					$errors++;
 				}
 			} else {
-				// Assume a plugin/theme slug from the WordPress.org repository has been specified
+				// Assume a plugin/theme slug from the WordPress.org repository has been specified.
 				$result = $this->install_from_repo( $slug, $assoc_args );
 
 				if ( is_null( $result ) ) {
@@ -282,7 +282,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$response->download_link = $link . $response->slug . '.' . $version . '.zip';
 			$response->version       = $version;
 
-			// check if the requested version exists
+			// Check if the requested version exists.
 			$response      = wp_remote_head( $response->download_link );
 			$response_code = wp_remote_retrieve_response_code( $response );
 			if ( 200 !== (int) $response_code ) {
@@ -398,14 +398,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$result = array();
 
-		// Only attempt to update if there is something to update
+		// Only attempt to update if there is something to update.
 		if ( ! empty( $items_to_update ) ) {
 			$cache_manager = \WP_CLI::get_http_cache_manager();
 			foreach ( $items_to_update as $item ) {
 				$cache_manager->whitelist_package( $item['update_package'], $this->item_type, $item['name'], $item['update_version'] );
 			}
 			$upgrader = $this->get_upgrader( $assoc_args );
-			// Ensure the upgrader uses the download offer present in each item
+			// Ensure the upgrader uses the download offer present in each item.
 			$transient_filter = function( $transient ) use ( $items_to_update ) {
 				foreach ( $items_to_update as $name => $item_data ) {
 					if ( isset( $transient->response[ $name ] ) ) {
@@ -572,7 +572,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				continue;
 			}
 			$data = json_decode( $response->body, true );
-			// No minor or patch versions to access
+			// No minor or patch versions to access.
 			if ( empty( $data['versions'] ) ) {
 				unset( $items[ $i ] );
 				continue;
@@ -581,11 +581,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$update_package = false;
 			foreach ( $data['versions'] as $version => $download_link ) {
 				$update_type = Utils\get_named_sem_ver( $version, $item['version'] );
-				// Compared version must be older
+				// Compared version must be older.
 				if ( ! $update_type ) {
 					continue;
 				}
-				// Only permit 'patch' for 'patch'
+				// Only permit 'patch' for 'patch'.
 				if ( 'patch' === $type && 'patch' !== $update_type ) {
 					continue;
 				}
@@ -599,7 +599,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$update_version = $version;
 				$update_package = $download_link;
 			}
-			// If there's not a matching version, bail on updates
+			// If there's not a matching version, bail on updates.
 			if ( ! $update_version ) {
 				unset( $items[ $i ] );
 				continue;

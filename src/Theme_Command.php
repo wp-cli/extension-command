@@ -601,7 +601,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			WP_CLI::error( $message );
 		}
 
-		// WP_Theme object employs magic getter, unfortunately
+		// WP_Theme object employs magic getter, unfortunately.
 		$theme_vars = [
 			'name',
 			'title',
