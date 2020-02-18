@@ -88,11 +88,11 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		$list = array();
 		$mods = get_theme_mods();
 		if ( ! is_array( $mods ) ) {
-			// if no mods are set (perhaps new theme), make sure foreach still works
+			// If no mods are set (perhaps new theme), make sure foreach still works.
 			$mods = array();
 		}
 		foreach ( $mods as $k => $v ) {
-			// if mods were given, skip the others
+			// If mods were given, skip the others.
 			if ( ! empty( $args ) && ! in_array( $k, $args, true ) ) {
 				continue;
 			}
@@ -116,7 +116,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 			}
 		}
 
-		// For unset mods, show blank value
+		// For unset mods, show blank value.
 		foreach ( $args as $mod ) {
 			if ( ! isset( $mods[ $mod ] ) ) {
 				$list[] = [

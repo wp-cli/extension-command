@@ -304,18 +304,18 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			if ( $all && in_array( $status, [ 'active', 'active-network' ], true ) ) {
 				continue;
 			}
-			// Network-active is the highest level of activation status
+			// Network-active is the highest level of activation status.
 			if ( 'active-network' === $status ) {
 				WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
 				continue;
 			}
-			// Don't reactivate active plugins, but do let them become network-active
+			// Don't reactivate active plugins, but do let them become network-active.
 			if ( ! $network_wide && 'active' === $status ) {
 				WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
 				continue;
 			}
 
-			// Plugins need to be deactivated before being network activated
+			// Plugins need to be deactivated before being network activated.
 			if ( $network_wide && 'active' === $status ) {
 				deactivate_plugins( $plugin->file, false, false );
 			}
@@ -380,7 +380,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				continue;
 			}
 
-			// Network active plugins must be explicitly deactivated
+			// Network active plugins must be explicitly deactivated.
 			if ( ! $network_wide && 'active-network' === $status ) {
 				WP_CLI::warning( "Plugin '{$plugin->name}' is network active and must be deactivated with --network flag." );
 				$errors++;
