@@ -35,10 +35,11 @@ Feature: Delete WordPress themes
     And save STDOUT as {ACTIVE_THEME}
 
     When I try `wp theme delete --all`
-    Then STDERR should contain:
+    Then STDOUT should contain:
     """
-    Warning: Can't delete the currently active theme: {ACTIVE_THEME}
+    Success: Deleted
     """
+    And STDERR should be empty
 
     When I run `wp theme delete --all --force`
     Then STDOUT should be:
