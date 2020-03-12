@@ -835,8 +835,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			$theme_slug = $theme->get_stylesheet();
 
 			if ( $this->is_active_theme( $theme ) && ! $force ) {
-				WP_CLI::warning( "Can't delete the currently active theme: $theme_slug" );
-				$errors++;
+				if ( ! $all ) {
+					WP_CLI::warning( "Can't delete the currently active theme: $theme_slug" );
+					$errors++;
+				}
 				continue;
 			}
 
