@@ -945,6 +945,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * <plugin>
 	 * : The plugin to check.
 	 *
+	 * [--network]
+	 * : If set, check if plugin is network-activated.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Check whether plugin is Active; exit status 0 if active, otherwise 1
