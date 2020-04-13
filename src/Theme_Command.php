@@ -469,8 +469,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'name'           => $key,
 				'status'         => $this->get_status( $theme ),
 				'update'         => (bool) $update_info,
-				'update_version' => $update_info['new_version'],
-				'update_package' => $update_info['package'],
+				'update_version' => isset( $update_info['new_version'] ) ? $update_info['new_version'] : null,
+				'update_package' => isset( $update_info['package'] ) ? $update_info['package'] : null,
 				'version'        => $theme->get( 'Version' ),
 				'update_id'      => $theme->get_stylesheet(),
 				'title'          => $theme->get( 'Name' ),
@@ -601,7 +601,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			WP_CLI::error( $message );
 		}
 
-		// WP_Theme object employs magic getter, unfortunately
+		// WP_Theme object employs magic getter, unfortunately.
 		$theme_vars = [
 			'name',
 			'title',
@@ -835,8 +835,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			$theme_slug = $theme->get_stylesheet();
 
 			if ( $this->is_active_theme( $theme ) && ! $force ) {
-				WP_CLI::warning( "Can't delete the currently active theme: $theme_slug" );
-				$errors++;
+				if ( ! $all ) {
+					WP_CLI::warning( "Can't delete the currently active theme: $theme_slug" );
+					$errors++;
+				}
 				continue;
 			}
 
