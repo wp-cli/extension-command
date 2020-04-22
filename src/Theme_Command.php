@@ -883,6 +883,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *   - yaml
 	 * ---
 	 *
+	 * [--status=<status>]
+	 * : Filter the output by theme status.
+	 * ---
+	 * options:
+	 *   - active
+	 *   - parent
+	 *   - inactive
+	 * ---
+	 *
 	 * ## AVAILABLE FIELDS
 	 *
 	 * These fields will be displayed by default for each theme:
