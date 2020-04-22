@@ -1048,6 +1048,17 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *   - yaml
 	 * ---
 	 *
+	 * [--status=<status>]
+	 * : Filter the output by plugin status.
+	 * ---
+	 * options:
+	 *   - active
+	 *   - active-network
+	 *   - dropin
+	 *   - inactive
+	 *   - must-use
+	 * ---
+	 *
 	 * ## AVAILABLE FIELDS
 	 *
 	 * These fields will be displayed by default for each plugin:
