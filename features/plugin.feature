@@ -603,3 +603,19 @@ Feature: Manage WordPress plugins
     Warning: hello-dolly: version higher than expected.
     Error: No plugins updated.
     """
+
+  Scenario: Only valid status filters are accepted when listing plugins
+    Given a WP install
+
+    When I run `wp plugin list`
+    Then STDERR should be empty
+
+    When I run `wp plugin list --status=active`
+    Then STDERR should be empty
+
+    When I try `wp plugin list --status=invalid-status`
+    Then STDERR should be:
+      """
+      Error: Parameter errors:
+       Invalid value specified for 'status' (Filter the output by plugin status.)
+      """

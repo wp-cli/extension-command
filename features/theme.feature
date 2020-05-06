@@ -585,3 +585,19 @@ Feature: Manage WordPress themes
       """
     And STDOUT should be empty
     And the return code should be 1
+
+  Scenario: Only valid status filters are accepted when listing themes
+    Given a WP install
+
+    When I run `wp theme list`
+    Then STDERR should be empty
+
+    When I run `wp theme list --status=active`
+    Then STDERR should be empty
+
+    When I try `wp theme list --status=invalid-status`
+    Then STDERR should be:
+      """
+      Error: Parameter errors:
+       Invalid value specified for 'status' (Filter the output by theme status.)
+      """
