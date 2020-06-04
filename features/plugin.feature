@@ -309,6 +309,35 @@ Feature: Manage WordPress plugins
       | name       | status   | file                |
       | akismet    | active   | akismet/akismet.php |
 
+  Scenario: List plugin by multiple statuses
+    Given a WP multisite install
+    And a wp-content/plugins/network-only.php file:
+      """
+      // Plugin Name: Example Plugin
+      // Network: true
+      """
+
+    When I run `wp plugin activate akismet hello`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin install wordpress-importer`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin activate network-only`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --status=network-active,inactive --fields=name,status,file`
+    Then STDOUT should be a table containing rows:
+      | name               | status         | file                                      |
+      | network-only       | network-active | network-only.php                          |
+      | wordpress-importer | inactive       | wordpress-importer/wordpress-importer.php |
+
+    When I run `wp plugin list --status=active,inactive --fields=name,status,file`
+    Then STDOUT should be a table containing rows:
+      | name               | status   | file                                      |
+      | akismet            | active   | akismet/akismet.php                       |
+      | wordpress-importer | inactive | wordpress-importer/wordpress-importer.php |
+
   Scenario: Install a plugin when directory doesn't yet exist
     Given a WP install
 
