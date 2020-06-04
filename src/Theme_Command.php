@@ -721,6 +721,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			return;
 		}
 
+		if ( isset( $assoc_args['version'] ) && isset( $assoc_args['dry-run'] ) ) {
+			WP_CLI::error( '--dry-run cannot be used when specifying a specific version.' );
+		}
+
 		if ( isset( $assoc_args['version'] ) ) {
 			foreach ( $this->fetcher->get_many( $args ) as $theme ) {
 				$r = delete_theme( $theme->stylesheet );
