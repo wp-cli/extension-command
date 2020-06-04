@@ -392,7 +392,7 @@ Feature: Manage WordPress themes
     When I try `wp theme update --all --version=whatever --dry-run`
     Then STDERR should be:
       """
-      Error: --dry-run cannot be used when specifying a specific version.
+      Error: --dry-run cannot be used together with --version.
       """
     And the return code should be 1
 
