@@ -722,7 +722,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		if ( isset( $assoc_args['version'] ) && isset( $assoc_args['dry-run'] ) ) {
-			WP_CLI::error( '--dry-run cannot be used when specifying a specific version.' );
+			WP_CLI::error( '--dry-run cannot be used together with --version.' );
 		}
 
 		if ( isset( $assoc_args['version'] ) ) {
