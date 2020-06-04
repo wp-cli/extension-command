@@ -386,6 +386,16 @@ Feature: Manage WordPress themes
       twentytwelve,inactive,1.0,{UPDATE_VERSION}
       """
 
+  Scenario: When updating a theme --dry-run cannot be used when specifying a specific version.
+    Given a WP install
+
+    When I try `wp theme update --all --version=whatever --dry-run`
+    Then STDERR should be:
+      """
+      Error: --dry-run cannot be used when specifying a specific version.
+      """
+    And the return code should be 1
+
   Scenario: Check json and csv formats when updating a theme
     Given a WP install
 
