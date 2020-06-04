@@ -20,6 +20,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	const INVALID_VERSION_MESSAGE = 'version higher than expected';
 
 	public function __construct() {
+
 		// Do not automatically check translations updates after updating plugins/themes.
 		add_action(
 			'upgrader_process_complete',
@@ -486,8 +487,17 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 
 			foreach ( $this->obj_fields as $field ) {
-				if ( isset( $assoc_args[ $field ] )
-					&& $assoc_args[ $field ] !== $item[ $field ] ) {
+				if ( ! array_key_exists( $field, $assoc_args ) ) {
+					continue;
+				}
+
+				// This can be either a value to filter by or a comma-separated list of values.
+				// Also, it is not forbidden for a value to contain a comma (in which case we can filter only by one).
+				$field_filter = $assoc_args[ $field ];
+				if (
+					$item[ $field ] !== $field_filter
+					&& ! in_array( $item[ $field ], array_map( 'trim', explode( ',', $field_filter ) ), true )
+				) {
 					unset( $all_items[ $key ] );
 				}
 			}
