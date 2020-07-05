@@ -313,6 +313,7 @@ Feature: Manage WordPress plugins
     Given a WP multisite install
     And a wp-content/plugins/network-only.php file:
       """
+      <?php
       // Plugin Name: Example Plugin
       // Network: true
       """
@@ -326,10 +327,10 @@ Feature: Manage WordPress plugins
     When I run `wp plugin activate network-only`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list --status=network-active,inactive --fields=name,status,file`
+    When I run `wp plugin list --status=active-network,inactive --fields=name,status,file`
     Then STDOUT should be a table containing rows:
       | name               | status         | file                                      |
-      | network-only       | network-active | network-only.php                          |
+      | network-only       | active-network | network-only.php                          |
       | wordpress-importer | inactive       | wordpress-importer/wordpress-importer.php |
 
     When I run `wp plugin list --status=active,inactive --fields=name,status,file`
