@@ -92,11 +92,20 @@ Feature: Activate WordPress plugins
        * Requires PHP: 99.99
        */
        """
+    And  I run `wp plugin deactivate --all`
 
-    When I run `wp plugin activate high-requirements`
+    When I try `wp plugin activate high-requirements`
     Then STDERR should contain:
       """
-      Failed to activate plugin: PHP minimum not met.
+      Failed to activate plugin
+      """
+    And STDERR should contain:
+      """
+      Current PHP version
+      """
+    And STDERR should contain:
+      """
+      does not meet minimum requirements
       """
     And STDOUT should not contain:
       """
