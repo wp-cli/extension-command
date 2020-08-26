@@ -80,3 +80,25 @@ Feature: Activate WordPress plugins
       """
       Success: No plugins installed.
       """
+
+  Scenario: Activating a plugin that does not meet PHP minimum throws a warning
+    Given a wp-content/plugins/high-requirements.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: High PHP Requirements
+       * Description: This is meant to not activate because PHP version is too low.
+       * Author: WP-CLI tests
+       * Requires PHP: 99.99
+       */
+       """
+
+    When I run `wp plugin activate high-requirements`
+    Then STDERR should contain:
+      """
+      Failed to activate plugin: PHP minimum not met.
+      """
+    And STDOUT should not contain:
+      """
+      1 out of 1
+      """

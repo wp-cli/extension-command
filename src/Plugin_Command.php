@@ -320,10 +320,17 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				deactivate_plugins( $plugin->file, false, false );
 			}
 
-			activate_plugin( $plugin->file, '', $network_wide );
+			$result = activate_plugin( $plugin->file, '', $network_wide );
+
+			if ( is_wp_error( $result ) ) {
+				WP_CLI::warning( "Failed to activate plugin: {$result->get_error_message()}" );
+			}
 
 			$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
-			$successes++;
+
+			if ( ! is_wp_error( $result ) ) {
+				$successes++;
+			}
 		}
 
 		if ( ! $this->chained_command ) {
