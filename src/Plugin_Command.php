@@ -323,12 +323,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$result = activate_plugin( $plugin->file, '', $network_wide );
 
 			if ( is_wp_error( $result ) ) {
-				WP_CLI::warning( "Failed to activate plugin: {$result->get_error_message()}" );
-			}
-
-			$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
-
-			if ( ! is_wp_error( $result ) ) {
+				$message = $result->get_error_message();
+				$message = preg_replace( '/<a\s[^>]+>.*<\/a>/im', '', $message );
+				$message = strip_tags( $message );
+				$message = str_replace( 'Error: ', '', $message );
+				WP_CLI::warning( "Failed to activate plugin. {$message}" );
+			} else {
+				$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
 				$successes++;
 			}
 		}
