@@ -9,9 +9,11 @@ trait ParsePluginNameInput {
 	/**
 	 * If have optional args ([<plugin>...]) and an all option, then check have something to do.
 	 *
-	 * @param array $args Passed-in arguments.
-	 * @param bool $all All flag.
+	 * @param array  $args Passed-in arguments.
+	 * @param bool   $all All flag.
+	 * @param string $verb Optional. Verb to use. Defaults to 'install'.
 	 * @return array Same as $args if not all, otherwise all slugs.
+	 * @throws ExitException If neither plugin name nor --all were provided.
 	 */
 	protected function check_optional_args_and_all( $args, $all, $verb = 'install' ) {
 		if ( $all ) {

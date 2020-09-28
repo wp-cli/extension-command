@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\CommandWithUpgrade;
+use WP_CLI\ParseThemeNameInput;
 use WP_CLI\Utils;
 
 /**
@@ -39,7 +41,9 @@ use WP_CLI\Utils;
  *
  * @package wp-cli
  */
-class Theme_Command extends \WP_CLI\CommandWithUpgrade {
+class Theme_Command extends CommandWithUpgrade {
+
+	use ParseThemeNameInput;
 
 	protected $item_type         = 'theme';
 	protected $upgrade_refresh   = 'wp_update_themes';
@@ -185,16 +189,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 	protected function get_all_items() {
 		return $this->get_item_list();
-	}
-
-	protected function get_status( $theme ) {
-		if ( $this->is_active_theme( $theme ) ) {
-			return 'active';
-		} elseif ( $theme->get_stylesheet_directory() === get_template_directory() ) {
-			return 'parent';
-		} else {
-			return 'inactive';
-		}
 	}
 
 	/**
@@ -354,10 +348,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 	}
 
-	private function is_active_theme( $theme ) {
-		return $theme->get_stylesheet_directory() === get_stylesheet_directory();
-	}
-
 	/**
 	 * Gets the path to a theme or to the theme directory.
 	 *
@@ -436,67 +426,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function get_item_list() {
-		$items              = array();
-		$theme_version_info = array();
-
-		if ( is_multisite() ) {
-			$site_enabled = get_option( 'allowedthemes' );
-			if ( empty( $site_enabled ) ) {
-				$site_enabled = array();
-			}
-
-			$network_enabled = get_site_option( 'allowedthemes' );
-			if ( empty( $network_enabled ) ) {
-				$network_enabled = array();
-			}
-		}
-
-		$all_update_info = $this->get_update_info();
-		$checked_themes  = isset( $all_update_info->checked ) ? $all_update_info->checked : array();
-
-		if ( ! empty( $checked_themes ) ) {
-			foreach ( $checked_themes as $slug => $version ) {
-				$theme_version_info[ $slug ] = $this->is_theme_version_valid( $slug, $version );
-			}
-		}
-
-		foreach ( wp_get_themes() as $key => $theme ) {
-			$file = $theme->get_stylesheet_directory();
-
-			$update_info = ( isset( $all_update_info->response[ $theme->get_stylesheet() ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
-
-			$items[ $file ] = [
-				'name'           => $key,
-				'status'         => $this->get_status( $theme ),
-				'update'         => (bool) $update_info,
-				'update_version' => isset( $update_info['new_version'] ) ? $update_info['new_version'] : null,
-				'update_package' => isset( $update_info['package'] ) ? $update_info['package'] : null,
-				'version'        => $theme->get( 'Version' ),
-				'update_id'      => $theme->get_stylesheet(),
-				'title'          => $theme->get( 'Name' ),
-				'description'    => wordwrap( $theme->get( 'Description' ) ),
-				'author'         => $theme->get( 'Author' ),
-			];
-
-			// Compare version and update information in theme list.
-			if ( isset( $theme_version_info[ $key ] ) && false === $theme_version_info[ $key ] ) {
-				$items[ $file ]['update'] = static::INVALID_VERSION_MESSAGE;
-			}
-
-			if ( is_multisite() ) {
-				if ( ! empty( $site_enabled[ $key ] ) && ! empty( $network_enabled[ $key ] ) ) {
-					$items[ $file ]['enabled'] = 'network,site';
-				} elseif ( ! empty( $network_enabled[ $key ] ) ) {
-					$items[ $file ]['enabled'] = 'network';
-				} elseif ( ! empty( $site_enabled[ $key ] ) ) {
-					$items[ $file ]['enabled'] = 'site';
-				} else {
-					$items[ $file ]['enabled'] = 'no';
-				}
-			}
-		}
-
-		return $items;
+		return $this->get_all_themes();
 	}
 
 	protected function filter_item_list( $items, $args ) {
@@ -934,7 +864,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @param bool $all All flag.
 	 * @return array Same as $args if not all, otherwise all slugs.
 	 */
-	private function check_optional_args_and_all( $args, $all ) {
+	private function check_optional_args_and_all( $args, $all, $verb = 'install' ) {
 		if ( $all ) {
 			$args = array_map(
 				function( $item ) {
@@ -966,27 +896,5 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		return $template_path;
-	}
-
-	/**
-	 * Check if current version of the theme is higher than the one available at WP.org.
-	 *
-	 * @param string $slug Theme slug.
-	 * @param string $version Theme current version.
-	 *
-	 * @return bool|string
-	 */
-	protected function is_theme_version_valid( $slug, $version ) {
-		// Get Theme Info.
-		$theme_info = themes_api( 'theme_information', array( 'slug' => $slug ) );
-
-		// Return empty string for themes not on WP.org.
-		if ( is_wp_error( $theme_info ) ) {
-			return '';
-		}
-
-		// Compare theme version info.
-		return ! version_compare( $version, $theme_info->version, '>' );
-
 	}
 }
