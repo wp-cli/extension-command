@@ -325,7 +325,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			if ( is_wp_error( $result ) ) {
 				$message = $result->get_error_message();
 				$message = preg_replace( '/<a\s[^>]+>.*<\/a>/im', '', $message );
-				$message = strip_tags( $message );
+				$message = wp_strip_all_tags( $message );
 				$message = str_replace( 'Error: ', '', $message );
 				WP_CLI::warning( "Failed to activate plugin. {$message}" );
 			} else {
