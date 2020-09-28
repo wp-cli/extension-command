@@ -53,13 +53,13 @@ Feature: Show the status of auto-updates for WordPress plugins
       | name           | status   |
       | akismet        | disabled |
       | duplicate-post | disabled |
-      | hello          | enabled |
+      | hello          | enabled  |
     And the return code should be 0
 
     When I run `wp plugin auto-updates status --all --enabled-only`
     Then STDOUT should be a table containing rows:
       | name           | status   |
-      | hello          | enabled |
+      | hello          | enabled  |
     And the return code should be 0
 
     When I run `wp plugin auto-updates status --all --disabled-only`
