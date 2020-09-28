@@ -237,8 +237,8 @@ class Theme_AutoUpdates_Command {
 	 *
 	 *     # Get the list of themes that have auto-updates enabled
 	 *     $ wp theme auto-updates status --all --enabled-only --field=name
-	 *     akismet
-	 *     duplicate-post
+	 *     twentysixteen
+	 *     twentyseventeen
 	 */
 	public function status( $args, $assoc_args ) {
 		$all           = Utils\get_flag_value( $assoc_args, 'all', false );
