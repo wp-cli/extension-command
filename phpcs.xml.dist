@@ -53,13 +53,14 @@
 
 	<!-- Exclude existing classes from the prefix rule as it would break BC to prefix them now. -->
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound">
-		<exclude-pattern>*/src/(Plugin_|Theme_(Mod_)?)Command\.php$</exclude-pattern>
+		<exclude-pattern>*/src/(Plugin_|Plugin_AutoUpdates_|Theme_(Mod_)?)Command\.php$</exclude-pattern>
 	</rule>
 
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound">
 		<exclude-pattern>*/src/WP_CLI/Fetchers/(Plugin|Theme)\.php$</exclude-pattern>
 		<exclude-pattern>*/src/WP_CLI/CommandWithUpgrade\.php$</exclude-pattern>
 		<exclude-pattern>*/src/WP_CLI/(CommandWith|DestructivePlugin|DestructiveTheme)Upgrader\.php$</exclude-pattern>
+		<exclude-pattern>*/src/WP_CLI/ParsePluginNameInput\.php$</exclude-pattern>
 	</rule>
 
 	<!-- Exclude classes from UselessOverridingMethod sniff as the method is used for generating docs. -->
