@@ -51,7 +51,7 @@ Feature: Delete WordPress themes
     When I try the previous command again
     Then STDOUT should be:
     """
-    Success: No themes installed.
+    Success: No themes deleted.
     """
 
   Scenario: Attempting to delete a theme that doesn't exist
