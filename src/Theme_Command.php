@@ -647,6 +647,9 @@ class Theme_Command extends CommandWithUpgrade {
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
+		if ( ! $args ) {
+			return;
+		}
 
 		if ( isset( $assoc_args['version'] ) && isset( $assoc_args['dry-run'] ) ) {
 			WP_CLI::error( '--dry-run cannot be used together with --version.' );
@@ -754,6 +757,9 @@ class Theme_Command extends CommandWithUpgrade {
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all, 'delete' );
+		if ( ! $args ) {
+			return;
+		}
 
 		$force = Utils\get_flag_value( $assoc_args, 'force', false );
 
