@@ -185,6 +185,7 @@ Feature: Manage WordPress plugins
     Given a WP install
     And a wp-content/plugins/network-only.php file:
       """
+      <?php
       // Plugin Name: Example Plugin
       // Network: true
       """
