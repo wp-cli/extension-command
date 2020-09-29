@@ -330,10 +330,18 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				deactivate_plugins( $plugin->file, false, false );
 			}
 
-			activate_plugin( $plugin->file, '', $network_wide );
+			$result = activate_plugin( $plugin->file, '', $network_wide );
 
-			$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
-			$successes++;
+			if ( is_wp_error( $result ) ) {
+				$message = $result->get_error_message();
+				$message = preg_replace( '/<a\s[^>]+>.*<\/a>/im', '', $message );
+				$message = wp_strip_all_tags( $message );
+				$message = str_replace( 'Error: ', '', $message );
+				WP_CLI::warning( "Failed to activate plugin. {$message}" );
+			} else {
+				$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
+				$successes++;
+			}
 		}
 
 		if ( ! $this->chained_command ) {
@@ -877,7 +885,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
-		// Check if plugin names of --all is passed.
+		// Check if plugin names or --all is passed.
 		$args = $this->check_optional_args_and_all( $args, $all, 'uninstall' );
 		if ( ! $args ) {
 			return;
@@ -1005,7 +1013,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	public function delete( $args, $assoc_args = array() ) {
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
-		// Check if plugin names of --all is passed.
+		// Check if plugin names or --all is passed.
 		$args = $this->check_optional_args_and_all( $args, $all, 'delete' );
 		if ( ! $args ) {
 			return;

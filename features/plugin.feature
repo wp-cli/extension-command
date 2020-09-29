@@ -185,6 +185,7 @@ Feature: Manage WordPress plugins
     Given a WP install
     And a wp-content/plugins/network-only.php file:
       """
+      <?php
       // Plugin Name: Example Plugin
       // Network: true
       """
@@ -206,6 +207,7 @@ Feature: Manage WordPress plugins
     Given a WP multisite install
     And a wp-content/plugins/network-only.php file:
       """
+      <?php
       // Plugin Name: Example Plugin
       // Network: true
       """
@@ -537,7 +539,7 @@ Feature: Manage WordPress plugins
       """
     And the return code should be 0
 
-  @require-wp-47
+  @require-wp-4.7
   Scenario: Plugin hidden by "all_plugins" filter
     Given a WP install
     And these installed and active plugins:
