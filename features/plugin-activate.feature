@@ -80,3 +80,29 @@ Feature: Activate WordPress plugins
       """
       Success: No plugins installed.
       """
+
+  @require-wp-5.2
+  Scenario: Activating a plugin that does not meet PHP minimum throws a warning
+    Given a wp-content/plugins/high-requirements.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: High PHP Requirements
+       * Description: This is meant to not activate because PHP version is too low.
+       * Author: WP-CLI tests
+       * Requires PHP: 99.99
+       */
+       """
+    And I run `wp plugin deactivate --all`
+    And I run `php -r 'echo PHP_VERSION;'`
+    And save STDOUT as {PHP_VERSION}
+
+    When I try `wp plugin activate high-requirements`
+    Then STDERR should contain:
+      """
+      Failed to activate plugin. Current PHP version ({PHP_VERSION}) does not meet minimum requirements for High PHP Requirements. The plugin requires PHP 99.99.
+      """
+    And STDOUT should not contain:
+      """
+      1 out of 1
+      """
