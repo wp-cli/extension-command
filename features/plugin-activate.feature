@@ -81,6 +81,7 @@ Feature: Activate WordPress plugins
       Success: No plugins installed.
       """
 
+  @require-wp-5.2
   Scenario: Activating a plugin that does not meet PHP minimum throws a warning
     Given a wp-content/plugins/high-requirements.php file:
       """
