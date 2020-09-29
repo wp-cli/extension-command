@@ -858,33 +858,6 @@ class Theme_Command extends CommandWithUpgrade {
 	}
 
 	/**
-	 * If have optional args ([<theme>...]) and an all option, then check have something to do.
-	 *
-	 * @param array $args Passed-in arguments.
-	 * @param bool $all All flag.
-	 * @return array Same as $args if not all, otherwise all slugs.
-	 */
-	private function check_optional_args_and_all( $args, $all, $verb = 'install' ) {
-		if ( $all ) {
-			$args = array_map(
-				function( $item ) {
-						return Utils\get_theme_name( $item );
-				},
-				array_keys( $this->get_all_items() )
-			);
-		}
-
-		if ( empty( $args ) ) {
-			if ( ! $all ) {
-				WP_CLI::error( 'Please specify one or more themes, or use --all.' );
-			}
-			WP_CLI::success( 'No themes installed.' ); // Don't error if --all given for BC.
-		}
-
-		return $args;
-	}
-
-	/**
 	 * Gets the template path based on installation type.
 	 */
 	private static function get_template_path( $template ) {
