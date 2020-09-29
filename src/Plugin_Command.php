@@ -299,9 +299,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$all          = Utils\get_flag_value( $assoc_args, 'all', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
-		if ( ! $args ) {
-			return;
-		}
 
 		$successes = 0;
 		$errors    = 0;
@@ -380,9 +377,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$disable_all  = Utils\get_flag_value( $assoc_args, 'all' );
 
 		$args = $this->check_optional_args_and_all( $args, $disable_all );
-		if ( ! $args ) {
-			return;
-		}
 
 		$successes = 0;
 		$errors    = 0;
@@ -645,9 +639,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
-		if ( ! $args ) {
-			return;
-		}
 
 		if ( isset( $assoc_args['version'] ) ) {
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
@@ -885,11 +876,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
-		// Check if plugin names of --all is passed.
+		// Check if plugin names or --all is passed.
 		$args = $this->check_optional_args_and_all( $args, $all, 'uninstall' );
-		if ( ! $args ) {
-			return;
-		}
 
 		$successes = 0;
 		$errors    = 0;
@@ -1013,11 +1001,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	public function delete( $args, $assoc_args = array() ) {
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
-		// Check if plugin names of --all is passed.
+		// Check if plugin names or --all is passed.
 		$args = $this->check_optional_args_and_all( $args, $all, 'delete' );
-		if ( ! $args ) {
-			return;
-		}
 
 		$successes = 0;
 		$errors    = 0;
