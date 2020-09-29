@@ -1,5 +1,6 @@
 <?php
 
+use WP_CLI\ParsePluginNameInput;
 use WP_CLI\Utils;
 
 /**
@@ -40,6 +41,8 @@ use WP_CLI\Utils;
  */
 class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
+	use ParsePluginNameInput;
+
 	protected $item_type         = 'plugin';
 	protected $upgrade_refresh   = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
@@ -50,6 +53,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		'update',
 		'version',
 	);
+
+	/**
+	 * Plugin fetcher instance.
+	 *
+	 * @var \WP_CLI\Fetchers\Plugin
+	 */
+	protected $fetcher;
 
 	public function __construct() {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -1197,47 +1207,5 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		return ! WP_CLI::launch( $command . escapeshellarg( $path ) );
-	}
-
-	/**
-	 * Gets all available plugins.
-	 *
-	 * Uses the same filter core uses in plugins.php to determine which plugins
-	 * should be available to manage through the WP_Plugins_List_Table class.
-	 *
-	 * @return array
-	 */
-	private function get_all_plugins() {
-		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling native WordPress hook.
-		return apply_filters( 'all_plugins', get_plugins() );
-	}
-
-	/**
-	 * If have optional args ([<plugin>...]) and an all option, then check have something to do.
-	 *
-	 * @param array $args Passed-in arguments.
-	 * @param bool $all All flag.
-	 * @return array Same as $args if not all, otherwise all slugs.
-	 */
-	private function check_optional_args_and_all( $args, $all, $verb = 'install' ) {
-		if ( $all ) {
-			$args = array_map(
-				function( $file ) {
-						return Utils\get_plugin_name( $file );
-				},
-				array_keys( $this->get_all_plugins() )
-			);
-		}
-
-		if ( empty( $args ) ) {
-			if ( ! $all ) {
-				WP_CLI::error( 'Please specify one or more plugins, or use --all.' );
-			}
-
-			$past_tense_verb = Utils\past_tense_verb( $verb );
-			WP_CLI::success( "No plugins {$past_tense_verb}." ); // Don't error if --all given for BC.
-		}
-
-		return $args;
 	}
 }
