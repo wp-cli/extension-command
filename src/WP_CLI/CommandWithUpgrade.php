@@ -16,6 +16,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected $chained_command = false;
 
+	// Invalid version message.
+	const INVALID_VERSION_MESSAGE = 'version higher than expected';
+
 	public function __construct() {
 
 		// Do not automatically check translations updates after updating plugins/themes.
