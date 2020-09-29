@@ -78,6 +78,9 @@ class Plugin_AutoUpdates_Command {
 		$disabled_only = Utils\get_flag_value( $assoc_args, 'disabled-only', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
+		if ( ! $args ) {
+			return;
+		}
 
 		$plugins      = $this->fetcher->get_many( $args );
 		$auto_updates = get_site_option( static::SITE_OPTION );
@@ -152,6 +155,9 @@ class Plugin_AutoUpdates_Command {
 		$enabled_only = Utils\get_flag_value( $assoc_args, 'enabled-only', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
+		if ( ! $args ) {
+			return;
+		}
 
 		$plugins      = $this->fetcher->get_many( $args );
 		$auto_updates = get_site_option( static::SITE_OPTION );
