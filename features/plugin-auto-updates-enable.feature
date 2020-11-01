@@ -4,6 +4,7 @@ Feature: Enable auto-updates for WordPress plugins
     Given a WP install
     And I run `wp plugin install duplicate-post`
 
+  @require-wp-5.5
   Scenario: Show an error if required params are missing
     When I try `wp plugin auto-updates enable`
     Then STDOUT should be empty
@@ -12,6 +13,7 @@ Feature: Enable auto-updates for WordPress plugins
       Error: Please specify one or more plugins, or use --all.
       """
 
+  @require-wp-5.5
   Scenario: Enable auto-updates for a single plugin
     When I run `wp plugin auto-updates enable hello`
     Then STDOUT should be:
@@ -20,6 +22,7 @@ Feature: Enable auto-updates for WordPress plugins
       """
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Enable auto-updates for multiple plugins
     When I run `wp plugin auto-updates enable hello duplicate-post`
     Then STDOUT should be:
@@ -28,6 +31,7 @@ Feature: Enable auto-updates for WordPress plugins
       """
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Enable auto-updates for all plugins
     When I run `wp plugin auto-updates enable --all`
     Then STDOUT should be:
@@ -36,6 +40,7 @@ Feature: Enable auto-updates for WordPress plugins
       """
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Enable auto-updates for already enabled plugins
     When I run `wp plugin auto-updates enable hello`
     And I try `wp plugin auto-updates enable --all`
@@ -48,6 +53,7 @@ Feature: Enable auto-updates for WordPress plugins
       Error: Only enabled 2 of 3 plugin auto-updates.
       """
 
+  @require-wp-5.5
   Scenario: Filter when enabling auto-updates for already enabled plugins
     When I run `wp plugin auto-updates enable hello`
     And I run `wp plugin auto-updates enable --all --disabled-only`
@@ -57,6 +63,7 @@ Feature: Enable auto-updates for WordPress plugins
       """
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Filter when enabling auto-updates for already enabled selection of plugins
     When I run `wp plugin auto-updates enable hello`
     And I run `wp plugin auto-updates enable hello duplicate-post --disabled-only`
@@ -66,6 +73,7 @@ Feature: Enable auto-updates for WordPress plugins
       """
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Filtering everything away produces an error
     When I run `wp plugin auto-updates enable hello`
     And I try `wp plugin auto-updates enable hello --disabled-only`
