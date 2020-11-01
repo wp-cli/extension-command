@@ -4,6 +4,7 @@ Feature: Show the status of auto-updates for WordPress plugins
     Given a WP install
     And I run `wp plugin install duplicate-post`
 
+  @require-wp-5.5
   Scenario: Show an error if required params are missing
     When I try `wp plugin auto-updates status`
     Then STDOUT should be empty
@@ -12,6 +13,7 @@ Feature: Show the status of auto-updates for WordPress plugins
       Error: Please specify one or more plugins, or use --all.
       """
 
+  @require-wp-5.5
   Scenario: Show the status of auto-updates of a single plugin
     When I run `wp plugin auto-updates status hello`
     Then STDOUT should be a table containing rows:
@@ -19,6 +21,7 @@ Feature: Show the status of auto-updates for WordPress plugins
       | hello          | disabled |
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Show the status of auto-updates multiple plugins
     When I run `wp plugin auto-updates status duplicate-post hello`
     Then STDOUT should be a table containing rows:
@@ -27,6 +30,7 @@ Feature: Show the status of auto-updates for WordPress plugins
       | hello          | disabled |
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Show the status of auto-updates all installed plugins
     When I run `wp plugin auto-updates status --all`
     Then STDOUT should be a table containing rows:
@@ -45,6 +49,7 @@ Feature: Show the status of auto-updates for WordPress plugins
       | hello          | enabled  |
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: The status can be filtered to only show enabled or disabled plugins
     Given I run `wp plugin auto-updates enable hello`
 
@@ -76,6 +81,7 @@ Feature: Show the status of auto-updates for WordPress plugins
       Error: --enabled-only and --disabled-only are mutually exclusive and cannot be used at the same time.
       """
 
+  @require-wp-5.5
   Scenario: The fields can be shown individually
     Given I run `wp plugin auto-updates enable hello`
 

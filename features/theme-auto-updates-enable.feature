@@ -8,6 +8,7 @@ Feature: Enable auto-updates for WordPress themes
     And I run `wp theme install twentynineteen`
     And I try `wp theme auto-updates disable --all`
 
+  @require-wp-5.5
   Scenario: Show an error if required params are missing
     When I try `wp theme auto-updates enable`
     Then STDOUT should be empty
@@ -16,6 +17,7 @@ Feature: Enable auto-updates for WordPress themes
       Error: Please specify one or more themes, or use --all.
       """
 
+  @require-wp-5.5
   Scenario: Enable auto-updates for a single theme
     When I run `wp theme auto-updates enable twentysixteen`
     Then STDOUT should be:
@@ -24,6 +26,7 @@ Feature: Enable auto-updates for WordPress themes
       """
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Enable auto-updates for multiple themes
     When I run `wp theme auto-updates enable twentysixteen twentyseventeen`
     Then STDOUT should be:
@@ -32,6 +35,7 @@ Feature: Enable auto-updates for WordPress themes
       """
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Enable auto-updates for all themes
     When I run `wp theme auto-updates enable --all`
     Then STDOUT should be:
@@ -40,6 +44,7 @@ Feature: Enable auto-updates for WordPress themes
       """
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Enable auto-updates for already enabled themes
     When I run `wp theme auto-updates enable twentysixteen`
     And I try `wp theme auto-updates enable --all`
@@ -52,6 +57,7 @@ Feature: Enable auto-updates for WordPress themes
       Error: Only enabled 2 of 3 theme auto-updates.
       """
 
+  @require-wp-5.5
   Scenario: Filter when enabling auto-updates for already enabled themes
     When I run `wp theme auto-updates enable twentysixteen`
     And I run `wp theme auto-updates enable --all --disabled-only`
@@ -61,6 +67,7 @@ Feature: Enable auto-updates for WordPress themes
       """
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Filter when enabling auto-updates for already enabled selection of themes
     When I run `wp theme auto-updates enable twentysixteen`
     And I run `wp theme auto-updates enable twentysixteen twentyseventeen --disabled-only`
@@ -70,6 +77,7 @@ Feature: Enable auto-updates for WordPress themes
       """
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Filtering everything away produces an error
     When I run `wp theme auto-updates enable twentysixteen`
     And I try `wp theme auto-updates enable twentysixteen --disabled-only`
