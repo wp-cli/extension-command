@@ -166,9 +166,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 					// If URL provided is for releases/latest, normalize to the latest ZIP URL
 					// e.g. https://github.com/twitter/wordpress/releases/latest becomes https://github.com/twitter/wordpress/archive/2.0.5.zip
-					if( preg_match( '#(.+)releases/latest/?#i', $this->parse_url_host_component( $slug, PHP_URL_PATH ) ) ) {
+					if ( preg_match( '#(.+)releases/latest/?#i', $this->parse_url_host_component( $slug, PHP_URL_PATH ) ) ) {
 						$http_headers = wp_get_http_headers( $slug );
-						if( '302 Found' === $http_headers['status'] ) {
+						if ( '302 Found' === $http_headers['status'] ) {
 							$filename = Utils\basename( $http_headers['location'] . '.zip' );
 							$slug = preg_replace( '#releases/latest/?#', 'archive/' . $filename, $slug );
 						}
