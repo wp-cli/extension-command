@@ -105,3 +105,17 @@ Feature: Install WordPress themes
     Success: Switched to 'P2' theme.
     Success: Theme already installed.
     """
+
+  Scenario: Verify that providing a theme releases/latest GitHub URL will get the latest ZIP
+    Given a WP install
+
+    When I run `wp theme install https://github.com/solstice23/argon-theme/releases/latest`
+    Then STDOUT should contain:
+    """
+    Downloading installation package from
+    """
+    And STDOUT should contain:
+    """
+    Theme installed successfully.
+    Success: Installed 1 of 1 themes.
+    """
