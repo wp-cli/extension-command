@@ -18,7 +18,7 @@
     ],
     "require": {
         "composer/semver": "^1.4 || ^2 || ^3",
-        "wp-cli/wp-cli": "dev-master",
+        "wp-cli/wp-cli": "^2.5",
         "wp-cli/wp-cli-tests": "^3.0.1"
     },
     "require-dev": {
