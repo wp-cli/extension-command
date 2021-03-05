@@ -270,31 +270,36 @@ Feature: Manage WordPress themes
        Success: Switched to 'Buntu' theme.
        """
 
-    When I run `wp network-meta get 1 allowedthemes`
+    # Hybrid_Registry throws warning for PHP 8+.
+    When I try `wp network-meta get 1 allowedthemes`
     Then STDOUT should not contain:
        """
        'buntu' => true
        """
 
-    When I run `wp theme enable buntu --network`
+    # Hybrid_Registry throws warning for PHP 8+.
+    When I try `wp theme enable buntu --network`
     Then STDOUT should contain:
        """
        Success: Network enabled the 'Buntu' theme.
        """
 
-    When I run `wp network-meta get 1 allowedthemes`
+    # Hybrid_Registry throws warning for PHP 8+.
+    When I try `wp network-meta get 1 allowedthemes`
     Then STDOUT should contain:
        """
        'buntu' => true
        """
 
-    When I run `wp theme disable buntu --network`
+    # Hybrid_Registry throws warning for PHP 8+.
+    When I try `wp theme disable buntu --network`
     Then STDOUT should contain:
        """
        Success: Network disabled the 'Buntu' theme.
        """
 
-    When I run `wp network-meta get 1 allowedthemes`
+    # Hybrid_Registry throws warning for PHP 8+.
+    When I try `wp network-meta get 1 allowedthemes`
     Then STDOUT should not contain:
        """
        'buntu' => true
@@ -351,7 +356,8 @@ Feature: Manage WordPress themes
     And I run `wp theme install stargazer`
     And I run `wp theme install --activate buntu`
 
-    When I run `wp theme list --fields=name,status`
+    # Hybrid_Registry throws warning for PHP 8+.
+    When I try `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name          | status   |
       | buntu         | active   |
