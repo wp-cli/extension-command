@@ -97,7 +97,10 @@ class Theme_Mod_Command extends WP_CLI_Command {
 				continue;
 			}
 
-			if ( is_array( $v ) ) {
+			$requested_format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' );
+			$is_table_format  = empty( $requested_format ) || 'table' === $requested_format;
+
+			if ( is_array( $v ) && $is_table_format ) {
 				$list[] = [
 					'key'   => $k,
 					'value' => '=>',
