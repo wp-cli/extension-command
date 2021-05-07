@@ -457,6 +457,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 * [--activate]
 	 * : If set, the theme will be activated immediately after install.
 	 *
+	 * [--insecure]
+	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Install the latest version from wordpress.org and activate
@@ -595,6 +598,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 * [--dry-run]
 	 * : Preview which themes would be updated.
+	 *
+	 * [--insecure]
+	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
 	 * ## EXAMPLES
 	 *
