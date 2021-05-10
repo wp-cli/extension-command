@@ -593,6 +593,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--dry-run]
 	 * : Preview which plugins would be updated.
 	 *
+	 * [--insecure]
+	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp plugin update bbpress --version=dev
@@ -736,6 +739,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--activate-network]
 	 * : If set, the plugin will be network activated immediately after install
+	 *
+	 * [--insecure]
+	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
 	 * ## EXAMPLES
 	 *
