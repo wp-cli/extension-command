@@ -3,6 +3,7 @@
 namespace WP_CLI;
 
 use Composer\Semver\Comparator;
+use Exception;
 use WP_CLI;
 use WP_CLI\Fetchers;
 use WP_CLI\Loggers;
@@ -583,15 +584,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * @return array
 	 */
 	private function get_minor_or_patch_updates( $items, $type, $insecure ) {
+		$wp_org_api = new WpOrgApi( [ 'insecure' => $insecure ] );
 		foreach ( $items as $i => $item ) {
-			$wporg_url = sprintf( 'https://api.wordpress.org/plugins/info/1.0/%s.json', $item['name'] );
-			$response  = Utils\http_request( 'GET', $wporg_url, null, [], [ 'insecure' => $insecure ] );
-			// Must not be hosted on wp.org
-			if ( 20 !== absint( substr( $response->status_code, 0, 2 ) ) ) {
+			try {
+				$data = $wp_org_api->get_plugin_info( $item['name'] );
+			} catch ( Exception $exception ) {
 				unset( $items[ $i ] );
 				continue;
 			}
-			$data = json_decode( $response->body, true );
 			// No minor or patch versions to access.
 			if ( empty( $data['versions'] ) ) {
 				unset( $items[ $i ] );
