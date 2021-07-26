@@ -11,12 +11,12 @@ use WP_CLI\Utils;
  * ## EXAMPLES
  *
  *     # Enable the auto-updates for a plugin
- *     $ wp plugin auto-updates enable activate hello
+ *     $ wp plugin auto-updates enable hello
  *     Plugin auto-updates for 'hello' enabled.
  *     Success: Enabled 1 of 1 plugin auto-updates.
  *
  *     # Disable the auto-updates for a plugin
- *     $ wp plugin auto-updates disable activate hello
+ *     $ wp plugin auto-updates disable hello
  *     Plugin auto-updates for 'hello' disabled.
  *     Success: Disabled 1 of 1 plugin auto-updates.
  *
@@ -69,7 +69,7 @@ class Plugin_AutoUpdates_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Enable the auto-updates for a plugin
-	 *     $ wp plugin auto-updates enable activate hello
+	 *     $ wp plugin auto-updates enable hello
 	 *     Plugin auto-updates for 'hello' enabled.
 	 *     Success: Enabled 1 of 1 plugin auto-updates.
 	 */
@@ -146,7 +146,7 @@ class Plugin_AutoUpdates_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Disable the auto-updates for a plugin
-	 *     $ wp plugin auto-updates disable activate hello
+	 *     $ wp plugin auto-updates disable hello
 	 *     Plugin auto-updates for 'hello' disabled.
 	 *     Success: Disabled 1 of 1 plugin auto-updates.
 	 */
