@@ -50,19 +50,19 @@ Feature: Update WordPress plugins
 
     When I run `wp plugin install wordpress-importer --version=0.5 --force`
     Then STDOUT should contain:
-      """"
+      """
       Downloading install
-      """"
+      """
     And STDOUT should contain:
-      """"
+      """
       package from https://downloads.wordpress.org/plugin/wordpress-importer.0.5.zip...
-      """"
+      """
 
     When I run `wp plugin status wordpress-importer`
     Then STDOUT should contain:
-      """"
+      """
       Update available
-      """"
+      """
 
     When I run `wp plugin update --all --exclude=wordpress-importer | grep 'Skipped'`
     Then STDOUT should contain:
@@ -72,9 +72,9 @@ Feature: Update WordPress plugins
 
     When I run `wp plugin status wordpress-importer`
     Then STDOUT should contain:
-      """"
+      """
       Update available
-      """"
+      """
 
   Scenario: Update a plugin to its latest patch release
     Given a WP install
@@ -196,15 +196,25 @@ Feature: Update WordPress plugins
   Scenario: Plugin updates that error should not report a success
     Given a WP install
     And I run `wp plugin install --force akismet --version=4.0`
-    And I run `chmod -w wp-content/plugins/akismet`
-    And I try `wp plugin update akismet`
-    And save STDERR as {ERROR}
-    And I run `chmod +w wp-content/plugins/akismet`
 
-    And I run `echo "{ERROR}"`
+    When I run `chmod -w wp-content/plugins/akismet`
+    And I try `wp plugin update akismet`
+    Then STDERR should contain:
+      """
+      Error:
+      """
+    Then STDOUT should not contain:
+      """
+      Success:
+      """
+
+    When I run `chmod +w wp-content/plugins/akismet`
+    And I try `wp plugin update akismet`
+    Then STDERR should not contain:
+      """
+      Error:
+      """
     Then STDOUT should contain:
       """
-      Error: 
+      Success:
       """
-
-    
