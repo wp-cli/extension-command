@@ -320,7 +320,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		call_user_func( $this->upgrade_refresh );
 
 		if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], [ 'json', 'csv' ], true ) ) {
-			$logger = new Loggers\Quiet();
+			$logger = new Loggers\Quiet( WP_CLI::get_runner()->in_color() );
 			WP_CLI::set_logger( $logger );
 		}
 
