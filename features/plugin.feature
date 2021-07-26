@@ -171,7 +171,7 @@ Feature: Manage WordPress plugins
       """
       Warning: The 'xxx' plugin could not be found.
       """
-    Then STDERR should contain:
+    And STDERR should contain:
       """
       Warning: The 'yyy' plugin could not be found.
       """
