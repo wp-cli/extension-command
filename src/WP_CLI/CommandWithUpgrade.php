@@ -433,7 +433,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// Let the user know the results.
 		$num_to_update = count( $items_to_update );
-		$num_updated   = count( array_filter( $result ) );
+		$num_updated   = count(
+			array_filter(
+				$result,
+				static function ( $result ) {
+					return $result && ! is_wp_error( $result );
+				}
+			)
+		);
 
 		if ( $num_to_update > 0 ) {
 			if ( ! empty( $assoc_args['format'] ) && 'summary' === $assoc_args['format'] ) {
@@ -448,9 +455,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						'name'        => $info['name'],
 						'old_version' => $info['version'],
 						'new_version' => $info['update_version'],
-						'status'      => null !== $result[ $info['update_id'] ] ? 'Updated' : 'Error',
+						'status'      => ( null !== $result[ $info['update_id'] ] && ! is_wp_error( $result[ $info['update_id'] ] ) ) ? 'Updated' : 'Error',
 					];
-					if ( null === $result[ $info['update_id'] ] ) {
+					if ( null === $result[ $info['update_id'] ] || is_wp_error( $result[ $info['update_id'] ] ) ) {
 						$errors++;
 					}
 				}
