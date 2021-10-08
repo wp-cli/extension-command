@@ -831,7 +831,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 *   - parent
 	 *   - inactive
 	 * ---
-	 * 
+	 *
 	 * [--skip-update-check]
 	 * : If set, the plugin update check will be skipped.
 	 *
