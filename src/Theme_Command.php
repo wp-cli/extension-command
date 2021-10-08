@@ -833,7 +833,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * ---
 	 *
 	 * [--skip-update-check]
-	 * : If set, the plugin update check will be skipped.
+	 * : If set, the theme update check will be skipped.
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
