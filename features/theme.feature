@@ -188,7 +188,7 @@ Feature: Manage WordPress themes
       """
 
     When I run `wp theme list --fields=name,status,update`
-    Then STDOUT should be table containing rows:
+    Then STDOUT should be a table containing rows:
       | name  | status   | update    |
       | astra | inactive | available |
 
@@ -199,7 +199,7 @@ Feature: Manage WordPress themes
       """
 
     When I run `wp theme list --fields=name,status,update --skip-update-check`
-    Then STDOUT should be table containing rows:
+    Then STDOUT should be a table containing rows:
       | name  | status   | update |
       | astra | inactive | none   |
 

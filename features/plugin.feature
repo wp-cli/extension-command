@@ -351,7 +351,7 @@ Feature: Manage WordPress plugins
       """
 
     When I run `wp plugin list --fields=name,status,update`
-    Then STDOUT should be table containing rows:
+    Then STDOUT should be a table containing rows:
       | name               | status   | update    |
       | wordpress-importer | inactive | available |
 
@@ -362,7 +362,7 @@ Feature: Manage WordPress plugins
       """
 
     When I run `wp plugin list --fields=name,status,update --skip-update-check`
-    Then STDOUT should be table containing rows:
+    Then STDOUT should be a table containing rows:
       | name               | status   | update    |
       | wordpress-importer | inactive | none      |
 
