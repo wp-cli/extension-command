@@ -482,7 +482,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected function _list( $_, $assoc_args ) {
 
 		// Force WordPress to check for updates if `--skip-update-check` is not passed.
-		if ( Utils\get_flag_value( $assoc_args, 'skip-update-check', false ) ) {
+		if ( false === (bool) Utils\get_flag_value( $assoc_args, 'skip-update-check', false ) ) {
 			call_user_func( $this->upgrade_refresh );
 		}
 
