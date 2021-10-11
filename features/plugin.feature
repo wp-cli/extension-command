@@ -355,7 +355,7 @@ Feature: Manage WordPress plugins
     | name               | status   | update    |
     | wordpress-importer | inactive | available |
 
-    When I run `wp transient delete update_plugins`
+    When I run `wp transient delete update_themes --network`
     Success: Transient deleted.
 
     When I run `wp plugin list --fields=name,status,update --skip-update-check`
