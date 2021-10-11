@@ -67,7 +67,7 @@ Feature: Install WordPress plugins
       """
       Renamed Github-based project from 'generic-example-plugin-0.1.0' to 'generic-example-plugin'.
       """
-    And the wp-content/plugins/test-wordpress-plugin directory should exist
+    And the wp-content/plugins/generic-example-plugin directory should exist
 
   Scenario: Don't attempt to rename ZIPs coming from a GitHub raw source
     Given a WP install
