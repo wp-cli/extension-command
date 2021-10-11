@@ -194,7 +194,9 @@ Feature: Manage WordPress themes
 
     When I run `wp transient delete update_themes --network`
     Then STDOUT should contain:
-    Success: Transient deleted.
+      """
+      Success: Transient deleted.
+      """
 
     When I run `wp theme list --fields=name,status,update --skip-update-check`
     Then STDOUT should be table containing rows:
