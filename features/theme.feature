@@ -189,8 +189,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list --fields=name,status,update`
     Then STDOUT should be table containing rows:
-    | name  | status   | update    |
-    | astra | inactive | available |
+      | name  | status   | update    |
+      | astra | inactive | available |
 
     When I run `wp transient delete update_themes --network`
     Then STDOUT should be:
@@ -200,8 +200,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list --fields=name,status,update --skip-update-check`
     Then STDOUT should be table containing rows:
-    | name  | status   | update |
-    | astra | inactive | none   |
+      | name  | status   | update |
+      | astra | inactive | none   |
 
   Scenario: Install a theme when the theme directory doesn't yet exist
     Given a WP install
