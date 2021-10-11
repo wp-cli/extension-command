@@ -3,27 +3,27 @@ Feature: Install WordPress plugins
   Scenario: Branch names should be removed from Github projects
     Given a WP install
 
-    When I run `wp plugin install https://github.com/Nikschavan/test-wordpress-plugin/archive/refs/heads/main.zip --activate`
+    When I run `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/archive/refs/heads/master.zip --activate`
     Then STDOUT should contain:
       """
       Downloading install
       """
     And STDOUT should contain:
       """
-      package from https://github.com/Nikschavan/test-wordpress-plugin/archive/refs/heads/main.zip
+      package from https://github.com/wp-cli-test/generic-example-plugin/archive/refs/heads/master.zip
       """
     And STDOUT should contain:
       """
-      Renamed Github-based project from 'test-wordpress-plugin-main' to 'test-wordpress-plugin'.
+      Renamed Github-based project from 'generic-example-plugin-master' to 'generic-example-plugin'.
       """
     And STDOUT should contain:
       """
       Plugin installed successfully.
       """
-    And the wp-content/plugins/test-wordpress-plugin directory should exist
-    And the wp-content/plugins/test-wordpress-plugin-main directory should not exist
+    And the wp-content/plugins/generic-example-plugin directory should exist
+    And the wp-content/plugins/generic-example-plugin-master directory should not exist
 
-    When I try `wp plugin install https://github.com/Nikschavan/test-wordpress-plugin/archive/refs/heads/main.zip`
+    When I try `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/archive/refs/heads/master.zip`
     Then STDERR should contain:
       """
       Warning: Destination folder already exists
@@ -32,17 +32,17 @@ Feature: Install WordPress plugins
       """
       Error: No plugins installed.
       """
-    And the wp-content/plugins/test-wordpress-plugin directory should exist
-    And the wp-content/plugins/test-wordpress-plugin-main directory should not exist
+    And the wp-content/plugins/generic-example-plugin directory should exist
+    And the wp-content/plugins/generic-example-plugin-master directory should not exist
     And the return code should be 1
 
-    When I run `wp plugin install https://github.com/Nikschavan/test-wordpress-plugin/archive/refs/heads/main.zip --force`
+    When I run `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/archive/refs/heads/master.zip --force`
     Then STDOUT should contain:
       """
       Plugin updated successfully.
       """
-    And the wp-content/plugins/test-wordpress-plugin directory should exist
-    And the wp-content/plugins/test-wordpress-plugin-main directory should not exist
+    And the wp-content/plugins/generic-example-plugin directory should exist
+    And the wp-content/plugins/generic-example-plugin-master directory should not exist
 
     # However if the plugin slug ('modern-framework') does not match the project name then it's downloaded to wrong directory.
     When I run `wp plugin install https://github.com/Miller-Media/modern-wordpress/archive/master.zip`
@@ -58,14 +58,14 @@ Feature: Install WordPress plugins
   Scenario: Don't attempt to rename ZIPs uploaded to GitHub's releases page
     Given a WP install
 
-    When I run `wp plugin install https://github.com/Nikschavan/test-wordpress-plugin/archive/refs/tags/0.0.1.zip`
+    When I run `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/archive/refs/tags/v0.1.0.zip`
     Then STDOUT should contain:
       """
       Plugin installed successfully.
       """
     And STDOUT should not contain:
       """
-      Renamed Github-based project from 'test-wordpress-plugin.0.0.1' to 'test-wordpress-plugin'.
+      Renamed Github-based project from 'generic-example-plugin-0.1.0' to 'generic-example-plugin'.
       """
     And the wp-content/plugins/test-wordpress-plugin directory should exist
 
