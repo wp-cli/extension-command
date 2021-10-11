@@ -357,7 +357,9 @@ Feature: Manage WordPress plugins
 
     When I run `wp transient delete update_themes --network`
     Then STDOUT should contain:
-    Success: Transient deleted.
+      """
+      Success: Transient deleted.
+      """
 
     When I run `wp plugin list --fields=name,status,update --skip-update-check`
     Then STDOUT should be table containing rows:
