@@ -192,7 +192,7 @@ Feature: Manage WordPress themes
     | name  | status   | update    |
     | astra | inactive | available |
 
-    When I run `wp transient delete update_themes`
+    When I run `wp transient delete update_themes --network`
     Success: Transient deleted.
 
     When I run `wp theme list --fields=name,status,update --skip-update-check`
