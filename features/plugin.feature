@@ -352,22 +352,16 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list --fields=name,status,update`
     Then STDOUT should be table containing rows:
-    ---------------------+----------+-----------+
     | name               | status   | update    |
-    ---------------------+----------+-----------+
     | wordpress-importer | inactive | available |
-    ---------------------+----------+-----------+
 
     When I run `wp transient delete update_plugins`
     Success: Transient deleted.
 
     When I run `wp plugin list --fields=name,status,update --skip-update-check`
     Then STDOUT should be table containing rows:
-    ---------------------+----------+-----------+
     | name               | status   | update    |
-    ---------------------+----------+-----------+
     | wordpress-importer | inactive | none      |
-    ---------------------+----------+-----------+
 
   Scenario: Install a plugin when directory doesn't yet exist
     Given a WP install
