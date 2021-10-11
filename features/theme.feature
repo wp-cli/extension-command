@@ -193,7 +193,7 @@ Feature: Manage WordPress themes
     | astra | inactive | available |
 
     When I run `wp transient delete update_themes --network`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
       Success: Transient deleted.
       """
