@@ -350,9 +350,15 @@ Feature: Manage WordPress plugins
       Plugin installed successfully.
       """
 
-    When I run `wp plugin list --fields=name,status,update`
+    When I run `wp plugin delete akismet hello`
+    Then STDOUT should contain:
+      """
+      Deleted 2 of 2 plugins.
+      """
+
+    When I run `wp plugin list --fields=name,status,update --status=inactive`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update    |
+      | name               | status   | update   |
       | wordpress-importer | inactive | available |
 
     When I run `wp transient delete update_themes --network`
@@ -361,9 +367,9 @@ Feature: Manage WordPress plugins
       Success: Transient deleted.
       """
 
-    When I run `wp plugin list --fields=name,status,update --skip-update-check`
+    When I run `wp plugin list --fields=name,status,update --status=inactive --skip-update-check`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update    |
+      | name               | status   | update   |
       | wordpress-importer | inactive | none      |
 
   Scenario: Install a plugin when directory doesn't yet exist
