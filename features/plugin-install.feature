@@ -58,7 +58,7 @@ Feature: Install WordPress plugins
   Scenario: Don't attempt to rename ZIPs uploaded to GitHub's releases page
     Given a WP install
 
-    When I run `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/archive/refs/tags/v0.1.0.zip`
+    When I run `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/releases/download/v0.1.0/generic-example-plugin.0.1.0.zip`
     Then STDOUT should contain:
       """
       Plugin installed successfully.
