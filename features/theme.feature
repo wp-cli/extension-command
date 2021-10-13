@@ -178,6 +178,31 @@ Feature: Manage WordPress themes
     And STDOUT should be empty
     And the return code should be 0
 
+  Scenario: Flag `--skip-update-check` skips update check when running `wp theme list`
+    Given a WP install
+
+    When I run `wp theme install astra --version=1.0.0`
+    Then STDOUT should contain:
+      """
+      Theme installed successfully.
+      """
+
+    When I run `wp theme list --fields=name,status,update`
+    Then STDOUT should be a table containing rows:
+      | name  | status   | update    |
+      | astra | inactive | available |
+
+    When I run `wp transient delete update_themes --network`
+    Then STDOUT should be:
+      """
+      Success: Transient deleted.
+      """
+
+    When I run `wp theme list --fields=name,status,update --skip-update-check`
+    Then STDOUT should be a table containing rows:
+      | name  | status   | update |
+      | astra | inactive | none   |
+
   Scenario: Install a theme when the theme directory doesn't yet exist
     Given a WP install
 
