@@ -170,7 +170,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						$http_headers = wp_get_http_headers( $slug );
 						if ( '302 Found' === $http_headers['status'] ) {
 							$filename = Utils\basename( $http_headers['location'] . '.zip' );
-							$slug = preg_replace( '#releases/latest/?#', 'archive/' . $filename, $slug );
+							$slug     = preg_replace( '#releases/latest/?#', 'archive/' . $filename, $slug );
 						}
 					}
 
