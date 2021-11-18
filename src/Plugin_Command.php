@@ -242,7 +242,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_package' => null,
 				'version'        => $mu_version,
 				'update_id'      => '',
-				'title'          => '',
+				'title'          => Utils\get_plugin_name( $file ),
 				'description'    => '',
 				'file'           => $file,
 			);
