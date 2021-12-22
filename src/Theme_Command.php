@@ -789,7 +789,7 @@ class Theme_Command extends CommandWithUpgrade {
 		foreach ( $this->fetcher->get_many( $args ) as $theme ) {
 			$theme_slug = $theme->get_stylesheet();
 
-			if ( in_array( $theme_slug, $protected_from_delete ) ) {
+			if ( in_array( $theme_slug, $protected_from_delete, true ) ) {
 				if ( ! $all ) {
 					WP_CLI::warning( "Can't delete the currently active theme: $theme_slug" );
 					$errors++;
@@ -797,7 +797,7 @@ class Theme_Command extends CommandWithUpgrade {
 				continue;
 			}
 
-			//$r = delete_theme( $theme_slug );
+			$r = delete_theme( $theme_slug );
 
 			if ( is_wp_error( $r ) ) {
 				WP_CLI::warning( $r );
