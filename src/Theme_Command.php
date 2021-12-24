@@ -774,7 +774,12 @@ class Theme_Command extends CommandWithUpgrade {
 
 		$protected_from_delete = array();
 
-		foreach ( $this->fetcher->get_many( $args ) as $theme ) {
+		foreach ( $args as $arg ) {
+
+			$theme = $this->fetcher->get( $arg );
+			if ( ! $theme ) {
+				continue;
+			}
 			$theme_slug = $theme->get_stylesheet();
 
 			if ( $this->is_active_theme( $theme ) && ! $force ) {
