@@ -784,10 +784,6 @@ class Theme_Command extends CommandWithUpgrade {
 
 			if ( $this->is_active_theme( $theme ) && ! $force ) {
 				$protected_from_delete[] = $theme_slug;
-
-				if ( wp_get_theme( $theme_slug )->parent() ) {
-					$protected_from_delete[] = wp_get_theme( $theme_slug )->parent()->get_stylesheet();
-				}
 			}
 		}
 
