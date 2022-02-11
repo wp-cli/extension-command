@@ -57,18 +57,16 @@ Feature: Delete WordPress themes
     And save STDOUT as {ACTIVE_THEME}
 
     When I try `wp theme delete --all`
-    Then STDOUT should not contain:
+    Then STDOUT should contain:
     """
-    Success: Deleted 'p2' theme.
+    Deleted 'p2' theme.
     """
     And STDERR should be empty
 
     When I run `wp theme delete --all --force`
     Then STDOUT should be:
       """
-      Deleted 'p2' theme.
-      Deleted 'p2_child' theme.
-      Success: Deleted 2 of 2 themes.
+      Success: No themes deleted.
       """
 
     When I try the previous command again
@@ -91,7 +89,7 @@ Feature: Delete WordPress themes
     When I run `wp theme delete --all --force`
     Then STDOUT should be:
       """
-      Deleted '{ACTIVE_THEME}' theme.
+      Deleted 'twentytwentytwo' theme.
       Success: Deleted 1 of 1 themes.
       """
 
