@@ -85,6 +85,13 @@ Feature: Manage WordPress themes
     When I run `wp theme activate p2`
     Then STDOUT should not be empty
 
+    # Ensure no other themes interfere with update.
+    When I run `wp theme list --status=inactive --field=name | xargs wp theme delete`
+    Then STDOUT should contain:
+      """
+      Success: Deleted
+      """
+
     When I run `wp theme install p2 --version=1.4.1 --force`
     Then STDOUT should not be empty
 
@@ -120,19 +127,29 @@ Feature: Manage WordPress themes
 
     When I run `wp theme install p2 --version=1.4.1 --force`
     Then STDOUT should contain:
-      """"
+      """
       Downloading install
-      """"
+      """
     And STDOUT should contain:
-      """"
+      """
       package from https://downloads.wordpress.org/theme/p2.1.4.1.zip...
-      """"
+      """
+
+    When I run `wp theme activate p2`
+    Then STDOUT should not be empty
+
+    # Ensure no other themes interfere with update.
+    When I run `wp theme list --status=inactive --field=name | xargs wp theme delete`
+    Then STDOUT should contain:
+      """
+      Success: Deleted
+      """
 
     When I run `wp theme status p2`
     Then STDOUT should contain:
-      """"
+      """
       Update available
-      """"
+      """
 
     When I run `wp theme update --all --exclude=p2 | grep 'Skipped'`
     Then STDOUT should contain:
@@ -142,9 +159,9 @@ Feature: Manage WordPress themes
 
     When I run `wp theme status p2`
     Then STDOUT should contain:
-      """"
+      """
       Update available
-      """"
+      """
 
   Scenario: Get the path of an installed theme
     Given a WP install
