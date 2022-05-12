@@ -28,10 +28,7 @@
     },
     "config": {
         "process-timeout": 7200,
-        "sort-packages": true,
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
-        }
+        "sort-packages": true
     },
     "extra": {
         "branch-alias": {
