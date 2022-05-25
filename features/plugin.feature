@@ -683,9 +683,15 @@ Feature: Manage WordPress plugins
       """
       <?php
       // Plugin Name: Test mu-plugin
+      // Description: Test mu-plugin description
       """
 
     When I run `wp plugin list --fields=name,title`
     Then STDOUT should be a table containing rows:
       | name              | title                   |
       | test-mu           | Test mu-plugin       |
+
+    When I run `wp plugin list --fields=name,title,description`
+    Then STDOUT should be a table containing rows:
+      | name    | title             | description                                    |
+      | test    | Test mu-plugin    | Test mu-plugin description                     |
