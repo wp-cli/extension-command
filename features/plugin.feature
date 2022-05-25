@@ -676,3 +676,22 @@ Feature: Manage WordPress plugins
       Error: Parameter errors:
        Invalid value specified for 'status' (Filter the output by plugin status.)
       """
+
+  Scenario: Listing mu-plugins should include name and title
+    Given a WP install
+    And a wp-content/mu-plugins/test-mu.php file:
+      """
+      <?php
+      // Plugin Name: Test mu-plugin
+      // Description: Test mu-plugin description
+      """
+
+    When I run `wp plugin list --fields=name,title`
+    Then STDOUT should be a table containing rows:
+      | name              | title                   |
+      | test-mu           | Test mu-plugin       |
+
+    When I run `wp plugin list --fields=name,title,description`
+    Then STDOUT should be a table containing rows:
+      | name    | title             | description                                    |
+      | test-mu | Test mu-plugin    | Test mu-plugin description                     |
