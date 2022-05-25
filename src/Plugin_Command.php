@@ -234,6 +234,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				$mu_version = $mu_plugin['Version'];
 			}
 
+			$mu_title = '';
+			if ( ! empty( $mu_plugin['Name'] ) ) {
+				$mu_title = $mu_plugin['Title'];
+			}
+
+			$mu_description = '';
+			if ( ! empty( $mu_plugin['Description'] ) ) {
+				$mu_description = $mu_plugin['Description'];
+			}
+
 			$items[ $file ] = array(
 				'name'           => Utils\get_plugin_name( $file ),
 				'status'         => 'must-use',
@@ -242,8 +252,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_package' => null,
 				'version'        => $mu_version,
 				'update_id'      => '',
-				'title'          => '',
-				'description'    => '',
+				'title'          => $mu_title,
+				'description'    => $mu_description,
 				'file'           => $file,
 			);
 		}
