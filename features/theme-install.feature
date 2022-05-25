@@ -57,7 +57,7 @@ Feature: Install WordPress themes
     Given a WP install
     And an empty cache
 
-    When I run `wp theme install stargazer`
+    When I run `wp theme install moina`
     Then STDOUT should contain:
       """
       Success: Installed 1 of 1 themes.
@@ -67,13 +67,13 @@ Feature: Install WordPress themes
       Using cached file
       """
 
-    When I run `wp theme uninstall stargazer`
+    When I run `wp theme uninstall moina`
     Then STDOUT should contain:
       """
       Success: Deleted 1 of 1 themes.
       """
 
-    When I run `wp theme install buntu`
+    When I run `wp theme install moina-blog`
     Then STDOUT should contain:
       """
       Success: Installed 1 of 1 themes.
