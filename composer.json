@@ -9,20 +9,29 @@
             "name": "Daniel Bachhuber",
             "email": "daniel@runcommand.io",
             "homepage": "https://runcommand.io"
+        },
+        {
+            "name": "Alain Schlesser",
+            "email": "alain.schlesser@gmail.com",
+            "homepage": "https://www.alainschlesser.com"
         }
     ],
     "require": {
-        "composer/semver": "^1.4",
-        "wp-cli/wp-cli": "^2"
+        "composer/semver": "^1.4 || ^2 || ^3",
+        "wp-cli/wp-cli": "^2.5.1"
     },
     "require-dev": {
+        "wp-cli/cache-command": "^2.0",
         "wp-cli/entity-command": "^1.3 || ^2",
         "wp-cli/scaffold-command": "^1.2 || ^2",
-        "wp-cli/wp-cli-tests": "^2.0.7"
+        "wp-cli/wp-cli-tests": "^3.1"
     },
     "config": {
         "process-timeout": 7200,
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     },
     "extra": {
         "branch-alias": {

@@ -19,10 +19,11 @@ class Plugin extends Base {
 	 * @return object|false
 	 */
 	public function get( $name ) {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling native WordPress hook.
 		foreach ( apply_filters( 'all_plugins', get_plugins() ) as $file => $_ ) {
-			if ( $file === "$name.php" ||
+			if ( "$name.php" === $file ||
 				( $name && $file === $name ) ||
-				( dirname( $file ) === $name && $name !== '.' ) ) {
+				( dirname( $file ) === $name && '.' !== $name ) ) {
 				return (object) compact( 'name', 'file' );
 			}
 		}

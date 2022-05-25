@@ -107,6 +107,7 @@ Feature: Manage WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
+  @require-wp-4.0
   Scenario: Install a plugin, activate, then force install an older version of the plugin
     Given a WP install
 
@@ -165,10 +166,14 @@ Feature: Manage WordPress plugins
     When I run `wp plugin install wordpress-importer --version=0.5 --force`
     Then STDOUT should not be empty
 
-    When I try `wp plugin update wordpress-importer hello xxx`
+    When I try `wp plugin update xxx wordpress-importer yyy`
     Then STDERR should contain:
       """
       Warning: The 'xxx' plugin could not be found.
+      """
+    And STDERR should contain:
+      """
+      Warning: The 'yyy' plugin could not be found.
       """
     And STDERR should contain:
       """
@@ -180,6 +185,7 @@ Feature: Manage WordPress plugins
     Given a WP install
     And a wp-content/plugins/network-only.php file:
       """
+      <?php
       // Plugin Name: Example Plugin
       // Network: true
       """
@@ -201,6 +207,7 @@ Feature: Manage WordPress plugins
     Given a WP multisite install
     And a wp-content/plugins/network-only.php file:
       """
+      <?php
       // Plugin Name: Example Plugin
       // Network: true
       """
@@ -228,10 +235,10 @@ Feature: Manage WordPress plugins
       Success: Activated 1 of 1 plugins.
       """
 
-    When I run `wp plugin list --fields=name,status`
+    When I run `wp plugin list --fields=name,status,file`
     Then STDOUT should be a table containing rows:
-      | name            | status           |
-      | akismet         | active           |
+      | name            | status           | file                |
+      | akismet         | active           | akismet/akismet.php |
 
     When I try `wp plugin activate akismet`
     Then STDERR should contain:
@@ -299,10 +306,65 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list --status=inactive --field=name`
     Then STDOUT should be empty
 
-    When I run `wp plugin list --status=active --fields=name,status`
+    When I run `wp plugin list --status=active --fields=name,status,file`
     Then STDOUT should be a table containing rows:
-      | name       | status   |
-      | akismet    | active   |
+      | name       | status   | file                |
+      | akismet    | active   | akismet/akismet.php |
+
+  Scenario: List plugin by multiple statuses
+    Given a WP multisite install
+    And a wp-content/plugins/network-only.php file:
+      """
+      <?php
+      // Plugin Name: Example Plugin
+      // Network: true
+      """
+
+    When I run `wp plugin activate akismet hello`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin install wordpress-importer`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin activate network-only`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --status=active-network,inactive --fields=name,status,file`
+    Then STDOUT should be a table containing rows:
+      | name               | status         | file                                      |
+      | network-only       | active-network | network-only.php                          |
+      | wordpress-importer | inactive       | wordpress-importer/wordpress-importer.php |
+
+    When I run `wp plugin list --status=active,inactive --fields=name,status,file`
+    Then STDOUT should be a table containing rows:
+      | name               | status   | file                                      |
+      | akismet            | active   | akismet/akismet.php                       |
+      | wordpress-importer | inactive | wordpress-importer/wordpress-importer.php |
+
+  Scenario: Flag `--skip-update-check` skips update check when running `wp plugin list`
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --version=0.2`
+    Then STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+
+    When I run `wp plugin list --fields=name,status,update --status=inactive`
+    Then STDOUT should be a table containing rows:
+      | name               | status   | update    |
+      | wordpress-importer | inactive | available |
+
+    When I run `wp transient delete update_plugins --network`
+    Then STDOUT should be:
+      """
+      Success: Transient deleted.
+      """
+
+    When I run `wp plugin list --fields=name,status,update --status=inactive --skip-update-check`
+    Then STDOUT should be a table containing rows:
+      | name               | status   | update   |
+      | wordpress-importer | inactive | none     |
 
   Scenario: Install a plugin when directory doesn't yet exist
     Given a WP install
@@ -314,10 +376,10 @@ Feature: Manage WordPress plugins
     When I run `wp plugin install wordpress-importer --activate`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list --status=active --fields=name,status`
+    When I run `wp plugin list --status=active --fields=name,status,file`
     Then STDOUT should be a table containing rows:
-      | name               | status   |
-      | wordpress-importer | active   |
+      | name               | status   | file                                      |
+      | wordpress-importer | active   | wordpress-importer/wordpress-importer.php |
 
   Scenario: Plugin name with HTML entities
     Given a WP install
@@ -351,6 +413,7 @@ Feature: Manage WordPress plugins
       active
       active
       must-use
+      must-use
       """
 
     When I run `wp plugin deactivate --all`
@@ -372,6 +435,7 @@ Feature: Manage WordPress plugins
       """
       inactive
       inactive
+      must-use
       must-use
       """
 
@@ -457,20 +521,20 @@ Feature: Manage WordPress plugins
        */
       """
 
-    When I run `wp plugin list --fields=name,status`
+    When I run `wp plugin list --fields=name,status,file`
     Then STDOUT should be a table containing rows:
-      | name                             | status   |
-      | handbook/handbook                | inactive |
-      | handbook/functionality-for-pages | inactive |
+      | name                             | status   | file                                 |
+      | handbook/handbook                | inactive | handbook/handbook.php                |
+      | handbook/functionality-for-pages | inactive | handbook/functionality-for-pages.php |
 
     When I run `wp plugin activate handbook/functionality-for-pages`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list --fields=name,status`
+    When I run `wp plugin list --fields=name,status,file`
     Then STDOUT should be a table containing rows:
-      | name                             | status   |
-      | handbook/handbook                | inactive |
-      | handbook/functionality-for-pages | active   |
+      | name                             | status   | file                                 |
+      | handbook/handbook                | inactive | handbook/handbook.php                |
+      | handbook/functionality-for-pages | active   | handbook/functionality-for-pages.php |
 
   Scenario: Install a plugin, then update to a specific version of that plugin
     Given a WP install
@@ -481,10 +545,10 @@ Feature: Manage WordPress plugins
     When I run `wp plugin update akismet --version=2.6.0`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list --fields=name,version`
+    When I run `wp plugin list --fields=name,version,file`
     Then STDOUT should be a table containing rows:
-      | name       | version   |
-      | akismet    | 2.6.0     |
+      | name       | version   | file                |
+      | akismet    | 2.6.0     | akismet/akismet.php |
 
   Scenario: Ignore empty slugs
     Given a WP install
@@ -500,7 +564,7 @@ Feature: Manage WordPress plugins
       """
     And the return code should be 0
 
-  @require-wp-47
+  @require-wp-4.7
   Scenario: Plugin hidden by "all_plugins" filter
     Given a WP install
     And these installed and active plugins:
@@ -543,7 +607,72 @@ Feature: Manage WordPress plugins
       db-error.php
       """
 
-    When I run `wp plugin list --status=dropin --fields=name,title,description`
+    When I run `wp plugin list --status=dropin --fields=name,title,description,file`
     Then STDOUT should be a table containing rows:
-      | name         | title | description                    |
-      | db-error.php |       | Custom database error message. |
+      | name         | title | description                    | file         |
+      | db-error.php |       | Custom database error message. | db-error.php |
+
+  @require-wp-4.0
+  Scenario: Validate installed plugin's version.
+    Given a WP installation
+    And I run `wp plugin uninstall --all`
+    And I run `wp plugin install hello-dolly`
+    And a wp-content/mu-plugins/test-plugin-update.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Test Plugin Update
+       * Description: Fakes installed plugin's data to verify plugin version mismatch
+       * Author: WP-CLI tests
+       */
+
+      add_filter( 'site_transient_update_plugins', function( $value ) {
+          if ( ! is_object( $value ) ) {
+              return $value;
+          }
+
+          unset( $value->response['hello-dolly/hello.php'] );
+          $value->no_update['hello-dolly/hello.php']->new_version = '1.5';
+
+          return $value;
+      } );
+      ?>
+      """
+
+    When I run `wp plugin list --name=hello-dolly  --field=version`
+    And save STDOUT as {PLUGIN_VERSION}
+
+    When I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name               | status   | update                       | version          |
+      | hello-dolly        | inactive | version higher than expected | {PLUGIN_VERSION} |
+
+    When I try `wp plugin update --all`
+    Then STDERR should be:
+    """
+    Warning: hello-dolly: version higher than expected.
+    Error: No plugins updated.
+    """
+
+    When I try `wp plugin update hello-dolly`
+    Then STDERR should be:
+    """
+    Warning: hello-dolly: version higher than expected.
+    Error: No plugins updated.
+    """
+
+  Scenario: Only valid status filters are accepted when listing plugins
+    Given a WP install
+
+    When I run `wp plugin list`
+    Then STDERR should be empty
+
+    When I run `wp plugin list --status=active`
+    Then STDERR should be empty
+
+    When I try `wp plugin list --status=invalid-status`
+    Then STDERR should be:
+      """
+      Error: Parameter errors:
+       Invalid value specified for 'status' (Filter the output by plugin status.)
+      """

@@ -3,7 +3,7 @@ wp-cli/extension-command
 
 Manages plugins and themes, including installs, activations, and updates.
 
-[![Build Status](https://travis-ci.org/wp-cli/extension-command.svg?branch=master)](https://travis-ci.org/wp-cli/extension-command)
+[![Testing](https://github.com/wp-cli/extension-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/extension-command/actions/workflows/testing.yml)
 
 Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing) | [Support](#support)
 
@@ -121,13 +121,16 @@ wp plugin deactivate [<plugin>...] [--uninstall] [--all] [--network]
 Deletes plugin files without deactivating or uninstalling.
 
 ~~~
-wp plugin delete <plugin>...
+wp plugin delete [<plugin>...] [--all]
 ~~~
 
 **OPTIONS**
 
-	<plugin>...
+	[<plugin>...]
 		One or more plugins to delete.
+
+	[--all]
+		If set, all plugins will be deleted.
 
 **EXAMPLES**
 
@@ -185,7 +188,7 @@ wp plugin get <plugin> [--field=<field>] [--fields=<fields>] [--format=<format>]
 Installs one or more plugins.
 
 ~~~
-wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--activate] [--activate-network]
+wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--activate] [--activate-network] [--insecure]
 ~~~
 
 **OPTIONS**
@@ -206,6 +209,9 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--activat
 
 	[--activate-network]
 		If set, the plugin will be network activated immediately after install
+
+	[--insecure]
+		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 
 **EXAMPLES**
 
@@ -295,7 +301,7 @@ Returns exit code 0 when installed, 1 when uninstalled.
 Gets a list of plugins.
 
 ~~~
-wp plugin list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp plugin list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--status=<status>] [--skip-update-check]
 ~~~
 
 Displays a list of the plugins installed on the site with activation
@@ -326,6 +332,20 @@ Use `--status=dropin` to list installed dropins (e.g. `object-cache.php`).
 		  - yaml
 		---
 
+	[--status=<status>]
+		Filter the output by plugin status.
+		---
+		options:
+		  - active
+		  - active-network
+		  - dropin
+		  - inactive
+		  - must-use
+		---
+
+	[--skip-update-check]
+		If set, the plugin update check will be skipped.
+
 **AVAILABLE FIELDS**
 
 These fields will be displayed by default for each plugin:
@@ -342,6 +362,7 @@ These fields are optionally available:
 * update_id
 * title
 * description
+* file
 
 **EXAMPLES**
 
@@ -588,7 +609,7 @@ wp plugin uninstall [<plugin>...] [--deactivate] [--skip-delete] [--all]
 Updates one or more plugins.
 
 ~~~
-wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run]
+wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
 ~~~
 
 **OPTIONS**
@@ -624,6 +645,9 @@ wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [-
 
 	[--dry-run]
 		Preview which plugins would be updated.
+
+	[--insecure]
+		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 
 **EXAMPLES**
 
@@ -708,10 +732,10 @@ See the WordPress [Theme Handbook](https://developer.wordpress.org/themes/) deve
     # Get status of theme
     $ wp theme status twentysixteen
     Theme twentysixteen details:
-    		Name: Twenty Sixteen
-    		Status: Active
-    		Version: 1.2
-    		Author: the WordPress team
+         Name: Twenty Sixteen
+         Status: Active
+         Version: 1.2
+         Author: the WordPress team
 
 
 
@@ -740,15 +764,21 @@ wp theme activate <theme>
 Deletes one or more themes.
 
 ~~~
-wp theme delete <theme>...
+wp theme delete [<theme>...] [--all] [--force]
 ~~~
 
 Removes the theme or themes from the filesystem.
 
 **OPTIONS**
 
-	<theme>...
+	[<theme>...]
 		One or more themes to delete.
+
+	[--all]
+		If set, all themes will be deleted except active theme.
+
+	[--force]
+		To delete active theme use this.
 
 **EXAMPLES**
 
@@ -879,7 +909,7 @@ wp theme get <theme> [--field=<field>] [--fields=<fields>] [--format=<format>]
 Installs one or more themes.
 
 ~~~
-wp theme install <theme|zip|url>... [--version=<version>] [--force] [--activate]
+wp theme install <theme|zip|url>... [--version=<version>] [--force] [--activate] [--insecure]
 ~~~
 
 **OPTIONS**
@@ -897,6 +927,9 @@ wp theme install <theme|zip|url>... [--version=<version>] [--force] [--activate]
 
 	[--activate]
 		If set, the theme will be activated immediately after install.
+
+	[--insecure]
+		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 
 **EXAMPLES**
 
@@ -947,7 +980,7 @@ Returns exit code 0 when installed, 1 when uninstalled.
 Gets a list of themes.
 
 ~~~
-wp theme list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp theme list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--status=<status>] [--skip-update-check]
 ~~~
 
 **OPTIONS**
@@ -972,6 +1005,18 @@ wp theme list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--forma
 		  - count
 		  - yaml
 		---
+
+	[--status=<status>]
+		Filter the output by theme status.
+		---
+		options:
+		  - active
+		  - parent
+		  - inactive
+		---
+
+	[--skip-update-check]
+		If set, the theme update check will be skipped.
 
 **AVAILABLE FIELDS**
 
@@ -1177,7 +1222,7 @@ wp theme path [<theme>] [--dir]
 Searches the WordPress.org theme directory.
 
 ~~~
-wp theme search <search> [--per-page=<per-page>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp theme search <search> [--page=<page>] [--per-page=<per-page>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 Displays themes in the WordPress.org theme directory matching a given
@@ -1187,6 +1232,12 @@ search query.
 
 	<search>
 		The string to search for.
+
+	[--page=<page>]
+		Optional page to display.
+		---
+		default: 1
+		---
 
 	[--per-page=<per-page>]
 		Optional number of results to display. Defaults to 10.
@@ -1255,10 +1306,10 @@ wp theme status [<theme>]
 
     $ wp theme status twentysixteen
     Theme twentysixteen details:
-    		Name: Twenty Sixteen
-    		Status: Inactive
-    		Version: 1.2
-    		Author: the WordPress team
+         Name: Twenty Sixteen
+         Status: Inactive
+         Version: 1.2
+         Author: the WordPress team
 
 
 
@@ -1267,7 +1318,7 @@ wp theme status [<theme>]
 Updates one or more themes.
 
 ~~~
-wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--format=<format>] [--version=<version>] [--dry-run]
+wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
 ~~~
 
 **OPTIONS**
@@ -1297,6 +1348,9 @@ wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--format=<format
 
 	[--dry-run]
 		Preview which themes would be updated.
+
+	[--insecure]
+		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 
 **EXAMPLES**
 
@@ -1413,7 +1467,7 @@ Once you've decided to commit the time to seeing your pull request through, [ple
 
 ## Support
 
-Github issues aren't for general support questions, but there are other venues you can try: https://wp-cli.org/#support
+GitHub issues aren't for general support questions, but there are other venues you can try: https://wp-cli.org/#support
 
 
 *This README.md is generated dynamically from the project's codebase using `wp scaffold package-readme` ([doc](https://github.com/wp-cli/scaffold-package-command#wp-scaffold-package-readme)). To suggest changes, please submit a pull request against the corresponding part of the codebase.*

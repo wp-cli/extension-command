@@ -85,6 +85,13 @@ Feature: Manage WordPress themes
     When I run `wp theme activate p2`
     Then STDOUT should not be empty
 
+    # Ensure no other themes interfere with update.
+    When I run `wp theme list --status=inactive --field=name | xargs wp theme delete`
+    Then STDOUT should contain:
+      """
+      Success: Deleted
+      """
+
     When I run `wp theme install p2 --version=1.4.1 --force`
     Then STDOUT should not be empty
 
@@ -120,19 +127,29 @@ Feature: Manage WordPress themes
 
     When I run `wp theme install p2 --version=1.4.1 --force`
     Then STDOUT should contain:
-      """"
+      """
       Downloading install
-      """"
+      """
     And STDOUT should contain:
-      """"
+      """
       package from https://downloads.wordpress.org/theme/p2.1.4.1.zip...
-      """"
+      """
+
+    When I run `wp theme activate p2`
+    Then STDOUT should not be empty
+
+    # Ensure no other themes interfere with update.
+    When I run `wp theme list --status=inactive --field=name | xargs wp theme delete`
+    Then STDOUT should contain:
+      """
+      Success: Deleted
+      """
 
     When I run `wp theme status p2`
     Then STDOUT should contain:
-      """"
+      """
       Update available
-      """"
+      """
 
     When I run `wp theme update --all --exclude=p2 | grep 'Skipped'`
     Then STDOUT should contain:
@@ -142,9 +159,9 @@ Feature: Manage WordPress themes
 
     When I run `wp theme status p2`
     Then STDOUT should contain:
-      """"
+      """
       Update available
-      """"
+      """
 
   Scenario: Get the path of an installed theme
     Given a WP install
@@ -177,6 +194,31 @@ Feature: Manage WordPress themes
       """
     And STDOUT should be empty
     And the return code should be 0
+
+  Scenario: Flag `--skip-update-check` skips update check when running `wp theme list`
+    Given a WP install
+
+    When I run `wp theme install astra --version=1.0.0`
+    Then STDOUT should contain:
+      """
+      Theme installed successfully.
+      """
+
+    When I run `wp theme list --fields=name,status,update`
+    Then STDOUT should be a table containing rows:
+      | name  | status   | update    |
+      | astra | inactive | available |
+
+    When I run `wp transient delete update_themes --network`
+    Then STDOUT should be:
+      """
+      Success: Transient deleted.
+      """
+
+    When I run `wp theme list --fields=name,status,update --skip-update-check`
+    Then STDOUT should be a table containing rows:
+      | name  | status   | update |
+      | astra | inactive | none   |
 
   Scenario: Install a theme when the theme directory doesn't yet exist
     Given a WP install
@@ -231,73 +273,78 @@ Feature: Manage WordPress themes
 
   Scenario: Enabling and disabling a theme
   	Given a WP multisite install
-    And I run `wp theme install stargazer`
-    And I run `wp theme install buntu`
+    And I run `wp theme install moina`
+    And I run `wp theme install moina-blog`
 
     When I try `wp option get allowedthemes`
     Then the return code should be 1
     # STDERR may or may not be empty, depending on WP-CLI version.
     And STDOUT should be empty
 
-    When I run `wp theme enable buntu`
+    When I run `wp theme enable moina-blog`
     Then STDOUT should contain:
        """
-       Success: Enabled the 'Buntu' theme.
+       Success: Enabled the 'Moina Blog' theme.
        """
 
     When I run `wp option get allowedthemes`
     Then STDOUT should contain:
        """
-       'buntu' => true
+       'moina-blog' => true
        """
 
-    When I run `wp theme disable buntu`
+    When I run `wp theme disable moina-blog`
     Then STDOUT should contain:
        """
-       Success: Disabled the 'Buntu' theme.
+       Success: Disabled the 'Moina Blog' theme.
        """
 
     When I run `wp option get allowedthemes`
     Then STDOUT should not contain:
        """
-       'buntu' => true
+       'moina-blog' => true
        """
 
-    When I run `wp theme enable buntu --activate`
+    When I run `wp theme enable moina-blog --activate`
     Then STDOUT should contain:
        """
-       Success: Enabled the 'Buntu' theme.
-       Success: Switched to 'Buntu' theme.
+       Success: Enabled the 'Moina Blog' theme.
+       Success: Switched to 'Moina Blog' theme.
        """
 
-    When I run `wp network-meta get 1 allowedthemes`
+    # Hybrid_Registry throws warning for PHP 8+.
+    When I try `wp network-meta get 1 allowedthemes`
     Then STDOUT should not contain:
        """
-       'buntu' => true
+       'moina-blog' => true
        """
 
-    When I run `wp theme enable buntu --network`
+    # Hybrid_Registry throws warning for PHP 8+.
+    When I try `wp theme enable moina-blog --network`
     Then STDOUT should contain:
        """
-       Success: Network enabled the 'Buntu' theme.
+       Success: Network enabled the 'Moina Blog' theme.
        """
 
-    When I run `wp network-meta get 1 allowedthemes`
+    # Hybrid_Registry throws warning for PHP 8+.
+    When I try `wp network-meta get 1 allowedthemes`
     Then STDOUT should contain:
        """
-       'buntu' => true
+       'moina-blog' => true
        """
 
-    When I run `wp theme disable buntu --network`
+    # Hybrid_Registry throws warning for PHP 8+.
+    When I try `wp theme disable moina-blog --network`
     Then STDOUT should contain:
        """
-       Success: Network disabled the 'Buntu' theme.
+       Success: Network disabled the 'Moina Blog' theme.
        """
 
-    When I run `wp network-meta get 1 allowedthemes`
+    # Hybrid_Registry throws warning for PHP 8+.
+    When I try `wp network-meta get 1 allowedthemes`
     Then STDOUT should not contain:
        """
-       'buntu' => true
+       'moina-blog' => true
        """
 
   Scenario: Enabling and disabling a theme without multisite
@@ -335,27 +382,28 @@ Feature: Manage WordPress themes
 
   Scenario: Install and attempt to activate a child theme without its parent
     Given a WP install
-    And I run `wp theme install buntu`
-    And I run `rm -rf wp-content/themes/stargazer`
+    And I run `wp theme install moina-blog`
+    And I run `rm -rf wp-content/themes/moina`
 
-    When I try `wp theme activate buntu`
+    When I try `wp theme activate moina-blog`
     Then STDERR should contain:
       """
-      Error: The parent theme is missing. Please install the "stargazer" parent theme.
+      Error: The parent theme is missing. Please install the "moina" parent theme.
       """
     And STDOUT should be empty
     And the return code should be 1
 
   Scenario: List an active theme with its parent
     Given a WP install
-    And I run `wp theme install stargazer`
-    And I run `wp theme install --activate buntu`
+    And I run `wp theme install moina`
+    And I run `wp theme install --activate moina-blog`
 
-    When I run `wp theme list --fields=name,status`
+    # Hybrid_Registry throws warning for PHP 8+.
+    When I try `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name          | status   |
-      | buntu         | active   |
-      | stargazer     | parent   |
+      | moina-blog         | active   |
+      | moina     | parent   |
 
   Scenario: When updating a theme --format should be the same when using --dry-run
     Given a WP install
@@ -386,6 +434,16 @@ Feature: Manage WordPress themes
       twentytwelve,inactive,1.0,{UPDATE_VERSION}
       """
 
+  Scenario: When updating a theme --dry-run cannot be used when specifying a specific version.
+    Given a WP install
+
+    When I try `wp theme update --all --version=whatever --dry-run`
+    Then STDERR should be:
+      """
+      Error: --dry-run cannot be used together with --version.
+      """
+    And the return code should be 1
+
   Scenario: Check json and csv formats when updating a theme
     Given a WP install
 
@@ -414,24 +472,24 @@ Feature: Manage WordPress themes
   Scenario: Automatically install parent theme for a child theme
     Given a WP install
 
-    When I try `wp theme status stargazer`
+    When I try `wp theme status moina`
     Then STDERR should contain:
       """
-      Error: The 'stargazer' theme could not be found.
+      Error: The 'moina' theme could not be found.
       """
     And STDOUT should be empty
     And the return code should be 1
 
-    When I run `wp theme install buntu`
+    When I run `wp theme install moina-blog`
     Then STDOUT should contain:
       """
       This theme requires a parent theme. Checking if it is installed
       """
 
-    When I run `wp theme status stargazer`
+    When I run `wp theme status moina`
     Then STDOUT should contain:
       """
-      Theme stargazer details:
+      Theme moina details:
       """
     And STDERR should be empty
 
@@ -516,4 +574,88 @@ Feature: Manage WordPress themes
     And STDERR should be:
       """
       Error: Can't find the requested theme's version 1.4.2 in the WordPress.org theme repository (HTTP code 404).
+      """
+
+  Scenario: Get status field in theme detail
+    Given a WP install
+
+    When I run `wp theme install p2`
+    Then STDOUT should not be empty
+
+    When I run `wp theme get p2`
+    Then STDOUT should be a table containing rows:
+    | Field   | Value     |
+    | status  | inactive  |
+
+    When I run `wp theme get p2 --field=status`
+    Then STDOUT should be:
+       """
+       inactive
+       """
+
+    When I run `wp theme activate p2`
+    Then STDOUT should not be empty
+
+    When I run `wp theme get p2 --field=status`
+    Then STDOUT should be:
+       """
+       active
+       """
+
+  Scenario: Theme activation fails when slug does not match exactly
+    Given a WP install
+
+    When I run `wp theme install p2`
+    Then the return code should be 0
+
+    When I try `wp theme activate P2`
+    Then STDERR should contain:
+      """
+      Error: The 'P2' theme could not be found. Did you mean 'p2'?
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I try `wp theme activate p3`
+    Then STDERR should contain:
+      """
+      Error: The 'p3' theme could not be found. Did you mean 'p2'?
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I try `wp theme activate pb2`
+    Then STDERR should contain:
+      """
+      Error: The 'pb2' theme could not be found. Did you mean 'p2'?
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I try `wp theme activate completelyoff`
+    Then STDERR should contain:
+      """
+      Error: The 'completelyoff' theme could not be found.
+      """
+    And STDERR should not contain:
+      """
+      Did you mean
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+  Scenario: Only valid status filters are accepted when listing themes
+    Given a WP install
+
+    When I run `wp theme list`
+    Then STDERR should be empty
+
+    When I run `wp theme list --status=active`
+    Then STDERR should be empty
+
+    When I try `wp theme list --status=invalid-status`
+    Then STDERR should be:
+      """
+      Error: Parameter errors:
+       Invalid value specified for 'status' (Filter the output by theme status.)
       """
