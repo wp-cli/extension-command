@@ -694,4 +694,4 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list --fields=name,title,description`
     Then STDOUT should be a table containing rows:
       | name    | title             | description                                    |
-      | test    | Test mu-plugin    | Test mu-plugin description                     |
+      | test-mu | Test mu-plugin    | Test mu-plugin description                     |
