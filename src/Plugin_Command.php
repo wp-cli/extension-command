@@ -924,11 +924,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			if ( Utils\get_flag_value( $assoc_args, 'deactivate' ) ) {
 				WP_CLI::log( "Deactivating '{$plugin->name}'..." );
 				$this->chained_command = true;
-				$args                  = [];
+				$deactivate_args       = [];
 				if ( is_plugin_active_for_network( $plugin->file ) ) {
-					$args['network'] = true;
+					$deactivate_args['network'] = true;
 				}
-				$this->deactivate( array( $plugin->name ), $args );
+				$this->deactivate( array( $plugin->name ), $deactivate_args );
 				$this->chained_command = false;
 			}
 
