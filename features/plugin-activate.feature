@@ -78,7 +78,7 @@ Feature: Activate WordPress plugins
     When I run `wp plugin activate --all`
     Then STDOUT should be:
       """
-      Success: No plugins installed.
+      Success: No plugins activated.
       """
 
   @require-wp-5.2
@@ -106,3 +106,12 @@ Feature: Activate WordPress plugins
       """
       1 out of 1
       """
+
+  Scenario: Adding --exclude with plugin activate --all should exclude the plugins specified via --exclude
+    When I try `wp plugin activate --all --exclude=hello`
+    Then STDOUT should be:
+      """
+      Plugin 'akismet' activated.
+      Success: Activated 1 of 1 plugins.
+      """
+    And the return code should be 0
