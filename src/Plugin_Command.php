@@ -380,7 +380,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : If set, all plugins will be deactivated.
 	 *
 	 *  [--exclude=<name>]
-	 * : Comma separated list of plugin names that should be excluded from deactivation.
+	 * : Comma separated list of plugin slugs that should be excluded from deactivation.
 	 *
 	 * [--network]
 	 * : If set, the plugin will be deactivated for the entire multisite network.
