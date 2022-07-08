@@ -26,12 +26,12 @@ trait ParsePluginNameInput {
 
 		if ( $all && $exclude ) {
 			$exclude_list = explode( ',', trim( $exclude, ',' ) );
-			foreach ( $exclude_list as $exclude_item ) {
-				$exclude_index = array_search( $exclude_item, $args, true );
-				if ( false !== $exclude_index ) {
-					unset( $args[ $exclude_index ] );
+			$args         = array_filter(
+				$args,
+				static function( $slug ) use ( $exclude_list ) {
+					return ! in_array( $slug, $exclude_list, true );
 				}
-			}
+			);
 		}
 
 		if ( empty( $args ) ) {
