@@ -289,6 +289,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--all]
 	 * : If set, all plugins will be activated.
 	 *
+	 * [--exclude=<name>]
+	 * : Comma separated list of plugin slugs to be excluded from activation.
+	 *
 	 * [--network]
 	 * : If set, the plugin will be activated for the entire multisite network.
 	 *
@@ -307,8 +310,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	public function activate( $args, $assoc_args = array() ) {
 		$network_wide = Utils\get_flag_value( $assoc_args, 'network' );
 		$all          = Utils\get_flag_value( $assoc_args, 'all', false );
+		$all_exclude  = Utils\get_flag_value( $assoc_args, 'exclude' );
 
-		$args = $this->check_optional_args_and_all( $args, $all );
+		$args = $this->check_optional_args_and_all( $args, $all, 'activate', $all_exclude );
 		if ( ! $args ) {
 			return;
 		}
@@ -375,6 +379,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--all]
 	 * : If set, all plugins will be deactivated.
 	 *
+	 *  [--exclude=<name>]
+	 * : Comma separated list of plugin slugs that should be excluded from deactivation.
+	 *
 	 * [--network]
 	 * : If set, the plugin will be deactivated for the entire multisite network.
 	 *
@@ -384,12 +391,19 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     $ wp plugin deactivate hello
 	 *     Plugin 'hello' deactivated.
 	 *     Success: Deactivated 1 of 1 plugins.
+	 *
+	 *     # Deactivate all plugins with exclusion
+	 *     $ wp plugin deactivate --all --exclude=hello,wordpress-seo
+	 *     Plugin 'contact-form-7' deactivated.
+	 *     Plugin 'ninja-forms' deactivated.
+	 *     Success: Deactivated 2 of 2 plugins.
 	 */
 	public function deactivate( $args, $assoc_args = array() ) {
-		$network_wide = Utils\get_flag_value( $assoc_args, 'network' );
-		$disable_all  = Utils\get_flag_value( $assoc_args, 'all' );
+		$network_wide        = Utils\get_flag_value( $assoc_args, 'network' );
+		$disable_all         = Utils\get_flag_value( $assoc_args, 'all' );
+		$disable_all_exclude = Utils\get_flag_value( $assoc_args, 'exclude' );
 
-		$args = $this->check_optional_args_and_all( $args, $disable_all );
+		$args = $this->check_optional_args_and_all( $args, $disable_all, 'deactivate', $disable_all_exclude );
 		if ( ! $args ) {
 			return;
 		}
@@ -891,18 +905,28 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--all]
 	 * : If set, all plugins will be uninstalled.
 	 *
+	 * [--exclude=<name>]
+	 * : Comma separated list of plugin slugs to be excluded from uninstall.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp plugin uninstall hello
 	 *     Uninstalled and deleted 'hello' plugin.
 	 *     Success: Uninstalled 1 of 1 plugins.
+	 *
+	 *     # Uninstall all plugins excluding specified ones
+	 *     $ wp plugin uninstall --all --exclude=hello-dolly,jetpack
+	 *     Uninstalled and deleted 'akismet' plugin.
+	 *     Uninstalled and deleted 'tinymce-templates' plugin.
+	 *     Success: Uninstalled 2 of 2 plugins.
 	 */
 	public function uninstall( $args, $assoc_args = array() ) {
 
-		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+		$all         = Utils\get_flag_value( $assoc_args, 'all', false );
+		$all_exclude = Utils\get_flag_value( $assoc_args, 'exclude', false );
 
 		// Check if plugin names or --all is passed.
-		$args = $this->check_optional_args_and_all( $args, $all, 'uninstall' );
+		$args = $this->check_optional_args_and_all( $args, $all, 'uninstall', $all_exclude );
 		if ( ! $args ) {
 			return;
 		}
@@ -1014,6 +1038,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--all]
 	 * : If set, all plugins will be deleted.
 	 *
+	 * [--exclude=<name>]
+	 * : Comma separated list of plugin slugs to be excluded from deletion.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Delete plugin
@@ -1025,12 +1052,19 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     $ wp plugin delete $(wp plugin list --status=inactive --field=name)
 	 *     Deleted 'tinymce-templates' plugin.
 	 *     Success: Deleted 1 of 1 plugins.
+	 *
+	 *     # Delete all plugins excluding specified ones
+	 *     $ wp plugin delete --all --exclude=hello-dolly,jetpack
+	 *     Deleted 'akismet' plugin.
+	 *     Deleted 'tinymce-templates' plugin.
+	 *     Success: Deleted 2 of 2 plugins.
 	 */
 	public function delete( $args, $assoc_args = array() ) {
-		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+		$all         = Utils\get_flag_value( $assoc_args, 'all', false );
+		$all_exclude = Utils\get_flag_value( $assoc_args, 'exclude', false );
 
 		// Check if plugin names or --all is passed.
-		$args = $this->check_optional_args_and_all( $args, $all, 'delete' );
+		$args = $this->check_optional_args_and_all( $args, $all, 'delete', $all_exclude );
 		if ( ! $args ) {
 			return;
 		}

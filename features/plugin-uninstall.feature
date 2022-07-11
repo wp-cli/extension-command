@@ -71,3 +71,11 @@ Feature: Uninstall a WordPress plugin
       """
       Success: Uninstalled 2 of 2 plugins.
       """
+
+  Scenario: Excluding a plugin from uninstallation when using --all switch
+    When I try `wp plugin uninstall --all --exclude=akismet,hello`
+    Then STDOUT should be:
+      """
+      Success: No plugins uninstalled.
+      """
+    And the return code should be 0
