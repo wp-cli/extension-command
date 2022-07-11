@@ -57,7 +57,7 @@ See the WordPress [Plugin Handbook](https://developer.wordpress.org/plugins/) de
 Activates one or more plugins.
 
 ~~~
-wp plugin activate [<plugin>...] [--all] [--network]
+wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network]
 ~~~
 
 **OPTIONS**
@@ -67,6 +67,9 @@ wp plugin activate [<plugin>...] [--all] [--network]
 
 	[--all]
 		If set, all plugins will be activated.
+
+	[--exclude=<name>]
+		Comma separated list of plugin slugs to be excluded from activation.
 
 	[--network]
 		If set, the plugin will be activated for the entire multisite network.
@@ -90,7 +93,7 @@ wp plugin activate [<plugin>...] [--all] [--network]
 Deactivates one or more plugins.
 
 ~~~
-wp plugin deactivate [<plugin>...] [--uninstall] [--all] [--network]
+wp plugin deactivate [<plugin>...] [--uninstall] [--all]  [--exclude=<name>] [--network]
 ~~~
 
 **OPTIONS**
@@ -104,6 +107,9 @@ wp plugin deactivate [<plugin>...] [--uninstall] [--all] [--network]
 	[--all]
 		If set, all plugins will be deactivated.
 
+	 [--exclude=<name>]
+		Comma separated list of plugin names that should be excluded from deactivation.
+
 	[--network]
 		If set, the plugin will be deactivated for the entire multisite network.
 
@@ -114,6 +120,12 @@ wp plugin deactivate [<plugin>...] [--uninstall] [--all] [--network]
     Plugin 'hello' deactivated.
     Success: Deactivated 1 of 1 plugins.
 
+    # Deactivate all plugins with exclusion
+    $ wp plugin deactivate --all --exclude=hello,wordpress-seo
+    Plugin 'contact-form-7' deactivated.
+    Plugin 'ninja-forms' deactivated.
+    Success: Deactivated 2 of 2 plugins.
+
 
 
 ### wp plugin delete
@@ -121,7 +133,7 @@ wp plugin deactivate [<plugin>...] [--uninstall] [--all] [--network]
 Deletes plugin files without deactivating or uninstalling.
 
 ~~~
-wp plugin delete [<plugin>...] [--all]
+wp plugin delete [<plugin>...] [--all] [--exclude=<name>]
 ~~~
 
 **OPTIONS**
@@ -131,6 +143,9 @@ wp plugin delete [<plugin>...] [--all]
 
 	[--all]
 		If set, all plugins will be deleted.
+
+	[--exclude=<name>]
+		Comma separated list of plugin slugs to be excluded from deletion.
 
 **EXAMPLES**
 
@@ -143,6 +158,12 @@ wp plugin delete [<plugin>...] [--all]
     $ wp plugin delete $(wp plugin list --status=inactive --field=name)
     Deleted 'tinymce-templates' plugin.
     Success: Deleted 1 of 1 plugins.
+
+    # Delete all plugins excluding specified ones
+    $ wp plugin delete --all --exclude=hello-dolly,jetpack
+    Deleted 'akismet' plugin.
+    Deleted 'tinymce-templates' plugin.
+    Success: Deleted 2 of 2 plugins.
 
 
 
@@ -578,7 +599,7 @@ inactive, then it will be activated.
 Uninstalls one or more plugins.
 
 ~~~
-wp plugin uninstall [<plugin>...] [--deactivate] [--skip-delete] [--all]
+wp plugin uninstall [<plugin>...] [--deactivate] [--skip-delete] [--all] [--exclude=<name>]
 ~~~
 
 **OPTIONS**
@@ -596,11 +617,20 @@ wp plugin uninstall [<plugin>...] [--deactivate] [--skip-delete] [--all]
 	[--all]
 		If set, all plugins will be uninstalled.
 
+	[--exclude=<name>]
+		Comma separated list of plugin slugs to be excluded from uninstall.
+
 **EXAMPLES**
 
     $ wp plugin uninstall hello
     Uninstalled and deleted 'hello' plugin.
     Success: Uninstalled 1 of 1 plugins.
+
+    # Uninstall all plugins excluding specified ones
+    $ wp plugin uninstall --all --exclude=hello-dolly,jetpack
+    Uninstalled and deleted 'akismet' plugin.
+    Uninstalled and deleted 'tinymce-templates' plugin.
+    Success: Uninstalled 2 of 2 plugins.
 
 
 

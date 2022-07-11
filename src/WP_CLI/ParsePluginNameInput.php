@@ -13,13 +13,24 @@ trait ParsePluginNameInput {
 	 * @param bool   $all All flag.
 	 * @param string $verb Optional. Verb to use. Defaults to 'install'.
 	 * @return array Same as $args if not all, otherwise all slugs.
+	 * @param string $exclude Comma separated list of plugin slugs.
 	 * @throws ExitException If neither plugin name nor --all were provided.
 	 */
-	protected function check_optional_args_and_all( $args, $all, $verb = 'install' ) {
+	protected function check_optional_args_and_all( $args, $all, $verb = 'install', $exclude = null ) {
 		if ( $all ) {
 			$args = array_map(
 				'\WP_CLI\Utils\get_plugin_name',
 				array_keys( $this->get_all_plugins() )
+			);
+		}
+
+		if ( $all && $exclude ) {
+			$exclude_list = explode( ',', trim( $exclude, ',' ) );
+			$args         = array_filter(
+				$args,
+				static function( $slug ) use ( $exclude_list ) {
+					return ! in_array( $slug, $exclude_list, true );
+				}
 			);
 		}
 

@@ -39,3 +39,11 @@ Feature: Delete WordPress plugins
       Warning: The 'edit-flow' plugin could not be found.
       """
     And the return code should be 0
+
+  Scenario: Excluding a plugin from deletion when using --all switch
+    When I try `wp plugin delete --all --exclude=akismet,hello`
+    Then STDOUT should be:
+      """
+      Success: No plugins deleted.
+      """
+    And the return code should be 0
