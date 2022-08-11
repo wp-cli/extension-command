@@ -159,6 +159,17 @@ trait ParseThemeNameInput {
 	}
 
 	/**
+	 * Check whether a given theme is the active theme parent.
+	 *
+	 * @param string $theme Theme to check.
+	 *
+	 * @return bool Whether the provided theme is the active theme.
+	 */
+	protected function is_active_parent_theme( $theme ) {
+		return $theme->get_stylesheet_directory() === get_template_directory();
+	}
+
+	/**
 	 * Get the available update info.
 	 *
 	 * @return mixed Available update info.
