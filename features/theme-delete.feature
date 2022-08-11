@@ -57,7 +57,6 @@ Feature: Delete WordPress themes
   Scenario: Delete all installed themes when active theme has a parent
     Given a WP install
     And I run `wp theme install moina-blog --activate`
-    And I run `wp theme activate moina`
 
     When I run `wp theme list --field=name`
     Then STDOUT should contain:
@@ -66,12 +65,18 @@ Feature: Delete WordPress themes
       moina
       """
 
-    When I try `wp theme delete moina moina-blog`
+    When I try `wp theme delete moina-blog`
     Then STDERR should contain:
       """
       Can't delete the currently active theme
       """
     And STDERR should contain:
+      """
+      Error: No themes deleted.
+      """
+
+    When I try `wp theme delete moina`
+    Then STDERR should contain:
       """
       Can't delete the parent of the currently active theme
       """
