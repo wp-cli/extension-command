@@ -782,6 +782,14 @@ class Theme_Command extends CommandWithUpgrade {
 				continue;
 			}
 
+			if ( $this->is_active_parent_theme( $theme ) && ! $force ) {
+				if ( ! $all ) {
+					WP_CLI::warning( "Can't delete the parent of the currently active theme: $theme_slug" );
+					$errors++;
+				}
+				continue;
+			}
+
 			$r = delete_theme( $theme_slug );
 
 			if ( is_wp_error( $r ) ) {
