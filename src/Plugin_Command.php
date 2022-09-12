@@ -754,6 +754,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : If set, get that particular version from wordpress.org, instead of the
 	 * stable version.
 	 *
+	 * [--adapt-slug[=<adapt-slug>]]
+	 * : If set, the plugin will be installed in a folder named <adapt-slug>. If provided and not set to a value, the plugin folder name will be retrieved from the plugin header.
+	 *
 	 * [--force]
 	 * : If set, the command will overwrite any installed version of the plugin, without prompting
 	 * for confirmation.
@@ -823,6 +826,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Removing the old version of the plugin...
 	 *     Plugin updated successfully
 	 *     Success: Installed 1 of 1 plugins.
+	 *
+	 *     # Install from a local zip file and set the plugin folder name
+	 *     $ wp plugin install ../my-plugin.zip --adapt-slug=different-name
+	 *
+	 *     # Install from a remote zip file and name the plugin folder after the name in the plugin header
+	 *     $ wp plugin install https://downloads.wordpress.org/plugin/akismet.3.1.11.zip --adapt-slug
 	 */
 	public function install( $args, $assoc_args ) {
 
@@ -1236,6 +1245,25 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$plugin_file   = Utils\basename( $file );
 
 		return $plugin_folder[ $plugin_file ];
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	protected function get_project_name_from_header( $project_dir ) {
+		$files = glob( $project_dir . '*.php' );
+		if ( ! $files ) {
+			return null;
+		}
+
+		foreach ( $files as $file ) {
+			$info = get_plugin_data( $file, false, false );
+			if ( ! empty( $info['Name'] ) ) {
+				return $info['Name'];
+			}
+		}
+
+		return null;
 	}
 
 	private function delete_plugin( $plugin ) {

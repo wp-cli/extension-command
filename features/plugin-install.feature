@@ -83,6 +83,64 @@ Feature: Install WordPress plugins
       """
     And the wp-content/plugins/modern-framework directory should exist
 
+  Scenario: Directories should be named after the provided adapt-slug
+    Given a WP install
+
+    When I run `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/archive/refs/heads/master.zip --activate --adapt-slug=boom`
+    Then STDOUT should contain:
+      """
+      Downloading install
+      """
+    And STDOUT should contain:
+      """
+      package from https://github.com/wp-cli-test/generic-example-plugin/archive/refs/heads/master.zip
+      """
+    And STDOUT should contain:
+      """
+      Renamed Github-based project from 'generic-example-plugin-master' to 'boom'.
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the wp-content/plugins/boom directory should exist
+    And the wp-content/plugins/generic-example-plugin-master directory should not exist
+
+    When I run `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/archive/refs/heads/master.zip --activate --adapt-slug`
+    Then STDOUT should contain:
+      """
+      Downloading install
+      """
+    And STDOUT should contain:
+      """
+      package from https://github.com/wp-cli-test/generic-example-plugin/archive/refs/heads/master.zip
+      """
+    And STDOUT should contain:
+      """
+      Renamed Github-based project from 'generic-example-plugin-master' to 'example-plugin'.
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the wp-content/plugins/example-plugin directory should exist
+    And the wp-content/plugins/generic-example-plugin-master directory should not exist
+
+    When I run `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/archive/refs/heads/master.zip --activate --adapt-slug=generic-example-plugin-master`
+    Then STDOUT should contain:
+      """
+      Downloading install
+      """
+    And STDOUT should contain:
+      """
+      package from https://github.com/wp-cli-test/generic-example-plugin/archive/refs/heads/master.zip
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the wp-content/plugins/generic-example-plugin-master directory should exist
+
   Scenario: Installing respects WP_PROXY_HOST and WP_PROXY_PORT
     Given a WP install
     And a invalid-proxy-details.php file:

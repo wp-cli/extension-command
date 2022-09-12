@@ -64,6 +64,15 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
 
+	/**
+	 * Gets the project's name from the project's header file.
+	 *
+	 * @param string $project_dir Path to the project directory.
+	 *
+	 * @return string
+	 */
+	abstract protected function get_project_name_from_header( $project_dir );
+
 	public function status( $args ) {
 		// Force WordPress to check for updates.
 		call_user_func( $this->upgrade_refresh );
@@ -168,9 +177,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						// Don't attempt to rename ZIPs uploaded to the releases page or coming from a raw source.
 						&& ! preg_match( '#github\.com/[^/]+/[^/]+/(?:releases/download|raw)/#', $slug ) ) {
 
-					$filter = function( $source, $remote_source, $upgrader ) use ( $slug ) {
+					$filter = function( $source, $remote_source, $upgrader ) use ( $slug, $assoc_args ) {
 
-						$slug_dir = Utils\basename( $this->parse_url_host_component( $slug, PHP_URL_PATH ), '.zip' );
+						$slug_dir = $this->get_slug_dir_from_host_component( $slug );
 
 						// Don't use the zip name if archive attached to release, as name likely to contain version tag/branch.
 						if ( preg_match( '#github\.com/[^/]+/([^/]+)/archive/#', $slug, $matches ) ) {
@@ -178,18 +187,37 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 							$slug_dir = $matches[1];
 						}
 
-						$source_dir = Utils\basename( $source ); // `$source` is trailing-slashed path to the unzipped archive directory, so basename returns the unslashed directory.
-						if ( $source_dir === $slug_dir ) {
+						$slug_dir = $this->get_destination_dir( $assoc_args, $slug_dir, $source );
+
+						if ( $source === $slug_dir ) {
 							return $source;
 						}
-						$new_path = substr_replace( $source, $slug_dir, strrpos( $source, $source_dir ), strlen( $source_dir ) );
 
-						if ( $GLOBALS['wp_filesystem']->move( $source, $new_path ) ) {
-							WP_CLI::log( sprintf( "Renamed Github-based project from '%s' to '%s'.", $source_dir, $slug_dir ) );
-							return $new_path;
+						if ( $GLOBALS['wp_filesystem']->move( $source, $slug_dir ) ) {
+							WP_CLI::log( sprintf( "Renamed Github-based project from '%s' to '%s'.", Utils\basename( $source ), Utils\basename( $slug_dir ) ) );
+							return $slug_dir;
 						}
 
 						return new WP_Error( 'wpcli_install_github', "Couldn't move Github-based project to appropriate directory." );
+					};
+
+					add_filter( 'upgrader_source_selection', $filter, 10, 3 );
+				} elseif ( ! empty( $assoc_args['adapt-slug'] ) ) {
+					$filter = function( $source, $remote_source, $upgrader ) use ( $slug, $assoc_args ) {
+
+						$slug_dir = $this->get_slug_dir_from_host_component( $slug );
+						$slug_dir = $this->get_destination_dir( $assoc_args, $slug_dir, $source );
+
+						if ( $source === $slug_dir ) {
+							return $source;
+						}
+
+						if ( $GLOBALS['wp_filesystem']->move( $source, $slug_dir ) ) {
+							WP_CLI::log( sprintf( "Renamed project from '%s' to '%s'.", Utils\basename( $source ), Utils\basename( $slug_dir ) ) );
+							return $slug_dir;
+						}
+
+						return new WP_Error( 'wpcli_install_project', "Couldn't move project to appropriate directory." );
 					};
 					add_filter( 'upgrader_source_selection', $filter, 10, 3 );
 				}
@@ -253,6 +281,46 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		}
 		Utils\report_batch_operation_results( $this->item_type, 'install', count( $args ), $successes, $errors );
+	}
+
+	/**
+	 * Gets the destination directory for the project being installed.
+	 *
+	 * @param array $assoc_args The associative args passed to the command.
+	 * @param string $slug_dir The destination directory name.
+	 * @param string $source File source location.
+	 *
+	 * @return string
+	 */
+	protected function get_destination_dir( $assoc_args, $slug_dir, $source ) {
+		$source_dir = Utils\basename( $source ); // `$source` is trailing-slashed path to the unzipped archive directory, so basename returns the unslashed directory.
+		$original_slug_dir = $slug_dir;
+
+		if ( ! empty( $assoc_args['adapt-slug'] ) ) {
+			$slug_dir = $assoc_args['adapt-slug'];
+
+			if ( ! is_string( $slug_dir ) ) {
+				$name = $this->get_project_name_from_header( $source );
+				$slug_dir = $name ? sanitize_title( $name ) : $original_slug_dir;
+			}
+		}
+
+		if ( $source_dir === $slug_dir ) {
+			return $source;
+		}
+
+		return substr_replace( $source, $slug_dir, strrpos( $source, $source_dir ), strlen( $source_dir ) );
+	}
+
+	/**
+	 * Get the slug directory from the parsed URL host component.
+	 *
+	 * @param string $slug The slug to parse.
+	 *
+	 * @return string
+	 */
+	protected function get_slug_dir_from_host_component( $slug ) {
+		return Utils\basename( $this->parse_url_host_component( $slug, PHP_URL_PATH ), '.zip' );
 	}
 
 	/**

@@ -450,6 +450,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 * : If set, get that particular version from wordpress.org, instead of the
 	 * stable version.
 	 *
+	 * [--adapt-slug[=<adapt-slug>]]
+	 * : If set, the plugin will be installed in a folder named <adapt-slug>. If provided and not set to a value, the plugin folder name will be retrieved from the plugin header.
+	 *
 	 * [--force]
 	 * : If set, the command will overwrite any installed version of the theme, without prompting
 	 * for confirmation.
@@ -477,6 +480,12 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 *     # Install from a remote zip file
 	 *     $ wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+	 *
+	 *     # Install from a local zip file and set the theme folder name
+	 *     $ wp theme install ../my-theme.zip --adapt-slug=different-name
+	 *
+	 *     # Install from a remote zip file and name the theme folder after the "Theme Name" in the style.css header
+	 *     $ wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef --adapt-slug
 	 */
 	public function install( $args, $assoc_args ) {
 
@@ -886,5 +895,19 @@ class Theme_Command extends CommandWithUpgrade {
 		}
 
 		return $template_path;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	protected function get_project_name_from_header( $project_dir ) {
+		$stylesheet_path = $project_dir . '/style.css';
+		$contents        = file_get_contents( $stylesheet_path );
+
+		if ( preg_match( '|Theme Name:\s*(.*)$|mi', $contents, $matches ) ) {
+			return trim( $matches[1] );
+		}
+
+		return null;
 	}
 }

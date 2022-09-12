@@ -105,3 +105,61 @@ Feature: Install WordPress themes
     Success: Switched to 'P2' theme.
     Success: Theme already installed.
     """
+
+  Scenario: Directories should be named after the provided adapt-slug
+    Given a WP install
+
+    When I run `wp theme install https://downloads.wordpress.org/theme/twentyfifteen.3.2.zip --activate --adapt-slug=boom`
+    Then STDOUT should contain:
+      """
+      Downloading install
+      """
+    And STDOUT should contain:
+      """
+      package from https://downloads.wordpress.org/theme/twentyfifteen.3.2.zip
+      """
+    And STDOUT should contain:
+      """
+      Renamed project from 'twentyfifteen' to 'boom'.
+      """
+    And STDOUT should contain:
+      """
+      Theme installed successfully.
+      """
+    And the wp-content/themes/boom directory should exist
+    And the wp-content/themes/twentyfifteen directory should not exist
+
+    When I run `wp theme install https://downloads.wordpress.org/theme/twentyfifteen.3.2.zip --activate --adapt-slug`
+    Then STDOUT should contain:
+      """
+      Downloading install
+      """
+    And STDOUT should contain:
+      """
+      package from https://downloads.wordpress.org/theme/twentyfifteen.3.2.zip
+      """
+    And STDOUT should contain:
+      """
+      Renamed project from 'twentyfifteen' to 'twenty-fifteen'.
+      """
+    And STDOUT should contain:
+      """
+      Theme installed successfully.
+      """
+    And the wp-content/themes/twenty-fifteen directory should exist
+    And the wp-content/themes/twentyfifteen directory should not exist
+
+    When I run `wp theme install https://downloads.wordpress.org/theme/twentyfifteen.3.2.zip --activate --adapt-slug=twentyfifteen`
+    Then STDOUT should contain:
+      """
+      Downloading install
+      """
+    And STDOUT should contain:
+      """
+      package from https://downloads.wordpress.org/theme/twentyfifteen.3.2.zip
+      """
+    And STDOUT should contain:
+      """
+      Theme installed successfully.
+      """
+    And the wp-content/themes/twentyfifteen directory should exist
