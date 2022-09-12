@@ -659,3 +659,17 @@ Feature: Manage WordPress themes
       Error: Parameter errors:
        Invalid value specified for 'status' (Filter the output by theme status.)
       """
+
+  Scenario: Parent theme is active when its child is active
+    Given a WP install
+    And I run `wp theme install p2`
+    And I run `wp theme install moina-blog --activate`
+
+    When I run `wp theme is-active moina-blog`
+    Then the return code should be 0
+
+    When I run `wp theme is-active moina`
+    Then the return code should be 0
+
+    When I try `wp theme is-active p2`
+    Then the return code should be 1

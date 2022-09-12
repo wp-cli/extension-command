@@ -731,7 +731,7 @@ class Theme_Command extends CommandWithUpgrade {
 			WP_CLI::halt( 1 );
 		}
 
-		$this->is_active_theme( $theme ) ? WP_CLI::halt( 0 ) : WP_CLI::halt( 1 );
+		$this->is_active_theme( $theme ) || $this->is_active_parent_theme( $theme ) ? WP_CLI::halt( 0 ) : WP_CLI::halt( 1 );
 	}
 
 	/**
