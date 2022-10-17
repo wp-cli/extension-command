@@ -79,3 +79,15 @@ Feature: Uninstall a WordPress plugin
       Success: No plugins uninstalled.
       """
     And the return code should be 0
+
+
+
+  Scenario: Excluding a missing plugin should not throw an error
+    Given a WP install
+    And I run `wp plugin uninstall --all --exclude=missing-plugin`
+    Then STDERR should be empty
+    And STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0

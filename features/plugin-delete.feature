@@ -47,3 +47,13 @@ Feature: Delete WordPress plugins
       Success: No plugins deleted.
       """
     And the return code should be 0
+
+  Scenario: Excluding a missing plugin should not throw an error
+    Given a WP install
+    And I run `wp plugin delete --all --exclude=missing-plugin`
+    Then STDERR should be empty
+    And STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0

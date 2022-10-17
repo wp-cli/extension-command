@@ -673,3 +673,15 @@ Feature: Manage WordPress themes
 
     When I try `wp theme is-active p2`
     Then the return code should be 1
+
+  Scenario: Excluding a missing theme should not throw an error
+    Given a WP install
+    And I run `wp theme delete --all --force`
+    And I run `wp theme install p2 --version=1.5.5 --activate`
+    And I run `wp theme update --all --exclude=missing-theme`
+    Then STDERR should be empty
+    And STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0
