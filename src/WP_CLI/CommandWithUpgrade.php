@@ -360,9 +360,15 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			foreach ( $exclude_items as $item ) {
 				if ( 'plugin' === $this->item_type ) {
 					$plugin = $this->fetcher->get( $item );
+					if ( ! $plugin ) {
+						continue;
+					}
 					unset( $items_to_update[ $plugin->file ] );
 				} elseif ( 'theme' === $this->item_type ) {
 					$theme_root = get_theme_root() . '/' . $item;
+					if ( ! is_dir( $theme_root ) ) {
+						continue;
+					}
 					unset( $items_to_update[ $theme_root ] );
 				}
 			}
