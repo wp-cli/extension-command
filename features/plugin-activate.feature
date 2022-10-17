@@ -115,3 +115,13 @@ Feature: Activate WordPress plugins
       Success: Activated 1 of 1 plugins.
       """
     And the return code should be 0
+
+  Scenario: Excluding a missing plugin should not throw an error
+    Given a WP install
+    And I run `wp plugin activate --all --exclude=missing-plugin`
+    Then STDERR should be empty
+    And STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0
