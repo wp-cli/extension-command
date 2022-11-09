@@ -334,7 +334,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$items = $this->get_item_list();
 
-		$errors = 0;
+		$errors  = 0;
 		$skipped = 0;
 		if ( ! Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			$items  = $this->filter_item_list( $items, $args );
