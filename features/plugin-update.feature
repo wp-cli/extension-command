@@ -239,7 +239,7 @@ Feature: Update WordPress plugins
     When I run `wp plugin install wordpress-importer --version=0.5`
     Then STDOUT should not be empty
 
-    When I run `sed -i bak 's/Version: .*/Version: 10000/' $(wp plugin path health-check)`
+    When I run `sed -ibak 's/Version: .*/Version: 10000/' $(wp plugin path health-check)`
     Then STDOUT should be empty
     And the return code should be 0
 
