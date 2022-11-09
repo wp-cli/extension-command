@@ -479,6 +479,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 
 		$total_updated = Utils\get_flag_value( $assoc_args, 'all' ) ? $num_to_update : count( $args );
+		if ( 0 === $num_updated && $skipped ) {
+			$errors = $skipped;
+			$skipped = null;
+		}
 		Utils\report_batch_operation_results( $this->item_type, 'update', $total_updated, $num_updated, $errors, $skipped );
 		if ( null !== $exclude ) {
 			WP_CLI::log( "Skipped updates for: $exclude" );
