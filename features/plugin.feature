@@ -341,6 +341,7 @@ Feature: Manage WordPress plugins
       | akismet            | active   | akismet/akismet.php                       |
       | wordpress-importer | inactive | wordpress-importer/wordpress-importer.php |
 
+  @require-wp-5.2
   Scenario: Flag `--skip-update-check` skips update check when running `wp plugin list`
     Given a WP install
 
