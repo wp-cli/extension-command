@@ -4,7 +4,10 @@ Feature: Update WordPress plugins
     Given a WP install
 
     When I run `wp plugin install wordpress-importer --version=0.5 --force`
-    Then STDOUT should not be empty
+    Then STDOUT should include:
+      """
+      Success:
+      """
 
     When I run `wp plugin list --name=wordpress-importer --field=update_version`
     Then STDOUT should not be empty
