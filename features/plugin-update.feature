@@ -1,5 +1,6 @@
 Feature: Update WordPress plugins
 
+  @require-wp-5.2
   Scenario: Updating plugin with invalid version shouldn't remove the old version
     Given a WP install
 
@@ -45,6 +46,7 @@ Feature: Update WordPress plugins
       """
     And the return code should be 1
 
+  @require-wp-5.2
   Scenario: Exclude plugin updates from bulk updates.
     Given a WP install
 
@@ -76,6 +78,7 @@ Feature: Update WordPress plugins
       Update available
       """
 
+  @require-wp-5.2
   Scenario: Update a plugin to its latest patch release
     Given a WP install
     And I run `wp plugin install --force wordpress-importer --version=0.5`
@@ -109,6 +112,7 @@ Feature: Update WordPress plugins
       2.6.1
       """
 
+  @require-wp-5.2
   Scenario: Not giving a slug on update should throw an error unless --all given
     Given a WP install
     And I run `wp plugin path`
@@ -229,7 +233,7 @@ Feature: Update WordPress plugins
       """
     And the return code should be 0
 
-
+  @require-wp-5.2
   Scenario: Updating all plugins with some of them having an invalid version shouldn't report an error
     Given a WP install
 
