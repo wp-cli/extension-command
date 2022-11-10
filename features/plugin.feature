@@ -159,7 +159,7 @@ Feature: Manage WordPress plugins
       """
     And STDERR should contain:
       """
-      Error: No plugins updated.
+      Error: No plugins updated (2 failed).
       """
     And the return code should be 1
 
@@ -177,7 +177,7 @@ Feature: Manage WordPress plugins
       """
     And STDERR should contain:
       """
-      Error: Only updated 1 of 3 plugins.
+      Error: Only updated 1 of 3 plugins (2 failed).
       """
     And the return code should be 1
 

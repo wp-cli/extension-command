@@ -228,3 +228,33 @@ Feature: Update WordPress plugins
       Success:
       """
     And the return code should be 0
+
+
+  Scenario: Updating all plugins with some of them having an invalid version shouldn't report an error
+    Given a WP install
+
+    When I run `wp plugin install health-check --version=1.5.0`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin install wordpress-importer --version=0.5`
+    Then STDOUT should not be empty
+
+    When I run `sed -i.bak 's/Version: .*/Version: 10000/' $(wp plugin path health-check)`
+    Then STDOUT should be empty
+    And the return code should be 0
+
+    When I try `wp plugin update --all`
+    Then STDERR should contain:
+      """
+      Warning: health-check: version higher than expected.
+      """
+
+    And STDOUT should not contain:
+      """
+      Error: Only updated 1 of 1 plugins.
+      """
+
+    And STDOUT should contain:
+      """
+      Success: Updated 1 of 1 plugins (1 skipped).
+      """
