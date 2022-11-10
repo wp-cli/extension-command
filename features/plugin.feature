@@ -159,7 +159,7 @@ Feature: Manage WordPress plugins
       """
     And STDERR should contain:
       """
-      Error: No plugins updated.
+      Error: No plugins updated (2 failed).
       """
     And the return code should be 1
 
@@ -177,7 +177,7 @@ Feature: Manage WordPress plugins
       """
     And STDERR should contain:
       """
-      Error: Only updated 1 of 3 plugins.
+      Error: Only updated 1 of 3 plugins (2 failed).
       """
     And the return code should be 1
 
@@ -341,6 +341,7 @@ Feature: Manage WordPress plugins
       | akismet            | active   | akismet/akismet.php                       |
       | wordpress-importer | inactive | wordpress-importer/wordpress-importer.php |
 
+  @require-wp-5.2
   Scenario: Flag `--skip-update-check` skips update check when running `wp plugin list`
     Given a WP install
 

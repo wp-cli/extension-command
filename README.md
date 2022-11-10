@@ -93,7 +93,7 @@ wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network]
 Deactivates one or more plugins.
 
 ~~~
-wp plugin deactivate [<plugin>...] [--uninstall] [--all]  [--exclude=<name>] [--network]
+wp plugin deactivate [<plugin>...] [--uninstall] [--all] [--exclude=<name>] [--network]
 ~~~
 
 **OPTIONS**
@@ -107,7 +107,7 @@ wp plugin deactivate [<plugin>...] [--uninstall] [--all]  [--exclude=<name>] [--
 	[--all]
 		If set, all plugins will be deactivated.
 
-	 [--exclude=<name>]
+	[--exclude=<name>]
 		Comma separated list of plugin slugs that should be excluded from deactivation.
 
 	[--network]

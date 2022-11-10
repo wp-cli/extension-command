@@ -334,7 +334,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$items = $this->get_item_list();
 
-		$errors = 0;
+		$errors  = 0;
+		$skipped = 0;
 		if ( ! Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			$items  = $this->filter_item_list( $items, $args );
 			$errors = count( $args ) - count( $items );
@@ -378,7 +379,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		foreach ( $items_to_update as $item_key => $item_info ) {
 			if ( static::INVALID_VERSION_MESSAGE === $item_info['update'] ) {
 				WP_CLI::warning( "{$item_info['name']}: " . static::INVALID_VERSION_MESSAGE . '.' );
-				$errors++;
+				$skipped++;
 				unset( $items_to_update[ $item_key ] );
 			}
 		}
@@ -478,7 +479,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 
 		$total_updated = Utils\get_flag_value( $assoc_args, 'all' ) ? $num_to_update : count( $args );
-		Utils\report_batch_operation_results( $this->item_type, 'update', $total_updated, $num_updated, $errors );
+		if ( 0 === $num_updated && $skipped ) {
+			$errors  = $skipped;
+			$skipped = null;
+		}
+		Utils\report_batch_operation_results( $this->item_type, 'update', $total_updated, $num_updated, $errors, $skipped );
 		if ( null !== $exclude ) {
 			WP_CLI::log( "Skipped updates for: $exclude" );
 		}
