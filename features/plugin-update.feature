@@ -10,7 +10,10 @@ Feature: Update WordPress plugins
       """
 
     When I run `wp plugin list --name=wordpress-importer --field=update_version`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      1234
+      """
     And save STDOUT as {UPDATE_VERSION}
 
     When I run `wp plugin list`
