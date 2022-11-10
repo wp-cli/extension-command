@@ -92,7 +92,7 @@ Feature: Uninstall a WordPress plugin
       """
     And the return code should be 0
 
-  @requires-wp-5.2
+  @require-wp-5.2
   Scenario: Uninstalling a plugin should remove its language pack too
     Given a WP install
     And I run `wp plugin install wordpress-importer`
