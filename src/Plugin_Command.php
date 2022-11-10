@@ -951,34 +951,32 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				$this->deactivate( array( $plugin->name ) );
 				$this->chained_command = false;
 			}
-			
-			if ( is_uninstallable_plugin( $plugin->file ) ) {
-				uninstall_plugin( $plugin->file );
 
-				$plugin_translations = wp_get_installed_translations( 'plugins' );
+			uninstall_plugin( $plugin->file );
 
-				$plugin_slug = dirname( $plugin->file );
+			$plugin_translations = wp_get_installed_translations( 'plugins' );
 
-				if ( 'hello.php' === $plugin->file ) {
-					$plugin_slug = 'hello-dolly';
-				}
+			$plugin_slug = dirname( $plugin->file );
 
-				// Remove language files, silently.
-				if ( '.' !== $plugin_slug && ! empty( $plugin_translations[ $plugin_slug ] ) ) {
-					$translations = $plugin_translations[ $plugin_slug ];
+			if ( 'hello.php' === $plugin->file ) {
+				$plugin_slug = 'hello-dolly';
+			}
 
-					global $wp_filesystem;
-					require_once ( ABSPATH . '/wp-admin/includes/file.php' );
-					WP_Filesystem();
+			// Remove language files, silently.
+			if ( '.' !== $plugin_slug && ! empty( $plugin_translations[ $plugin_slug ] ) ) {
+				$translations = $plugin_translations[ $plugin_slug ];
 
-					foreach ( $translations as $translation => $data ) {
-						$wp_filesystem->delete( WP_LANG_DIR . '/plugins/' . $plugin_slug . '-' . $translation . '.po' );
-						$wp_filesystem->delete( WP_LANG_DIR . '/plugins/' . $plugin_slug . '-' . $translation . '.mo' );
+				global $wp_filesystem;
+				require_once ( ABSPATH . '/wp-admin/includes/file.php' );
+				WP_Filesystem();
 
-						$json_translation_files = glob( WP_LANG_DIR . '/plugins/' . $plugin_slug . '-' . $translation . '-*.json' );
-						if ( $json_translation_files ) {
-							array_map( array( $wp_filesystem, 'delete' ), $json_translation_files );
-						}
+				foreach ( $translations as $translation => $data ) {
+					$wp_filesystem->delete( WP_LANG_DIR . '/plugins/' . $plugin_slug . '-' . $translation . '.po' );
+					$wp_filesystem->delete( WP_LANG_DIR . '/plugins/' . $plugin_slug . '-' . $translation . '.mo' );
+
+					$json_translation_files = glob( WP_LANG_DIR . '/plugins/' . $plugin_slug . '-' . $translation . '-*.json' );
+					if ( $json_translation_files ) {
+						array_map( array( $wp_filesystem, 'delete' ), $json_translation_files );
 					}
 				}
 			}
