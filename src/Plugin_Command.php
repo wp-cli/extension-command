@@ -967,7 +967,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				$translations = $plugin_translations[ $plugin_slug ];
 
 				global $wp_filesystem;
-				require_once ( ABSPATH . '/wp-admin/includes/file.php' );
+				require_once ABSPATH . '/wp-admin/includes/file.php';
 				WP_Filesystem();
 
 				foreach ( $translations as $translation => $data ) {
