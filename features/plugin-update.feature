@@ -4,7 +4,7 @@ Feature: Update WordPress plugins
     Given a WP install
 
     When I run `wp plugin install wordpress-importer --version=0.5 --force`
-    Then STDOUT should include:
+    Then STDOUT should contain:
       """
       Success:
       """
