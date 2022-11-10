@@ -91,3 +91,26 @@ Feature: Uninstall a WordPress plugin
       Success:
       """
     And the return code should be 0
+
+  @require-wp-5.2
+  Scenario: Uninstalling a plugin should remove its language pack too
+    Given a WP install
+    And I run `wp plugin install wordpress-importer`
+    And I run `wp core language install fr_FR`
+    And I run `wp site switch-language fr_FR`
+
+    When I run `wp language plugin install wordpress-importer fr_FR`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+    And the wp-content/languages/plugins/wordpress-importer-fr_FR.mo file should exist
+    And the wp-content/languages/plugins/wordpress-importer-fr_FR.po file should exist
+
+    When I run `wp plugin uninstall wordpress-importer`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+    And the wp-content/languages/plugins/wordpress-importer-fr_FR.mo file should not exist
+    And the wp-content/languages/plugins/wordpress-importer-fr_FR.po file should not exist
