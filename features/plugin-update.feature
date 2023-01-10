@@ -236,6 +236,7 @@ Feature: Update WordPress plugins
   @require-wp-5.2
   Scenario: Updating all plugins with some of them having an invalid version shouldn't report an error
     Given a WP install
+    And I run `wp plugin delete akismet`
 
     When I run `wp plugin install health-check --version=1.5.0`
     Then STDOUT should not be empty

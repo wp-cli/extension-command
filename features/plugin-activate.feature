@@ -35,18 +35,18 @@ Feature: Activate WordPress plugins
     And the return code should be 1
 
   Scenario: Activate all when one plugin is hidden by "all_plugins" filter
-    Given I run `wp plugin install query-monitor`
-    And a wp-content/mu-plugins/hide-qm-plugin.php file:
+    Given I run `wp plugin install user-switching`
+    And a wp-content/mu-plugins/hide-us-plugin.php file:
       """
       <?php
       /**
-       * Plugin Name: Hide Query Monitor on Production
-       * Description: Hides the Query Monitor plugin on production sites
+       * Plugin Name: Hide User Switching on Production
+       * Description: Hides the User Switching plugin on production sites
        * Author: WP-CLI tests
        */
 
        add_filter( 'all_plugins', function( $all_plugins ) {
-          unset( $all_plugins['query-monitor/query-monitor.php'] );
+          unset( $all_plugins['user-switching/user-switching.php'] );
           return $all_plugins;
        } );
        """
@@ -59,7 +59,7 @@ Feature: Activate WordPress plugins
       """
     And STDOUT should not contain:
       """
-      Plugin 'query-monitor' activated.
+      Plugin 'user-switching' activated.
       """
 
   Scenario: Not giving a slug on activate should throw an error unless --all given
