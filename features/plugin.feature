@@ -572,19 +572,19 @@ Feature: Manage WordPress plugins
       """
       akismet
       jetpack
-      query-monitor
+      user-switching
       """
-    And a wp-content/mu-plugins/hide-qm-plugin.php file:
+    And a wp-content/mu-plugins/hide-us-plugin.php file:
       """
       <?php
       /**
-       * Plugin Name: Hide Query Monitor on Production
-       * Description: Hides the Query Monitor plugin on production sites
+       * Plugin Name: Hide User Switchign on Production
+       * Description: Hides the User Switching plugin on production sites
        * Author: WP-CLI tests
        */
 
        add_filter( 'all_plugins', function( $all_plugins ) {
-          unset( $all_plugins['query-monitor/query-monitor.php'] );
+          unset( $all_plugins['user-switching/user-switching.php'] );
           return $all_plugins;
        } );
        """
@@ -592,7 +592,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list --fields=name`
     Then STDOUT should not contain:
       """
-      query-monitor
+      user-switching
       """
 
   Scenario: Show dropins plugin list
