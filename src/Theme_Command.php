@@ -663,13 +663,8 @@ class Theme_Command extends CommandWithUpgrade {
 
 		if ( isset( $assoc_args['version'] ) ) {
 			foreach ( $this->fetcher->get_many( $args ) as $theme ) {
-				$r = delete_theme( $theme->stylesheet );
-				if ( is_wp_error( $r ) ) {
-					WP_CLI::warning( $r );
-				} else {
-					$assoc_args['force'] = true;
-					$this->install( array( $theme->stylesheet ), $assoc_args );
-				}
+				$assoc_args['force'] = true;
+				$this->install( array( $theme->stylesheet ), $assoc_args );
 			}
 		} else {
 			parent::update_many( $args, $assoc_args );
