@@ -696,3 +696,16 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name    | title             | description                                    |
       | test-mu | Test mu-plugin    | Test mu-plugin description                     |
+
+  Scenario: Listing plugins should include name and auto_updates
+    Given a WP install
+    When I run `wp plugin list --fields=name,auto_updates`
+    Then STDOUT should be a table containing rows:
+      | name              | auto_updates         |
+      | hello             | off                  |
+
+    When I run `wp plugin auto-updates enable hello`
+    And I try `wp plugin list --fields=name,auto_updates`
+    Then STDOUT should be a table containing rows:
+      | name              | auto_updates         |
+      | hello             | on                   |
