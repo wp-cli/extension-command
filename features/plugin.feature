@@ -697,6 +697,7 @@ Feature: Manage WordPress plugins
       | name    | title             | description                                    |
       | test-mu | Test mu-plugin    | Test mu-plugin description                     |
 
+  @require-wp-5.5
   Scenario: Listing plugins should include name and auto_updates
     Given a WP install
     When I run `wp plugin list --fields=name,auto_updates`
