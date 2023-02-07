@@ -1183,6 +1183,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * * title
 	 * * description
 	 * * file
+	 * * auto_update
 	 *
 	 * ## EXAMPLES
 	 *

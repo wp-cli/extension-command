@@ -384,6 +384,7 @@ These fields are optionally available:
 * title
 * description
 * file
+* auto_update
 
 **EXAMPLES**
 
@@ -1064,6 +1065,7 @@ These fields are optionally available:
 * update_id
 * title
 * description
+* auto_update
 
 **EXAMPLES**
 
