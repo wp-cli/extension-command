@@ -3,6 +3,7 @@
 namespace WP_CLI;
 
 use WP_CLI;
+use Theme_AutoUpdates_Command;
 
 trait ParseThemeNameInput {
 
@@ -68,6 +69,12 @@ trait ParseThemeNameInput {
 			}
 		}
 
+		$auto_updates = get_site_option( Theme_AutoUpdates_Command::SITE_OPTION );
+
+		if ( false === $auto_updates ) {
+			$auto_updates = [];
+		}
+
 		foreach ( wp_get_themes() as $key => $theme ) {
 			$file = $theme->get_stylesheet_directory();
 
@@ -84,6 +91,7 @@ trait ParseThemeNameInput {
 				'title'          => $theme->get( 'Name' ),
 				'description'    => wordwrap( $theme->get( 'Description' ) ),
 				'author'         => $theme->get( 'Author' ),
+				'auto_update'    => in_array( $theme->get_stylesheet(), $auto_updates, true ),
 			];
 
 			// Compare version and update information in theme list.

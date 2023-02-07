@@ -255,6 +255,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'title'          => $mu_title,
 				'description'    => $mu_description,
 				'file'           => $file,
+				'auto_update'    => false,
 			);
 		}
 
@@ -272,6 +273,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_package' => null,
 				'update_id'      => '',
 				'file'           => $name,
+				'auto_update'    => false,
 			];
 		}
 
@@ -690,6 +692,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$items           = [];
 		$duplicate_names = [];
 
+		$auto_updates = get_site_option( Plugin_AutoUpdates_Command::SITE_OPTION );
+
+		if ( false === $auto_updates ) {
+			$auto_updates = [];
+		}
+
 		foreach ( $this->get_all_plugins() as $file => $details ) {
 			$all_update_info = $this->get_update_info();
 			$update_info     = ( isset( $all_update_info->response[ $file ] ) && null !== $all_update_info->response[ $file ] ) ? (array) $all_update_info->response[ $file ] : null;
@@ -711,6 +719,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'title'          => $details['Name'],
 				'description'    => wordwrap( $details['Description'] ),
 				'file'           => $file,
+				'auto_update'    => in_array( $file, $auto_updates, true ),
 			];
 
 			if ( null === $update_info ) {
@@ -1174,6 +1183,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * * title
 	 * * description
 	 * * file
+	 * * auto_update
 	 *
 	 * ## EXAMPLES
 	 *

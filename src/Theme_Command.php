@@ -854,6 +854,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * * update_id
 	 * * title
 	 * * description
+	 * * auto_update
 	 *
 	 * ## EXAMPLES
 	 *

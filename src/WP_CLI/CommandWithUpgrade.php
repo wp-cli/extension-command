@@ -510,10 +510,18 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 
 			foreach ( $item as $field => &$value ) {
-				if ( true === $value ) {
-					$value = 'available';
-				} elseif ( false === $value ) {
-					$value = 'none';
+				if ( 'update' === $field ) {
+					if ( true === $value ) {
+						$value = 'available';
+					} elseif ( false === $value ) {
+						$value = 'none';
+					}
+				} elseif ( 'auto_update' === $field ) {
+					if ( true === $value ) {
+						$value = 'on';
+					} elseif ( false === $value ) {
+						$value = 'off';
+					}
 				}
 			}
 
