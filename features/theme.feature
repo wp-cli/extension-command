@@ -686,6 +686,7 @@ Feature: Manage WordPress themes
       """
     And the return code should be 0
 
+  @require-wp-5.5
   Scenario: Listing themes should include auto_updates
     Given a WP install
     When I run `wp theme list --fields=auto_updates`
