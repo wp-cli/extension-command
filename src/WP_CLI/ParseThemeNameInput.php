@@ -91,7 +91,7 @@ trait ParseThemeNameInput {
 				'title'          => $theme->get( 'Name' ),
 				'description'    => wordwrap( $theme->get( 'Description' ) ),
 				'author'         => $theme->get( 'Author' ),
-				'auto_updates'   => in_array( $theme->get_stylesheet(), $auto_updates, true ),
+				'auto_update'    => in_array( $theme->get_stylesheet(), $auto_updates, true ),
 			];
 
 			// Compare version and update information in theme list.

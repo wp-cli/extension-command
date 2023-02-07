@@ -255,7 +255,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'title'          => $mu_title,
 				'description'    => $mu_description,
 				'file'           => $file,
-				'auto_updates'   => false,
+				'auto_update'    => false,
 			);
 		}
 
@@ -273,7 +273,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_package' => null,
 				'update_id'      => '',
 				'file'           => $name,
-				'auto_updates'   => false,
+				'auto_update'    => false,
 			];
 		}
 
@@ -719,7 +719,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'title'          => $details['Name'],
 				'description'    => wordwrap( $details['Description'] ),
 				'file'           => $file,
-				'auto_updates'   => in_array( $file, $auto_updates, true ),
+				'auto_update'    => in_array( $file, $auto_updates, true ),
 			];
 
 			if ( null === $update_info ) {

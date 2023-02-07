@@ -516,7 +516,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					} elseif ( false === $value ) {
 						$value = 'none';
 					}
-				} elseif ( 'auto_updates' === $field ) {
+				} elseif ( 'auto_update' === $field ) {
 					if ( true === $value ) {
 						$value = 'on';
 					} elseif ( false === $value ) {

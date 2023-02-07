@@ -687,15 +687,15 @@ Feature: Manage WordPress themes
     And the return code should be 0
 
   @require-wp-5.5
-  Scenario: Listing themes should include auto_updates
+  Scenario: Listing themes should include auto_update
     Given a WP install
-    When I run `wp theme list --fields=auto_updates`
+    When I run `wp theme list --fields=auto_update`
     Then STDOUT should be a table containing rows:
-      | auto_updates         |
+      | auto_update          |
       | off                  |
 
     When I run `wp theme auto-updates enable --all`
-    And I try `wp theme list --fields=auto_updates`
+    And I try `wp theme list --fields=auto_update`
     Then STDOUT should be a table containing rows:
-      | auto_updates         |
+      | auto_update          |
       | on                   |
