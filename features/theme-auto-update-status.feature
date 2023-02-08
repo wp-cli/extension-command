@@ -100,3 +100,21 @@ Feature: Show the status of auto-updates for WordPress themes
       """
       enabled
       """
+
+  @require-wp-5.5
+  Scenario: Formatting options work
+
+    When I run `wp theme auto-updates status --all --format=json`
+    Then STDOUT should be:
+      """
+      [{"name":"twentynineteen","status":"disabled"},{"name":"twentyseventeen","status":"disabled"},{"name":"twentysixteen","status":"disabled"}]
+      """
+
+    When I run `wp theme auto-updates status --all --format=csv`
+    Then STDOUT should be:
+      """
+      name,status
+      twentynineteen,disabled
+      twentyseventeen,disabled
+      twentysixteen,disabled
+      """

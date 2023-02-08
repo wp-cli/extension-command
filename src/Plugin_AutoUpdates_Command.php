@@ -231,6 +231,18 @@ class Plugin_AutoUpdates_Command {
 	 * [--field=<field>]
 	 * : Only show the provided field.
 	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 *   - count
+	 * ---
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Get the status of plugin auto-updates
