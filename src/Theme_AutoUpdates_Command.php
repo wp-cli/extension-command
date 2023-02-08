@@ -236,11 +236,11 @@ class Theme_AutoUpdates_Command {
 	 * ---
 	 * default: table
 	 * options:
- 	 *   - table
- 	 *   - csv
- 	 *   - json
- 	 *   - yaml
- 	 *   - count
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 *   - count
 	 * ---
 	 *
 	 * ## EXAMPLES
