@@ -97,3 +97,21 @@ Feature: Show the status of auto-updates for WordPress plugins
       """
       enabled
       """
+
+  @require-wp-5.5
+  Scenario: Formatting options work
+
+    When I run `wp plugin auto-updates status --all --format=json`
+    Then STDOUT should be:
+      """
+      [{"name":"akismet","status":"disabled"},{"name":"hello","status":"disabled"},{"name":"duplicate-post","status":"disabled"}]
+      """
+
+    When I run `wp plugin auto-updates status --all --format=csv`
+    Then STDOUT should be:
+      """
+      name,status
+      akismet,disabled
+      hello,disabled
+      duplicate-post,disabled
+      """
