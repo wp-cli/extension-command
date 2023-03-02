@@ -631,7 +631,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			foreach ( $data['versions'] as $version => $download_link ) {
 				try {
 					$update_type = Utils\get_named_sem_ver( $version, $item['version'] );
-				} catch (\Exception $e) {
+				} catch ( \Exception $e ) {
 					continue;
 				}
 				// Compared version must be older.
