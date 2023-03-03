@@ -2,6 +2,7 @@
 
 namespace WP_CLI;
 
+use Composer\Semver\VersionParser;
 use Composer\Semver\Comparator;
 use Exception;
 use WP_CLI;
@@ -351,7 +352,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$type     = $minor ? 'minor' : 'patch';
 			$insecure = (bool) Utils\get_flag_value( $assoc_args, 'insecure', false );
 
-			$items_to_update = self::get_minor_or_patch_updates( $items_to_update, $type, $insecure );
+			$items_to_update = self::get_minor_or_patch_updates( $items_to_update, $type, $insecure, true );
 		}
 
 		$exclude = Utils\get_flag_value( $assoc_args, 'exclude' );
@@ -610,9 +611,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * @param array  $items    Plugins with updates.
 	 * @param string $type     Either 'minor' or 'patch'.
 	 * @param bool   $insecure Whether to retry without certificate validation on TLS handshake failure.
+	 * @param bool   $require_stable Whether to require stable version when comparing versions.
 	 * @return array
 	 */
-	private function get_minor_or_patch_updates( $items, $type, $insecure ) {
+	private function get_minor_or_patch_updates( $items, $type, $insecure, $require_stable ) {
 		$wp_org_api = new WpOrgApi( [ 'insecure' => $insecure ] );
 		foreach ( $items as $i => $item ) {
 			try {
@@ -646,6 +648,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				if ( 'minor' === $type && ! in_array( $update_type, array( 'minor', 'patch' ), true ) ) {
 					continue;
 				}
+				if ( $require_stable && 'stable' !== VersionParser::parseStability( $version ) ) {
+					continue;
+				}
+
 				if ( $update_version && ! Comparator::greaterThan( $version, $update_version ) ) {
 					continue;
 				}
