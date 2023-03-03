@@ -2,7 +2,7 @@
 
 namespace WP_CLI;
 
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\Semver\Comparator;
 use Exception;
 use WP_CLI;
