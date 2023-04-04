@@ -13,6 +13,7 @@ use WP_Error;
 
 abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
+	protected $fetcher;
 	protected $item_type;
 	protected $obj_fields;
 
