@@ -62,6 +62,7 @@ Feature: Activate WordPress plugins
       Plugin 'user-switching' activated.
       """
 
+  @require-php-7
   Scenario: Activating a plugin with no network wide option passes down correct types
     Given a wp-content/plugins/example-plugin.php file:
       """
@@ -82,6 +83,7 @@ Feature: Activate WordPress plugins
       Plugin 'example-plugin' activated.
       Success: Activated 1 of 1 plugins.
       """
+      And STDERR should be empty
 
   Scenario: Not giving a slug on activate should throw an error unless --all given
     When I try `wp plugin activate`
