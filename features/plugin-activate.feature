@@ -62,6 +62,29 @@ Feature: Activate WordPress plugins
       Plugin 'user-switching' activated.
       """
 
+  @require-php-7
+  Scenario: Activating a plugin with no network wide option passes down correct types
+    Given a wp-content/plugins/example-plugin.php file:
+      """
+      <?php
+      // Plugin Name: Example Plugin
+
+      function example_plugin_activate( bool $network_wide = false ) {
+        // Doesn't matter what we do here, we just need a function definition to check the type
+        return;
+      }
+
+      register_activation_hook( __FILE__, 'example_plugin_activate' );
+      """
+
+    When I run `wp plugin activate example-plugin`
+    Then STDOUT should be:
+      """
+      Plugin 'example-plugin' activated.
+      Success: Activated 1 of 1 plugins.
+      """
+      And STDERR should be empty
+
   Scenario: Not giving a slug on activate should throw an error unless --all given
     When I try `wp plugin activate`
     Then the return code should be 1
