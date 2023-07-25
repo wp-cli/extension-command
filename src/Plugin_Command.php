@@ -728,10 +728,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				$plugin_update_info = isset( $all_update_info->no_update[ $file ] ) ? $all_update_info->no_update[ $file ] : null;
 
 				// Compare version and update information in plugin list if possible
-				if (!is_string($plugin_update_info->new_version)) {
-					$items[ $file ]['update'] = static::INVALID_REMOTE_PLUGIN_VERSION;
-				} else if ( null !== $plugin_update_info && version_compare( $details['Version'], $plugin_update_info->new_version, '>' ) ) {
-					$items[ $file ]['update'] = static::INVALID_VERSION_MESSAGE;
+				if (isset($plugin_update_info->new_version)) {
+					if (!is_string($plugin_update_info->new_version)) {
+						$items[$file]['update'] = static::INVALID_REMOTE_PLUGIN_VERSION;
+					} else if (version_compare($details['Version'], $plugin_update_info->new_version, '>')) {
+						$items[$file]['update'] = static::INVALID_VERSION_MESSAGE;
+					}
 				}
 			}
 		}
