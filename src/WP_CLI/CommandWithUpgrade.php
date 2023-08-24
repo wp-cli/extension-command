@@ -436,7 +436,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				return $transient;
 			};
 			add_filter( 'site_transient_' . $this->upgrade_transient, $transient_filter, 999 );
+
+			add_filter( 'upgrader_source_selection', array( $upgrader, 'check_package' ) );
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
+			remove_filter( 'upgrader_source_selection', array( $upgrader, 'check_package' ) );
 			remove_filter( 'site_transient_' . $this->upgrade_transient, $transient_filter, 999 );
 		}
 
