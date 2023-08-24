@@ -311,6 +311,12 @@ Feature: Manage WordPress plugins
       | name       | status   | file                |
       | akismet    | active   | akismet/akismet.php |
 
+    When I run `wp plugin list --status=active --field=author`
+    Then STDOUT should contain:
+      """
+      Automattic
+      """
+
   Scenario: List plugin by multiple statuses
     Given a WP multisite install
     And a wp-content/plugins/network-only.php file:
