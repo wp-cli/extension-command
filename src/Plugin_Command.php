@@ -274,6 +274,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_id'      => '',
 				'file'           => $name,
 				'auto_update'    => false,
+				'author'         => $item_data['Author'],
 			];
 		}
 
@@ -720,6 +721,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'description'    => wordwrap( $details['Description'] ),
 				'file'           => $file,
 				'auto_update'    => in_array( $file, $auto_updates, true ),
+				'author'         => $details['Author'],
 			];
 
 			if ( null === $update_info ) {
@@ -1184,6 +1186,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * * description
 	 * * file
 	 * * auto_update
+	 * * author
 	 *
 	 * ## EXAMPLES
 	 *
