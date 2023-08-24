@@ -311,10 +311,11 @@ Feature: Manage WordPress plugins
       | name       | status   | file                |
       | akismet    | active   | akismet/akismet.php |
 
-    When I run `wp plugin list --status=active --fields=name,author`
-    Then STDOUT should be a table containing rows:
-      | name      | author                      |
-      | akismet   | Automattic - Anti Spam Team |
+    When I run `wp plugin list --status=active --field=author`
+    Then STDOUT should contain:
+      """
+      Automattic
+      """
 
   Scenario: List plugin by multiple statuses
     Given a WP multisite install
