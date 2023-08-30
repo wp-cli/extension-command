@@ -772,7 +772,7 @@ class Theme_Command extends CommandWithUpgrade {
 			if ( $this->is_active_theme( $theme ) && ! $force ) {
 				if ( ! $all ) {
 					WP_CLI::warning( "Can't delete the currently active theme: $theme_slug" );
-					$errors++;
+					++$errors;
 				}
 				continue;
 			}
@@ -780,7 +780,7 @@ class Theme_Command extends CommandWithUpgrade {
 			if ( $this->is_active_parent_theme( $theme ) && ! $force ) {
 				if ( ! $all ) {
 					WP_CLI::warning( "Can't delete the parent of the currently active theme: $theme_slug" );
-					$errors++;
+					++$errors;
 				}
 				continue;
 			}
@@ -789,10 +789,10 @@ class Theme_Command extends CommandWithUpgrade {
 
 			if ( is_wp_error( $r ) ) {
 				WP_CLI::warning( $r );
-				$errors++;
+				++$errors;
 			} else {
 				WP_CLI::log( "Deleted '$theme_slug' theme." );
-				$successes++;
+				++$successes;
 			}
 		}
 		if ( ! $this->chained_command ) {

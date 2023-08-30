@@ -99,7 +99,7 @@ class Theme_AutoUpdates_Command {
 				continue;
 			}
 
-			$count++;
+			++$count;
 
 			if ( $enabled ) {
 				WP_CLI::warning(
@@ -107,7 +107,7 @@ class Theme_AutoUpdates_Command {
 				);
 			} else {
 				$auto_updates[] = $theme->stylesheet;
-				$successes++;
+				++$successes;
 			}
 		}
 
@@ -176,7 +176,7 @@ class Theme_AutoUpdates_Command {
 				continue;
 			}
 
-			$count++;
+			++$count;
 
 			if ( ! $enabled ) {
 				WP_CLI::warning(
@@ -184,7 +184,7 @@ class Theme_AutoUpdates_Command {
 				);
 			} else {
 				$auto_updates = array_diff( $auto_updates, [ $theme->stylesheet ] );
-				$successes++;
+				++$successes;
 			}
 		}
 

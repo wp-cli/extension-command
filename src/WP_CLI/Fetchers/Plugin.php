@@ -31,4 +31,3 @@ class Plugin extends Base {
 		return false;
 	}
 }
-

@@ -28,7 +28,7 @@ trait ParsePluginNameInput {
 			$exclude_list = explode( ',', trim( $exclude, ',' ) );
 			$args         = array_filter(
 				$args,
-				static function( $slug ) use ( $exclude_list ) {
+				static function ( $slug ) use ( $exclude_list ) {
 					return ! in_array( $slug, $exclude_list, true );
 				}
 			);
