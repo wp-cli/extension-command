@@ -15,4 +15,3 @@ class DestructiveThemeUpgrader extends \Theme_Upgrader {
 		return parent::install_package( $args );
 	}
 }
-

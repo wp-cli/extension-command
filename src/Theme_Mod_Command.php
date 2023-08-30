@@ -128,7 +128,6 @@ class Theme_Mod_Command extends WP_CLI_Command {
 
 		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields, 'thememods' );
 		$formatter->display_items( $list );
-
 	}
 
 	/**
@@ -215,7 +214,6 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		$count           = count( $args );
 		$success_message = ( 1 === $count ) ? '%d mod removed.' : '%d mods removed.';
 		WP_CLI::success( sprintf( $success_message, $count ) );
-
 	}
 
 	/**
@@ -246,5 +244,4 @@ class Theme_Mod_Command extends WP_CLI_Command {
 			WP_CLI::success( "Could not update theme mod {$mod}." );
 		}
 	}
-
 }

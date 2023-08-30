@@ -64,4 +64,3 @@ class Theme extends Base {
 		return false;
 	}
 }
-

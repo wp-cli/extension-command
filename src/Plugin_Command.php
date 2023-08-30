@@ -357,7 +357,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				WP_CLI::warning( "Failed to activate plugin. {$message}" );
 			} else {
 				$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
-				$successes++;
+				++$successes;
 			}
 		}
 
@@ -365,7 +365,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$verb = $network_wide ? 'network activate' : 'activate';
 			Utils\report_batch_operation_results( 'plugin', $verb, count( $args ), $successes, $errors );
 		}
-
 	}
 
 	/**
@@ -428,7 +427,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			// Network active plugins must be explicitly deactivated.
 			if ( ! $network_wide && 'active-network' === $status ) {
 				WP_CLI::warning( "Plugin '{$plugin->name}' is network active and must be deactivated with --network flag." );
-				$errors++;
+				++$errors;
 				continue;
 			}
 
@@ -452,7 +451,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			}
 
 			$this->active_output( $plugin->name, $plugin->file, $network_wide, 'deactivate' );
-			$successes++;
+			++$successes;
 
 			if ( Utils\get_flag_value( $assoc_args, 'uninstall' ) ) {
 				WP_CLI::log( "Uninstalling '{$plugin->name}'..." );
@@ -466,7 +465,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$verb = $network_wide ? 'network deactivate' : 'deactivate';
 			Utils\report_batch_operation_results( 'plugin', $verb, count( $args ), $successes, $errors );
 		}
-
 	}
 
 	/**
@@ -511,7 +509,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			} else {
 				$this->activate( array( $plugin->name ), $assoc_args );
 			}
-			$successes++;
+			++$successes;
 		}
 		$this->chained_command = false;
 		Utils\report_batch_operation_results( 'plugin', 'toggle', count( $args ), $successes, $errors );
@@ -952,7 +950,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		foreach ( $plugins as $plugin ) {
 			if ( is_plugin_active( $plugin->file ) && ! WP_CLI\Utils\get_flag_value( $assoc_args, 'deactivate' ) ) {
 				WP_CLI::warning( "The '{$plugin->name}' plugin is active." );
-				$errors++;
+				++$errors;
 				continue;
 			}
 
@@ -997,7 +995,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			} else {
 				WP_CLI::log( "Ran uninstall procedure for '$plugin->name' plugin without deleting." );
 			}
-			$successes++;
+			++$successes;
 		}
 		if ( ! $this->chained_command ) {
 			Utils\report_batch_operation_results( 'plugin', 'uninstall', count( $args ), $successes, $errors );
@@ -1113,9 +1111,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			if ( $this->delete_plugin( $plugin ) ) {
 				WP_CLI::log( "Deleted '{$plugin->name}' plugin." );
-				$successes++;
+				++$successes;
 			} else {
-				$errors++;
+				++$errors;
 			}
 		}
 		if ( ! $this->chained_command ) {

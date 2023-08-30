@@ -15,4 +15,3 @@ class DestructivePluginUpgrader extends \Plugin_Upgrader {
 		return parent::install_package( $args );
 	}
 }
-

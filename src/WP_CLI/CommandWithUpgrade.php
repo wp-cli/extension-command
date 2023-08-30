@@ -30,7 +30,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// Do not automatically check translations updates after updating plugins/themes.
 		add_action(
 			'upgrader_process_complete',
-			function() {
+			function () {
 				remove_action( 'upgrader_process_complete', [ 'Language_Pack_Upgrader', 'async_upgrade' ], 20 );
 			},
 			1
@@ -170,7 +170,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						// Don't attempt to rename ZIPs uploaded to the releases page or coming from a raw source.
 						&& ! preg_match( '#github\.com/[^/]+/[^/]+/(?:releases/download|raw)/#', $slug ) ) {
 
-					$filter = function( $source, $remote_source, $upgrader ) use ( $slug ) {
+					$filter = function ( $source, $remote_source, $upgrader ) use ( $slug ) {
 
 						$slug_dir = Utils\basename( $this->parse_url_host_component( $slug, PHP_URL_PATH ), '.zip' );
 
@@ -202,30 +202,30 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					if ( $filter ) {
 						remove_filter( 'upgrader_source_selection', $filter, 10 );
 					}
-					$successes++;
+					++$successes;
 				} else {
-					$errors++;
+					++$errors;
 				}
 			} else {
 				// Assume a plugin/theme slug from the WordPress.org repository has been specified.
 				$result = $this->install_from_repo( $slug, $assoc_args );
 
 				if ( is_null( $result ) ) {
-					$errors++;
+					++$errors;
 				} elseif ( is_wp_error( $result ) ) {
 					$key = $result->get_error_code();
 					if ( in_array( $key, [ 'plugins_api_failed', 'themes_api_failed' ], true )
 						&& ! empty( $result->error_data[ $key ] ) && in_array( $result->error_data[ $key ], [ 'N;', 'b:0;' ], true ) ) {
 						WP_CLI::warning( "Couldn't find '$slug' in the WordPress.org {$this->item_type} directory." );
-						$errors++;
+						++$errors;
 					} else {
 						WP_CLI::warning( "$slug: " . $result->get_error_message() );
 						if ( 'already_installed' !== $key ) {
-							$errors++;
+							++$errors;
 						}
 					}
 				} else {
-					$successes++;
+					++$successes;
 				}
 			}
 
@@ -381,7 +381,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		foreach ( $items_to_update as $item_key => $item_info ) {
 			if ( static::INVALID_VERSION_MESSAGE === $item_info['update'] ) {
 				WP_CLI::warning( "{$item_info['name']}: " . static::INVALID_VERSION_MESSAGE . '.' );
-				$skipped++;
+				++$skipped;
 				unset( $items_to_update[ $item_key ] );
 			}
 		}
@@ -426,7 +426,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 			$upgrader = $this->get_upgrader( $assoc_args );
 			// Ensure the upgrader uses the download offer present in each item.
-			$transient_filter = function( $transient ) use ( $items_to_update ) {
+			$transient_filter = function ( $transient ) use ( $items_to_update ) {
 				foreach ( $items_to_update as $name => $item_data ) {
 					if ( isset( $transient->response[ $name ] ) ) {
 						$transient->response[ $name ]->new_version = $item_data['update_version'];
@@ -467,7 +467,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						'status'      => ( null !== $result[ $info['update_id'] ] && ! is_wp_error( $result[ $info['update_id'] ] ) ) ? 'Updated' : 'Error',
 					];
 					if ( null === $result[ $info['update_id'] ] || is_wp_error( $result[ $info['update_id'] ] ) ) {
-						$errors++;
+						++$errors;
 					}
 				}
 
@@ -767,5 +767,4 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- parse_url will only be used in absence of wp_parse_url.
 		return function_exists( 'wp_parse_url' ) ? wp_parse_url( $url, $component ) : parse_url( $url, $component );
 	}
-
 }
