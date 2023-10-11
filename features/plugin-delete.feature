@@ -57,3 +57,32 @@ Feature: Delete WordPress plugins
       Success:
       """
     And the return code should be 0
+
+  Scenario: Reports a failure for a plugin that can't be deleted
+    Given a WP install
+
+    When I run `chmod -w wp-content/plugins/akismet`
+    And I try `wp plugin delete akismet`
+    Then STDERR should contain:
+      """
+      Warning: The 'akismet' plugin could not be deleted.
+      """
+    And STDERR should contain:
+      """
+      Error: No plugins deleted.
+      """
+    Then STDOUT should not contain:
+      """
+      Success:
+      """
+
+    When I run `chmod +w wp-content/plugins/akismet`
+    And I run `wp plugin delete akismet`
+    Then STDERR should not contain:
+      """
+      Error:
+      """
+    Then STDOUT should contain:
+      """
+      Success:
+      """
