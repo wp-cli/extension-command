@@ -1113,6 +1113,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				WP_CLI::log( "Deleted '{$plugin->name}' plugin." );
 				++$successes;
 			} else {
+				WP_CLI::warning( "The '{$plugin->name}' plugin could not be deleted." );
 				++$errors;
 			}
 		}
@@ -1297,6 +1298,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$command = 'rm -rf ';
 		}
 
-		return ! WP_CLI::launch( $command . escapeshellarg( $path ) );
+		return ! WP_CLI::launch( $command . escapeshellarg( $path ), false );
 	}
 }
