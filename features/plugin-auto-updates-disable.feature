@@ -71,10 +71,10 @@ Feature: Disable auto-updates for WordPress plugins
       """
 
   @require-wp-5.5
-  Scenario: Filter when enabling auto-updates for already disabled plugins
+  Scenario: Filter when disabling auto-updates for already enabled plugins
     When I run `wp plugin auto-updates disable hello`
 
-    When I run `wp plugin list --format=count`
+    When I run `wp plugin list --auto_update=enabled --format=count`
     Then save STDOUT as {PLUGIN_COUNT}
 
     When I run `wp plugin auto-updates disable --all --enabled-only`
@@ -85,7 +85,7 @@ Feature: Disable auto-updates for WordPress plugins
     And the return code should be 0
 
   @require-wp-5.5
-  Scenario: Filter when enabling auto-updates for already disabled selection of plugins
+  Scenario: Filter when disabling auto-updates for already disabled selection of plugins
     When I run `wp plugin auto-updates disable hello`
     And I run `wp plugin auto-updates disable hello duplicate-post --enabled-only`
     Then STDOUT should be:

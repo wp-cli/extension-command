@@ -51,7 +51,9 @@ Feature: Activate WordPress plugins
        } );
        """
 
-    When I run `wp plugin activate --all`
+    # Uses "try" because the SQLite plugin attempts to do a redirect.
+    # See https://github.com/WordPress/sqlite-database-integration/issues/49
+    When I try `wp plugin activate --all`
     Then STDOUT should contain:
       """
       Plugin 'akismet' activated.
@@ -135,10 +137,13 @@ Feature: Activate WordPress plugins
     Then STDOUT should be:
       """
       Plugin 'akismet' activated.
-      Success: Activated 1 of 1 plugins.
       """
     And the return code should be 0
 
+  # Disabled for SQLite because the SQLite plugin attempts to do a redirect,
+  # which would cause the "Success" check to fail.
+  # See https://github.com/WordPress/sqlite-database-integration/issues/49
+  @require-mysql
   Scenario: Excluding a missing plugin should not throw an error
     Given a WP install
     And I run `wp plugin activate --all --exclude=missing-plugin`
@@ -148,3 +153,4 @@ Feature: Activate WordPress plugins
       Success:
       """
     And the return code should be 0
+

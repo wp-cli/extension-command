@@ -78,11 +78,14 @@ Feature: Deactivate WordPress plugins
       """
 
   Scenario: Adding --exclude with plugin deactivate --all should exclude the plugins specified via --exclude
+    When I run `wp plugin list --format=count`
+    Then save STDOUT as {PLUGIN_COUNT}
+
     When I try `wp plugin deactivate --all --exclude=hello`
     Then STDOUT should be:
       """
       Plugin 'akismet' deactivated.
-      Success: Deactivated 1 of 1 plugins.
+      Success: Deactivated 1 of {PLUGIN_COUNT} plugins.
       """
     And the return code should be 0
 
