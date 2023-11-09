@@ -13,8 +13,8 @@ Feature: Update WordPress plugins
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update    | version |
-      | wordpress-importer | inactive | available | 0.5     |
+      | name               | status   | update    | version | auto_update |
+      | wordpress-importer | inactive | available | 0.5     | off         |
 
     When I try `wp plugin update akismet --version=0.5.3`
     Then STDERR should be:

@@ -63,8 +63,8 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name       | status | update | version |
-      | Zombieland | active | none   | 0.1.0   |
+      | name       | status | update | version | auto_update |
+      | Zombieland | active | none   | 0.1.0   | off         |
 
     When I try `wp plugin uninstall Zombieland`
     Then STDERR should be:
@@ -131,8 +131,8 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update    | version |
-      | wordpress-importer | active   | available | 0.5     |
+      | name               | status   | update    | version | auto_update |
+      | wordpress-importer | active   | available | 0.5     | off         |
 
     When I try `wp plugin update`
     Then STDERR should be:
