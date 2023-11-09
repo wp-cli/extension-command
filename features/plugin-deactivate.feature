@@ -96,7 +96,7 @@ Feature: Deactivate WordPress plugins
     Then STDOUT should be:
       """
       Plugin 'akismet' deactivated.
-      Success: Deactivated 1 of 1 plugins.
+      Success: Deactivated 1 of 2 plugins.
       """
     And the return code should be 0
 

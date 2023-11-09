@@ -683,8 +683,8 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update                       | version          |
-      | hello-dolly        | inactive | version higher than expected | {PLUGIN_VERSION} |
+      | name               | status   | update                       | version          | auto_update |
+      | hello-dolly        | inactive | version higher than expected | {PLUGIN_VERSION} | off         |
 
     When I try `wp plugin update --all`
     Then STDERR should be:
