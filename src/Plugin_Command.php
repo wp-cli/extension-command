@@ -52,6 +52,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		'status',
 		'update',
 		'version',
+		'auto_update',
 	);
 
 	/**
