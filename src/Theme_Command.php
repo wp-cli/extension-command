@@ -54,7 +54,7 @@ class Theme_Command extends CommandWithUpgrade {
 		'status',
 		'update',
 		'version',
-		'auto_update'
+		'auto_update',
 	];
 
 	public function __construct() {
