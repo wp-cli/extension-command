@@ -58,6 +58,9 @@ Feature: Deactivate WordPress plugins
     Plugin 'akismet' deactivated.
     """
 
+  # Disabled for SQLite because this tests a scenario with an empty plugins directory,
+  # so the SQLite integration plugin would be missing.
+  @require-mysql
   Scenario: Not giving a slug on deactivate should throw an error unless --all given
     When I try `wp plugin deactivate`
     Then the return code should be 1
@@ -78,14 +81,11 @@ Feature: Deactivate WordPress plugins
       """
 
   Scenario: Adding --exclude with plugin deactivate --all should exclude the plugins specified via --exclude
-    When I run `wp plugin list --format=count`
-    Then save STDOUT as {PLUGIN_COUNT}
-
     When I try `wp plugin deactivate --all --exclude=hello`
     Then STDOUT should be:
       """
       Plugin 'akismet' deactivated.
-      Success: Deactivated 1 of {PLUGIN_COUNT} plugins.
+      Success: Deactivated 1 of 1 plugins.
       """
     And the return code should be 0
 

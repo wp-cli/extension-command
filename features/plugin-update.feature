@@ -112,7 +112,9 @@ Feature: Update WordPress plugins
       2.6.1
       """
 
-  @require-wp-5.2
+  # Disabled for SQLite because this tests a scenario with an empty plugins directory,
+  # so the SQLite integration plugin would be missing.
+  @require-wp-5.2 @require-mysql
   Scenario: Not giving a slug on update should throw an error unless --all given
     Given a WP install
     And I run `wp plugin path`

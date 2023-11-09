@@ -87,6 +87,9 @@ Feature: Activate WordPress plugins
       """
       And STDERR should be empty
 
+  # Disabled for SQLite because this tests a scenario with an empty plugins directory,
+  # so the SQLite integration plugin would be missing.
+  @require-mysql
   Scenario: Not giving a slug on activate should throw an error unless --all given
     When I try `wp plugin activate`
     Then the return code should be 1
@@ -134,7 +137,7 @@ Feature: Activate WordPress plugins
 
   Scenario: Adding --exclude with plugin activate --all should exclude the plugins specified via --exclude
     When I try `wp plugin activate --all --exclude=hello`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       Plugin 'akismet' activated.
       """

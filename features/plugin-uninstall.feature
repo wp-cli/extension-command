@@ -51,6 +51,8 @@ Feature: Uninstall a WordPress plugin
       Success: No plugins uninstalled.
       """
 
+  # Not running the previous command again in this test
+  # because the SQLite integration plugin is missing after the first run.
   @require-sqlite
   Scenario: Uninstall all installed plugins
     When I run `wp plugin uninstall --all`
@@ -63,12 +65,9 @@ Feature: Uninstall a WordPress plugin
       """
     And the return code should be 0
 
-    When I run the previous command again
-    Then STDOUT should be:
-      """
-      Success: No plugins uninstalled.
-      """
-
+  # Disabled for SQLite because this test uninstalls all plugins,
+  # including the SQLite integration plugin.
+  @require-mysql
   Scenario:  Uninstall all installed plugins when one or more activated
     When I run `wp plugin activate --all`
     Then STDOUT should contain:

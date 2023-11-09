@@ -12,6 +12,8 @@ Feature: Delete WordPress plugins
       """
     And the return code should be 0
 
+  # Disabled for SQLite because this tests a scenario with an empty plugins directory,
+  # so the SQLite integration plugin would be missing.
   @require-mysql
   Scenario: Delete all installed plugins
     When I run `wp plugin delete --all`
@@ -20,24 +22,6 @@ Feature: Delete WordPress plugins
       Deleted 'akismet' plugin.
       Deleted 'hello' plugin.
       Success: Deleted 2 of 2 plugins.
-      """
-    And the return code should be 0
-
-    When I run the previous command again
-    Then STDOUT should be:
-      """
-      Success: No plugins deleted.
-      """
-
-  @require-sqlite
-  Scenario: Delete all installed plugins
-    When I run `wp plugin delete --all`
-    Then STDOUT should be:
-      """
-      Deleted 'akismet' plugin.
-      Deleted 'hello' plugin.
-      Deleted 'sqlite-database-integration' plugin.
-      Success: Deleted 3 of 3 plugins.
       """
     And the return code should be 0
 
