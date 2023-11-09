@@ -217,8 +217,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list --fields=name,status,update --skip-update-check`
     Then STDOUT should be a table containing rows:
-      | name  | status   | update | auto_update |
-      | astra | inactive | none   | off         |
+      | name  | status   | update |
+      | astra | inactive | none   |
 
   Scenario: Install a theme when the theme directory doesn't yet exist
     Given a WP install
