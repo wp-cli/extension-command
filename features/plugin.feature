@@ -425,23 +425,20 @@ Feature: Manage WordPress plugins
       Installing Debug Bar List Script & Style Dependencies
       """
 
+  # Disabled for SQLite because this tests a specific list of plugins.
+  @require-mysql
   Scenario: Enable and disable all plugins
     Given a WP install
 
-    When I run `wp plugin list --format=count`
-    Then save STDOUT as {PLUGIN_COUNT}
-
-    # Uses "try" because the SQLite plugin attempts to do a redirect.
-    # See https://github.com/WordPress/sqlite-database-integration/issues/49
-    When I try `wp plugin activate --all`
-    Then STDOUT should be:
+    When I run `wp plugin activate --all`
+    Then STDOUT should contain:
       """
       Plugin 'akismet' activated.
       Plugin 'hello' activated.
-      Success: Activated {PLUGIN_COUNT} of {PLUGIN_COUNT} plugins.
+      Success: Activated 2 of 2 plugins.
       """
 
-    When I try `wp plugin activate --all`
+    When I run `wp plugin activate --all`
     Then STDOUT should be:
       """
       Success: Plugins already activated.

@@ -80,6 +80,17 @@ Feature: Deactivate WordPress plugins
       Success: No plugins deactivated.
       """
 
+  @require-mysql
+  Scenario: Adding --exclude with plugin deactivate --all should exclude the plugins specified via --exclude
+    When I try `wp plugin deactivate --all --exclude=hello`
+    Then STDOUT should be:
+      """
+      Plugin 'akismet' deactivated.
+      Success: Deactivated 1 of 1 plugins.
+      """
+    And the return code should be 0
+
+  @require-sqlite
   Scenario: Adding --exclude with plugin deactivate --all should exclude the plugins specified via --exclude
     When I try `wp plugin deactivate --all --exclude=hello`
     Then STDOUT should be:
