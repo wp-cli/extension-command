@@ -131,8 +131,8 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update    | version | update_version   |
-      | wordpress-importer | active | available | 0.5     | {UPDATE_VERSION} |
+      | name               | status   | update      | version | update_version   |
+      | wordpress-importer | active   | available   | 0.5     | {UPDATE_VERSION} |
 
     When I try `wp plugin update`
     Then STDERR should be:

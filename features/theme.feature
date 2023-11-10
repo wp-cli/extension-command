@@ -101,8 +101,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name  | status   | update    | version   | update_version |
-      | p2    | active | available | 1.4.1     | {UPDATE_VERSION} |
+      | name  | status   | update    | version   | update_version   |
+      | p2    | active   | available | 1.4.1     | {UPDATE_VERSION} |
 
     When I try `wp theme update`
     Then STDERR should be:
