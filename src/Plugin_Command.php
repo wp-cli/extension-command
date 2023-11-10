@@ -46,13 +46,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	protected $item_type         = 'plugin';
 	protected $upgrade_refresh   = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
+	protected $check_wporg       = [ 'status' => false, 'update_date' => false ];
 
 	protected $obj_fields = array(
 		'name',
 		'status',
 		'update',
 		'version',
-		'wordpress.org',
 	);
 
 	/**
@@ -702,6 +702,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$all_update_info = $this->get_update_info();
 			$update_info     = ( isset( $all_update_info->response[ $file ] ) && null !== $all_update_info->response[ $file ] ) ? (array) $all_update_info->response[ $file ] : null;
 			$name            = Utils\get_plugin_name( $file );
+			$wporg_info      = $this->get_wporg_data( $name );
 
 			if ( ! isset( $duplicate_names[ $name ] ) ) {
 				$duplicate_names[ $name ] = array();
@@ -721,11 +722,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'file'           => $file,
 				'auto_update'    => in_array( $file, $auto_updates, true ),
 				'author'         => $details['Author'],
-				'wordpress.org'  => $this->get_dotorg_status( $name ),
+				'wp_org'         => $wporg_info['status'],
+				'wp_org_updated' => $wporg_info['last_updated'],
 			];
 
 			if ( null === $update_info ) {
-
 				// Get info for all plugins that don't have an update.
 				$plugin_update_info = isset( $all_update_info->no_update[ $file ] ) ? $all_update_info->no_update[ $file ] : null;
 
@@ -755,36 +756,49 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @return string The status of the plugin, includes the last update date.
 	 */
-	protected function get_dotorg_status( $plugin_name ) {
+	protected function get_wporg_data( $plugin_name ) {
+		$data = [
+			'status'       => 'no_wp_org',
+			'last_updated' => '-',
+		];
+		if ( ! $this->check_wporg['status'] && ! $this->check_wporg['update_date'] ) {
+			return $data;
+		}
+
+		if ( $this->check_wporg ) {
+			$request       = wp_remote_head( 'https://api.wordpress.org/plugins/info/1.0/' . $plugin_name );
+			$response_code = wp_remote_retrieve_response_code( $request );
+			if ( 200 === $response_code ) {
+				$data['status'] = 'active';
+			}
+			// Just because the plugin is not in the api, does not mean it was never on .org.
+		}
+
 		$request       = wp_remote_get( "https://plugins.trac.wordpress.org/log/{$plugin_name}/?limit=1&mode=stop_on_copy&format=rss" );
 		$response_code = wp_remote_retrieve_response_code( $request );
 		if ( 404 === $response_code ) {
-			return 'not on wordpress.org'; // This plugin was never on .org.
+			return $data; // This plugin was never on .org, there is no date to check.
+		}
+		if ( 'active' !== $data['status'] ) {
+			$data['status'] = 'closed'; // This plugin was on .org at some point, but not anymore.
 		}
 		if ( ! class_exists( 'SimpleXMLElement' ) ) {
 			WP_CLI::error( "The PHP extension 'SimpleXMLElement' is not available but is required for XML-formatted output." );
 		}
 
-		$update_date = 'Unknown last update date';
-
-		// log the date.
+		// Check the last update date.
 		$r_body = wp_remote_retrieve_body( $request );
 		if ( str_contains( $r_body, 'pubDate' ) ) {
-			// Very basic check, not validating the format or anything else.
+			// Very raw check, not validating the format or anything else.
 			$xml          = simplexml_load_string( $r_body );
 			$xml_pub_date = $xml->xpath( '//pubDate' );
 			if ( $xml_pub_date ) {
-				$update_date = 'last updated ' . wp_date( get_option( 'date_format' ), (string) strtotime( $xml_pub_date[0] ) );
+				$data['last_updated'] = wp_date( 'Y-m-d', (string) strtotime( $xml_pub_date[0] ) );
 			}
 		}
 
-		$request       = wp_remote_head( 'https://api.wordpress.org/plugins/info/1.0/' . $plugin_name );
-		$response_code = wp_remote_retrieve_response_code( $request );
-		if ( 200 === $response_code ) {
-			return 'active, ' . $update_date; // this plugin is on .org.
-		}
 
-		return 'closed, ' . $update_date;
+		return $data;
 	}
 
 	protected function filter_item_list( $items, $args ) {
@@ -1227,6 +1241,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * * file
 	 * * auto_update
 	 * * author
+	 * * wp_org
+	 * * wp_org_updated
 	 *
 	 * ## EXAMPLES
 	 *
@@ -1252,6 +1268,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @subcommand list
 	 */
 	public function list_( $_, $assoc_args ) {
+		$fields = Utils\get_flag_value( $assoc_args, 'fields' );
+		if ( ! empty( $fields ) ) {
+			$fields                           = explode( ',', $fields );
+			$this->check_wporg['status']      = in_array( 'wp_org', $fields, true );
+			$this->check_wporg['update_date'] = in_array( 'wp_org_updated', $fields, true );
+		}
+
 		parent::_list( $_, $assoc_args );
 	}
 
