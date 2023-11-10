@@ -49,7 +49,7 @@ class Theme_Command extends CommandWithUpgrade {
 	protected $upgrade_refresh   = 'wp_update_themes';
 	protected $upgrade_transient = 'update_themes';
 
-	protected $obj_fields = [ 'name', 'status', 'update', 'version' ];
+	protected $obj_fields = [ 'name', 'status', 'update', 'version', 'update_version' ];
 
 	public function __construct() {
 		if ( is_multisite() ) {
