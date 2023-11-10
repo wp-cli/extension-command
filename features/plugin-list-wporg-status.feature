@@ -1,7 +1,7 @@
 Feature: Update WordPress plugins
 
   @require-wp-5.2
-  Scenario: development.
+  Scenario: Install plugins and check the status on wp.org.
     Given a WP install
 
     When I run `wp plugin install wordpress-importer --version=0.5 --force`
@@ -39,11 +39,3 @@ Feature: Update WordPress plugins
       | wordpress-importer     | active    | {COMMIT_DATE}  |
       | no-longer-in-directory | closed    | 2017-11-13     |
       | never-wporg            | no_wp_org | -              |
-
-
-# todo check
-# - wp plugin list --fields=name,wp_org
-# - wp plugin list --fields=name,wp_org_updated
-# - wp plugin list --fields=name,wp_org,wp_org_updated
-# extra challenge the wp_org_updated date will change.
-# reference for variable https://github.com/wp-cli/extension-command/blob/main/features/plugin-update.feature#L37
