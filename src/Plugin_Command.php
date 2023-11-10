@@ -1193,7 +1193,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     # List active plugins on the site.
 	 *     $ wp plugin list --status=active --format=json
-	 *     [{"name":"dynamic-hostname","status":"active","update":"none","version":"0.4.2","update_version": null},{"name":"tinymce-templates","status":"active","update":"none","version":"4.4.3","update_version": null},{"name":"wp-multibyte-patch","status":"active","update":"none","version":"2.4","update_version": null},{"name":"wp-total-hacks","status":"active","update":"none","version":"2.0.1","update_version": null}]
+	 *     [{"name":"dynamic-hostname","status":"active","update":"none","version":"0.4.2","update_version": ""},{"name":"tinymce-templates","status":"active","update":"none","version":"4.4.3","update_version": ""},{"name":"wp-multibyte-patch","status":"active","update":"none","version":"2.4","update_version": ""},{"name":"wp-total-hacks","status":"active","update":"none","version":"2.0.1","update_version": ""}]
 	 *
 	 *     # List plugins on each site in a network.
 	 *     $ wp site list --field=url | xargs -I % wp plugin list --url=%
