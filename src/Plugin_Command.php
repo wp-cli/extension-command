@@ -52,7 +52,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		'status',
 		'update',
 		'version',
-		'auto_update',
+		'wordpress.org',
 	);
 
 	/**
@@ -721,6 +721,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'file'           => $file,
 				'auto_update'    => in_array( $file, $auto_updates, true ),
 				'author'         => $details['Author'],
+				'wordpress.org'  => $this->get_dotorg_status( $name ),
 			];
 
 			if ( null === $update_info ) {
@@ -745,6 +746,45 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		return $items;
+	}
+
+	/**
+	 * Get the wordpress.org status of a plugin.
+	 *
+	 * @param string $plugin_name The plugin slug.
+	 *
+	 * @return string The status of the plugin, includes the last update date.
+	 */
+	protected function get_dotorg_status( $plugin_name ) {
+		$request       = wp_remote_get( "https://plugins.trac.wordpress.org/log/{$plugin_name}/?limit=1&mode=stop_on_copy&format=rss" );
+		$response_code = wp_remote_retrieve_response_code( $request );
+		if ( 404 === $response_code ) {
+			return 'not on wordpress.org'; // This plugin was never on .org.
+		}
+		if ( ! class_exists( 'SimpleXMLElement' ) ) {
+			WP_CLI::error( "The PHP extension 'SimpleXMLElement' is not available but is required for XML-formatted output." );
+		}
+
+		$update_date = 'Unknown last update date';
+
+		// log the date.
+		$r_body = wp_remote_retrieve_body( $request );
+		if ( str_contains( $r_body, 'pubDate' ) ) {
+			// Very basic check, not validating the format or anything else.
+			$xml          = simplexml_load_string( $r_body );
+			$xml_pub_date = $xml->xpath( '//pubDate' );
+			if ( $xml_pub_date ) {
+				$update_date = 'last updated ' . wp_date( get_option( 'date_format' ), (string) strtotime( $xml_pub_date[0] ) );
+			}
+		}
+
+		$request       = wp_remote_head( 'https://api.wordpress.org/plugins/info/1.0/' . $plugin_name );
+		$response_code = wp_remote_retrieve_response_code( $request );
+		if ( 200 === $response_code ) {
+			return 'active, ' . $update_date; // this plugin is on .org.
+		}
+
+		return 'closed, ' . $update_date;
 	}
 
 	protected function filter_item_list( $items, $args ) {
