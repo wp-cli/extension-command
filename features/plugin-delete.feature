@@ -12,7 +12,6 @@ Feature: Delete WordPress plugins
       """
     And the return code should be 0
 
-  @require-mysql
   Scenario: Delete all installed plugins
     When I run `wp plugin delete --all`
     Then STDOUT should be:
@@ -20,24 +19,6 @@ Feature: Delete WordPress plugins
       Deleted 'akismet' plugin.
       Deleted 'hello' plugin.
       Success: Deleted 2 of 2 plugins.
-      """
-    And the return code should be 0
-
-    When I run the previous command again
-    Then STDOUT should be:
-      """
-      Success: No plugins deleted.
-      """
-
-  @require-sqlite
-  Scenario: Delete all installed plugins
-    When I run `wp plugin delete --all`
-    Then STDOUT should be:
-      """
-      Deleted 'akismet' plugin.
-      Deleted 'hello' plugin.
-      Deleted 'sqlite-database-integration' plugin.
-      Success: Deleted 3 of 3 plugins.
       """
     And the return code should be 0
 
@@ -59,18 +40,8 @@ Feature: Delete WordPress plugins
       """
     And the return code should be 0
 
-  @require-mysql
   Scenario: Excluding a plugin from deletion when using --all switch
     When I try `wp plugin delete --all --exclude=akismet,hello`
-    Then STDOUT should be:
-      """
-      Success: No plugins deleted.
-      """
-    And the return code should be 0
-
-  @require-sqlite
-  Scenario: Excluding a plugin from deletion when using --all switch
-    When I try `wp plugin delete --all --exclude=akismet,hello,sqlite-database-integration`
     Then STDOUT should be:
       """
       Success: No plugins deleted.

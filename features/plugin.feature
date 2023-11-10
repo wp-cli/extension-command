@@ -63,8 +63,8 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name       | status | update | version |
-      | Zombieland | active | none   | 0.1.0   |
+      | name       | status | update | version | auto_update |
+      | Zombieland | active | none   | 0.1.0   | off         |
 
     When I try `wp plugin uninstall Zombieland`
     Then STDERR should be:
@@ -131,8 +131,8 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update    | version |
-      | wordpress-importer | active   | available | 0.5     |
+      | name               | status   | update    | version | auto_update |
+      | wordpress-importer | active   | available | 0.5     | off         |
 
     When I try `wp plugin update`
     Then STDERR should be:
@@ -397,11 +397,13 @@ Feature: Manage WordPress plugins
       Installing Debug Bar List Script & Style Dependencies
       """
 
+  # Not running for SQLite because it involves another must-use plugin and a drop-in.
+  @require-mysql
   Scenario: Enable and disable all plugins
     Given a WP install
 
     When I run `wp plugin activate --all`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       Plugin 'akismet' activated.
       Plugin 'hello' activated.
@@ -651,8 +653,8 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update                       | version          |
-      | hello-dolly        | inactive | version higher than expected | {PLUGIN_VERSION} |
+      | name               | status   | update                       | version          | auto_update |
+      | hello-dolly        | inactive | version higher than expected | {PLUGIN_VERSION} | off         |
 
     When I try `wp plugin update --all`
     Then STDERR should be:

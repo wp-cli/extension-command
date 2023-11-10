@@ -53,8 +53,8 @@ Feature: Manage WordPress themes and plugins
 
     When I run `wp <type> list`
     Then STDOUT should be a table containing rows:
-      | name   | status   | update    | version   |
-      | <item> | inactive | available | <version> |
+      | name   | status   | update    | version   | auto_update |
+      | <item> | inactive | available | <version> | off         |
 
     When I run `wp <type> list --field=name`
     Then STDOUT should contain:
@@ -203,6 +203,6 @@ Feature: Manage WordPress themes and plugins
     And the return code should be 1
 
     Examples:
-      | type   | type_name | item                    | item_title              | version | zip_file                                                              | file_to_check                                                    |
+      | type   | type_name | item                    | item_title              | version | zip_file                                                               | file_to_check                                                     |
       | theme  | Theme     | p2                      | P2                      | 1.0.1   | https://wordpress.org/themes/download/p2.1.0.1.zip                     | {CONTENT_DIR}/p2/style.css                                        |
       | plugin | Plugin    | category-checklist-tree | Category Checklist Tree | 1.2     | https://downloads.wordpress.org/plugin/category-checklist-tree.1.2.zip | {CONTENT_DIR}/category-checklist-tree/category-checklist-tree.php |
