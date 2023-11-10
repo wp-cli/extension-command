@@ -248,9 +248,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			if ( ! empty( $mu_plugin['Description'] ) ) {
 				$mu_description = $mu_plugin['Description'];
 			}
+			$mu_name    = Utils\get_plugin_name( $file );
+			$wporg_info = $this->get_wporg_data( $mu_name );
 
 			$items[ $file ] = array(
-				'name'           => Utils\get_plugin_name( $file ),
+				'name'           => $mu_name,
 				'status'         => 'must-use',
 				'update'         => false,
 				'update_version' => null,
@@ -261,6 +263,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'description'    => $mu_description,
 				'file'           => $file,
 				'auto_update'    => false,
+				'wp_org'         => $wporg_info['status'],
+				'wp_org_updated' => $wporg_info['last_updated'],
 			);
 		}
 
