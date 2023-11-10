@@ -33,8 +33,8 @@ Feature: Update WordPress plugins
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update    | version           | update_version   |
-      | wordpress-importer | inactive | none      | {UPDATE_VERSION}  |                  |
+      | name               | status   | update    | version           | update_version |
+      | wordpress-importer | inactive | none      | {UPDATE_VERSION}  |                |
 
   Scenario: Error when both --minor and --patch are provided
     Given a WP install
