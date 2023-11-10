@@ -46,7 +46,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	protected $item_type         = 'plugin';
 	protected $upgrade_refresh   = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
-	protected $check_wporg       = [ 'status' => false, 'update_date' => false ];
+	protected $check_wporg       = [
+		'status'      => false,
+		'update_date' => false,
+	];
 
 	protected $obj_fields = array(
 		'name',
@@ -797,7 +800,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				$data['last_updated'] = wp_date( 'Y-m-d', (string) strtotime( $xml_pub_date[0] ) );
 			}
 		}
-
 
 		return $data;
 	}
