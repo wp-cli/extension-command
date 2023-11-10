@@ -1282,6 +1282,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$this->check_wporg['update_date'] = in_array( 'wp_org_updated', $fields, true );
 		}
 
+		$field = Utils\get_flag_value( $assoc_args, 'field' );
+		if ( 'wp_org' === $field ) {
+			$this->check_wporg['status'] = true;
+		} elseif ( 'wp_org_updated' === $field ) {
+			$this->check_wporg['update_date'] = true;
+		}
+
 		parent::_list( $_, $assoc_args );
 	}
 
