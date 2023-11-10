@@ -15,10 +15,31 @@ Feature: Update WordPress plugins
        */
        """
 
+    When I run `wp plugin list --name=wordpress-importer --field=wp_org_updated`
+    Then STDOUT should not be empty
+    And save STDOUT as {COMMIT_DATE}
+
     When I run `wp plugin list --fields=name,wp_org`
     Then STDOUT should be a table containing rows:
-      | name                   | status   | update    | version | wp_org |
-      | wordpress-importer     | inactive | available | 0.5     | active |
+      | name                   | wp_org    |
+      | wordpress-importer     | active    |
+      | no-longer-in-directory | closed    |
+      | never-wporg            | no_wp_org |
+
+    When I run `wp plugin list --fields=name,wp_org_updated`
+    Then STDOUT should be a table containing rows:
+      | name                   | wp_org_updated |
+      | wordpress-importer     | {COMMIT_DATE}  |
+      | no-longer-in-directory | 2017-11-13     |
+      | never-wporg            | -              |
+
+    When I run `wp plugin list --fields=name,wp_org,wp_org_updated`
+    Then STDOUT should be a table containing rows:
+      | name                   | wp_org    | wp_org_updated |
+      | wordpress-importer     | active    | {COMMIT_DATE}  |
+      | no-longer-in-directory | closed    | 2017-11-13     |
+      | never-wporg            | no_wp_org | -              |
+
 
 # todo check
 # - wp plugin list --fields=name,wp_org
