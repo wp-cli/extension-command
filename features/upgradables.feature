@@ -51,10 +51,14 @@ Feature: Manage WordPress themes and plugins
        "<item_title>"
        """
 
+    When I run `wp <type> list --name=<item> --field=update_version`
+    Then STDOUT should not be empty
+    And save STDOUT as {UPDATE_VERSION}
+
     When I run `wp <type> list`
     Then STDOUT should be a table containing rows:
-      | name   | status   | update    | version   |
-      | <item> | inactive | available | <version> |
+      | name   | status   | update    | version   | update_version   |
+      | <item> | inactive | available | <version> | {UPDATE_VERSION} |
 
     When I run `wp <type> list --field=name`
     Then STDOUT should contain:
