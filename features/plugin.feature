@@ -397,6 +397,8 @@ Feature: Manage WordPress plugins
       Installing Debug Bar List Script & Style Dependencies
       """
 
+  # Not running for SQLite because it involves another must-use plugin and a drop-in.
+  @require-mysql
   Scenario: Enable and disable all plugins
     Given a WP install
 
