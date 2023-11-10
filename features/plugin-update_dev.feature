@@ -19,3 +19,10 @@ Feature: Update WordPress plugins
     Then STDOUT should be a table containing rows:
       | name                   | status   | update    | version | wp_org |
       | wordpress-importer     | inactive | available | 0.5     | active |
+
+# todo check
+# - wp plugin list --fields=name,wp_org
+# - wp plugin list --fields=name,wp_org_updated
+# - wp plugin list --fields=name,wp_org,wp_org_updated
+# extra challenge the wp_org_updated date will change.
+# reference for variable https://github.com/wp-cli/extension-command/blob/main/features/plugin-update.feature#L37
