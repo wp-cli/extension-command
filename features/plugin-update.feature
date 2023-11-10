@@ -13,8 +13,8 @@ Feature: Update WordPress plugins
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update    | version |
-      | wordpress-importer | inactive | available | 0.5     |
+      | name               | status   | update    | version | update_version   |
+      | wordpress-importer | inactive | available | 0.5     | {UPDATE_VERSION} |
 
     When I try `wp plugin update akismet --version=0.5.3`
     Then STDERR should be:
@@ -25,16 +25,16 @@ Feature: Update WordPress plugins
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update    | version |
-      | wordpress-importer | inactive | available | 0.5     |
+      | name               | status   | update    | version | update_version   |
+      | wordpress-importer | inactive | available | 0.5     | {UPDATE_VERSION} |
 
     When I run `wp plugin update wordpress-importer`
     Then STDOUT should not be empty
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update    | version           |
-      | wordpress-importer | inactive | none      | {UPDATE_VERSION}  |
+      | name               | status   | update    | version           | update_version   |
+      | wordpress-importer | inactive | none      | {UPDATE_VERSION}  |                  |
 
   Scenario: Error when both --minor and --patch are provided
     Given a WP install
