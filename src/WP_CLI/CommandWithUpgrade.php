@@ -511,6 +511,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$item['version'] = '';
 			}
 
+			if ( empty( $item['update_version'] ) ) {
+				$item['update_version'] = '';
+			}
+
 			foreach ( $item as $field => &$value ) {
 				if ( 'update' === $field ) {
 					if ( true === $value ) {
