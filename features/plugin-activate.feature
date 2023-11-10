@@ -51,9 +51,7 @@ Feature: Activate WordPress plugins
        } );
        """
 
-    # Uses "try" because the SQLite plugin attempts to do a redirect.
-    # See https://github.com/WordPress/sqlite-database-integration/issues/49
-    When I try `wp plugin activate --all`
+    When I run `wp plugin activate --all`
     Then STDOUT should contain:
       """
       Plugin 'akismet' activated.
@@ -134,9 +132,10 @@ Feature: Activate WordPress plugins
 
   Scenario: Adding --exclude with plugin activate --all should exclude the plugins specified via --exclude
     When I try `wp plugin activate --all --exclude=hello`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
       Plugin 'akismet' activated.
+      Success: Activated 1 of 1 plugins.
       """
     And the return code should be 0
 
@@ -149,4 +148,3 @@ Feature: Activate WordPress plugins
       Success:
       """
     And the return code should be 0
-
