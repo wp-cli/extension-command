@@ -83,8 +83,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name  | status   | update    | version   | update_version   |
-      | p2    | inactive | available | 1.4.2     | {UPDATE_VERSION} |
+      | name  | status   | update    | version   | update_version   | auto_update |
+      | p2    | inactive | available | 1.4.2     | {UPDATE_VERSION} | off         |
 
     When I run `wp theme activate p2`
     Then STDOUT should not be empty
@@ -101,8 +101,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name  | status   | update    | version   | update_version   |
-      | p2    | active   | available | 1.4.1     | {UPDATE_VERSION} |
+      | name  | status   | update    | version   | update_version   | auto_update |
+      | p2    | active   | available | 1.4.1     | {UPDATE_VERSION} | off         |
 
     When I try `wp theme update`
     Then STDERR should be:
@@ -392,8 +392,8 @@ Feature: Manage WordPress themes
     When I try `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name          | status   |
-      | moina-blog         | active   |
-      | moina     | parent   |
+      | moina-blog    | active   |
+      | moina         | parent   |
 
   Scenario: When updating a theme --format should be the same when using --dry-run
     Given a WP install
