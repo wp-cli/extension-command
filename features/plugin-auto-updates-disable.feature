@@ -44,7 +44,7 @@ Feature: Disable auto-updates for WordPress plugins
       """
     And the return code should be 0
 
-  @require-wp-5.5 @require-mysql
+  @require-wp-5.5
   Scenario: Disable auto-updates for already disabled plugins
     When I run `wp plugin auto-updates disable hello`
     And I try `wp plugin auto-updates disable --all`
@@ -55,19 +55,6 @@ Feature: Disable auto-updates for WordPress plugins
     And STDERR should contain:
       """
       Error: Only disabled 2 of 3 plugin auto-updates.
-      """
-
-  @require-wp-5.5 @require-sqlite
-  Scenario: Disable auto-updates for already disabled plugins
-    When I run `wp plugin auto-updates disable hello`
-    And I try `wp plugin auto-updates disable --all`
-    Then STDERR should contain:
-      """
-      Warning: Auto-updates already disabled for plugin hello.
-      """
-    And STDERR should contain:
-      """
-      Error: Only disabled 3 of 4 plugin auto-updates.
       """
 
   @require-wp-5.5

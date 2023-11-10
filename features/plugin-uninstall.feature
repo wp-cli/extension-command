@@ -34,7 +34,6 @@ Feature: Uninstall a WordPress plugin
       """
     And the return code should be 1
 
-  @require-mysql
   Scenario: Uninstall all installed plugins
     When I run `wp plugin uninstall --all`
     Then STDOUT should be:
@@ -51,23 +50,6 @@ Feature: Uninstall a WordPress plugin
       Success: No plugins uninstalled.
       """
 
-  # Not running the previous command again in this test
-  # because the SQLite integration plugin is missing after the first run.
-  @require-sqlite
-  Scenario: Uninstall all installed plugins
-    When I run `wp plugin uninstall --all`
-    Then STDOUT should be:
-      """
-      Uninstalled and deleted 'akismet' plugin.
-      Uninstalled and deleted 'hello' plugin.
-      Uninstalled and deleted 'sqlite-database-integration' plugin.
-      Success: Uninstalled 3 of 3 plugins.
-      """
-    And the return code should be 0
-
-  # Disabled for SQLite because this test uninstalls all plugins,
-  # including the SQLite integration plugin.
-  @require-mysql
   Scenario:  Uninstall all installed plugins when one or more activated
     When I run `wp plugin activate --all`
     Then STDOUT should contain:
@@ -90,18 +72,8 @@ Feature: Uninstall a WordPress plugin
       Success: Uninstalled 2 of 2 plugins.
       """
 
-  @require-mysql
   Scenario: Excluding a plugin from uninstallation when using --all switch
     When I try `wp plugin uninstall --all --exclude=akismet,hello`
-    Then STDOUT should be:
-      """
-      Success: No plugins uninstalled.
-      """
-    And the return code should be 0
-
-  @require-sqlite
-  Scenario: Excluding a plugin from uninstallation when using --all switch
-    When I try `wp plugin uninstall --all --exclude=akismet,hello,sqlite-database-integration`
     Then STDOUT should be:
       """
       Success: No plugins uninstalled.

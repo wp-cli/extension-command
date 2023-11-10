@@ -297,7 +297,6 @@ Feature: Manage WordPress plugins
       """
     And the return code should be 0
 
-  @require-mysql
   Scenario: List plugins
     Given a WP install
 
@@ -306,30 +305,6 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list --status=inactive --field=name`
     Then STDOUT should be empty
-
-    When I run `wp plugin list --status=active --fields=name,status,file`
-    Then STDOUT should be a table containing rows:
-      | name       | status   | file                |
-      | akismet    | active   | akismet/akismet.php |
-
-    When I run `wp plugin list --status=active --field=author`
-    Then STDOUT should contain:
-      """
-      Automattic
-      """
-
-  @require-sqlite
-  Scenario: List plugins
-    Given a WP install
-
-    When I run `wp plugin activate akismet hello`
-    Then STDOUT should not be empty
-
-    When I run `wp plugin list --status=inactive --field=name`
-    Then STDOUT should contain:
-      """
-      sqlite-database-integration
-      """
 
     When I run `wp plugin list --status=active --fields=name,status,file`
     Then STDOUT should be a table containing rows:
@@ -398,9 +373,6 @@ Feature: Manage WordPress plugins
       | name               | status   | update   |
       | wordpress-importer | inactive | none     |
 
-  # Disabled for SQLite because this tests a scenario with an empty plugins directory,
-  # so the SQLite integration plugin would be missing.
-  @require-mysql
   Scenario: Install a plugin when directory doesn't yet exist
     Given a WP install
 
@@ -425,8 +397,6 @@ Feature: Manage WordPress plugins
       Installing Debug Bar List Script & Style Dependencies
       """
 
-  # Disabled for SQLite because this tests a specific list of plugins.
-  @require-mysql
   Scenario: Enable and disable all plugins
     Given a WP install
 
@@ -649,9 +619,7 @@ Feature: Manage WordPress plugins
       | name         | title | description                    | file         |
       | db-error.php |       | Custom database error message. | db-error.php |
 
-  # Disabled for SQLite because this test uninstalls all plugins,
-  # including the SQLite integration plugin.
-  @require-wp-4.0 @require-mysql
+  @require-wp-4.0
   Scenario: Validate installed plugin's version.
     Given a WP installation
     And I run `wp plugin uninstall --all`

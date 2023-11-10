@@ -43,7 +43,7 @@ Feature: Enable auto-updates for WordPress plugins
       """
     And the return code should be 0
 
-  @require-wp-5.5 @require-mysql
+  @require-wp-5.5
   Scenario: Enable auto-updates for already enabled plugins
     When I run `wp plugin auto-updates enable hello`
     And I try `wp plugin auto-updates enable --all`
@@ -54,19 +54,6 @@ Feature: Enable auto-updates for WordPress plugins
     And STDERR should contain:
       """
       Error: Only enabled 2 of 3 plugin auto-updates.
-      """
-
-  @require-wp-5.5 @require-sqlite
-  Scenario: Enable auto-updates for already enabled plugins
-    When I run `wp plugin auto-updates enable hello`
-    And I try `wp plugin auto-updates enable --all`
-    Then STDERR should contain:
-      """
-      Warning: Auto-updates already enabled for plugin hello.
-      """
-    And STDERR should contain:
-      """
-      Error: Only enabled 3 of 4 plugin auto-updates.
       """
 
   @require-wp-5.5

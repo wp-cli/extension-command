@@ -87,9 +87,6 @@ Feature: Activate WordPress plugins
       """
       And STDERR should be empty
 
-  # Disabled for SQLite because this tests a scenario with an empty plugins directory,
-  # so the SQLite integration plugin would be missing.
-  @require-mysql
   Scenario: Not giving a slug on activate should throw an error unless --all given
     When I try `wp plugin activate`
     Then the return code should be 1
@@ -143,10 +140,6 @@ Feature: Activate WordPress plugins
       """
     And the return code should be 0
 
-  # Disabled for SQLite because the SQLite plugin attempts to do a redirect,
-  # which would cause the "Success" check to fail.
-  # See https://github.com/WordPress/sqlite-database-integration/issues/49
-  @require-mysql
   Scenario: Excluding a missing plugin should not throw an error
     Given a WP install
     And I run `wp plugin activate --all --exclude=missing-plugin`

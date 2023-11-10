@@ -81,7 +81,7 @@ Feature: Show the status of auto-updates for WordPress plugins
       Error: --enabled-only and --disabled-only are mutually exclusive and cannot be used at the same time.
       """
 
-  @require-wp-5.5 @require-mysql
+  @require-wp-5.5
   Scenario: The fields can be shown individually
     Given I run `wp plugin auto-updates enable hello`
 
@@ -98,25 +98,7 @@ Feature: Show the status of auto-updates for WordPress plugins
       enabled
       """
 
-  @require-wp-5.5 @require-sqlite
-  Scenario: The fields can be shown individually
-    Given I run `wp plugin auto-updates enable hello`
-
-    When I run `wp plugin auto-updates status --all --disabled-only --field=name`
-    Then STDOUT should be:
-      """
-      akismet
-      sqlite-database-integration
-      duplicate-post
-      """
-
-    When I run `wp plugin auto-updates status hello --field=status`
-    Then STDOUT should be:
-      """
-      enabled
-      """
-
-  @require-wp-5.5 @require-mysql
+  @require-wp-5.5
   Scenario: Formatting options work
     When I run `wp plugin auto-updates status --all --format=json`
     Then STDOUT should be:
@@ -130,23 +112,5 @@ Feature: Show the status of auto-updates for WordPress plugins
       name,status
       akismet,disabled
       hello,disabled
-      duplicate-post,disabled
-      """
-
-  @require-wp-5.5 @require-sqlite
-  Scenario: Formatting options work
-    When I run `wp plugin auto-updates status --all --format=json`
-    Then STDOUT should be:
-      """
-      [{"name":"akismet","status":"disabled"},{"name":"hello","status":"disabled"},{"name":"sqlite-database-integration","status":"disabled"},{"name":"duplicate-post","status":"disabled"}]
-      """
-
-    When I run `wp plugin auto-updates status --all --format=csv`
-    Then STDOUT should be:
-      """
-      name,status
-      akismet,disabled
-      hello,disabled
-      sqlite-database-integration,disabled
       duplicate-post,disabled
       """
