@@ -54,6 +54,7 @@ class Theme_Command extends CommandWithUpgrade {
 		'status',
 		'update',
 		'version',
+		'update_version',
 		'auto_update',
 	];
 
@@ -852,10 +853,10 @@ class Theme_Command extends CommandWithUpgrade {
 	 * * status
 	 * * update
 	 * * version
+	 * * update_version
 	 *
 	 * These fields are optionally available:
 	 *
-	 * * update_version
 	 * * update_package
 	 * * update_id
 	 * * title
@@ -866,9 +867,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 *     # List themes
 	 *     $ wp theme list --status=inactive --format=csv
-	 *     name,status,update,version
-	 *     twentyfourteen,inactive,none,1.7
-	 *     twentysixteen,inactive,available,1.1
+	 *     name,status,update,version,update_version
+	 *     twentyfourteen,inactive,none,1.7,
+	 *     twentysixteen,inactive,available,1.1,
 	 *
 	 * @subcommand list
 	 */

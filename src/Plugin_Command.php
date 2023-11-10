@@ -52,6 +52,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		'status',
 		'update',
 		'version',
+		'update_version',
 		'auto_update',
 	);
 
@@ -1176,10 +1177,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * * status
 	 * * update
 	 * * version
+	 * * update_version
 	 *
 	 * These fields are optionally available:
 	 *
-	 * * update_version
 	 * * update_package
 	 * * update_id
 	 * * title
@@ -1192,22 +1193,22 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     # List active plugins on the site.
 	 *     $ wp plugin list --status=active --format=json
-	 *     [{"name":"dynamic-hostname","status":"active","update":"none","version":"0.4.2"},{"name":"tinymce-templates","status":"active","update":"none","version":"4.4.3"},{"name":"wp-multibyte-patch","status":"active","update":"none","version":"2.4"},{"name":"wp-total-hacks","status":"active","update":"none","version":"2.0.1"}]
+	 *     [{"name":"dynamic-hostname","status":"active","update":"none","version":"0.4.2","update_version": ""},{"name":"tinymce-templates","status":"active","update":"none","version":"4.4.3","update_version": ""},{"name":"wp-multibyte-patch","status":"active","update":"none","version":"2.4","update_version": ""},{"name":"wp-total-hacks","status":"active","update":"none","version":"2.0.1","update_version": ""}]
 	 *
 	 *     # List plugins on each site in a network.
 	 *     $ wp site list --field=url | xargs -I % wp plugin list --url=%
-	 *     +---------+----------------+--------+---------+
-	 *     | name    | status         | update | version |
-	 *     +---------+----------------+--------+---------+
-	 *     | akismet | active-network | none   | 3.1.11  |
-	 *     | hello   | inactive       | none   | 1.6     |
-	 *     +---------+----------------+--------+---------+
-	 *     +---------+----------------+--------+---------+
-	 *     | name    | status         | update | version |
-	 *     +---------+----------------+--------+---------+
-	 *     | akismet | active-network | none   | 3.1.11  |
-	 *     | hello   | inactive       | none   | 1.6     |
-	 *     +---------+----------------+--------+---------+
+	 *     +---------+----------------+--------+---------+----------------+
+	 *     | name    | status         | update | version | update_version |
+	 *     +---------+----------------+--------+---------+----------------+
+	 *     | akismet | active-network | none   | 3.1.11  |                |
+	 *     | hello   | inactive       | none   | 1.6     | 1.7.2          |
+	 *     +---------+----------------+--------+---------+----------------+
+	 *     +---------+----------------+--------+---------+----------------+
+	 *     | name    | status         | update | version | update_version |
+	 *     +---------+----------------+--------+---------+----------------+
+	 *     | akismet | active-network | none   | 3.1.11  |                |
+	 *     | hello   | inactive       | none   | 1.6     | 1.7.2          |
+	 *     +---------+----------------+--------+---------+----------------+
 	 *
 	 * @subcommand list
 	 */

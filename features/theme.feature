@@ -77,10 +77,14 @@ Feature: Manage WordPress themes
     When I run `wp theme install p2 --version=1.4.2`
     Then STDOUT should not be empty
 
+    When I run `wp theme list --name=p2 --field=update_version`
+    Then STDOUT should not be empty
+    And save STDOUT as {UPDATE_VERSION}
+
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name  | status   | update    | version   | auto_update |
-      | p2    | inactive | available | 1.4.2     | off         |
+      | name  | status   | update    | version   | update_version   | auto_update |
+      | p2    | inactive | available | 1.4.2     | {UPDATE_VERSION} | off         |
 
     When I run `wp theme activate p2`
     Then STDOUT should not be empty
@@ -97,8 +101,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name  | status   | update    | version   | auto_update |
-      | p2    | active   | available | 1.4.1     | off         |
+      | name  | status   | update    | version   | update_version   | auto_update |
+      | p2    | active   | available | 1.4.1     | {UPDATE_VERSION} | off         |
 
     When I try `wp theme update`
     Then STDERR should be:
