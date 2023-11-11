@@ -779,6 +779,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$response_code = wp_remote_retrieve_response_code( $request );
 			if ( 200 === $response_code ) {
 				$data['status'] = 'active';
+				if ( ! $this->check_wporg['update_date'] ) {
+					return $data; // The plugin is active on .org, but we don't need the date.
+				}
 			}
 			// Just because the plugin is not in the api, does not mean it was never on .org.
 		}
