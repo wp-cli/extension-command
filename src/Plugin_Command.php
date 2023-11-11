@@ -47,8 +47,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	protected $upgrade_refresh   = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
 	protected $check_wporg       = [
-		'status'      => false,
-		'update_date' => false,
+		'status'       => false,
+		'last_updated' => false,
 	];
 
 	protected $obj_fields = array(
@@ -253,19 +253,19 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$wporg_info = $this->get_wporg_data( $mu_name );
 
 			$items[ $file ] = array(
-				'name'           => $mu_name,
-				'status'         => 'must-use',
-				'update'         => false,
-				'update_version' => null,
-				'update_package' => null,
-				'version'        => $mu_version,
-				'update_id'      => '',
-				'title'          => $mu_title,
-				'description'    => $mu_description,
-				'file'           => $file,
-				'auto_update'    => false,
-				'wp_org'         => $wporg_info['status'],
-				'wp_org_updated' => $wporg_info['last_updated'],
+				'name'               => $mu_name,
+				'status'             => 'must-use',
+				'update'             => false,
+				'update_version'     => null,
+				'update_package'     => null,
+				'version'            => $mu_version,
+				'update_id'          => '',
+				'title'              => $mu_title,
+				'description'        => $mu_description,
+				'file'               => $file,
+				'auto_update'        => false,
+				'wporg_status'       => $wporg_info['status'],
+				'wporg_last_updated' => $wporg_info['last_updated'],
 			);
 		}
 
@@ -719,20 +719,20 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 			$duplicate_names[ $name ][] = $file;
 			$items[ $file ]             = [
-				'name'           => $name,
-				'status'         => $this->get_status( $file ),
-				'update'         => (bool) $update_info,
-				'update_version' => isset( $update_info ) && isset( $update_info['new_version'] ) ? $update_info['new_version'] : null,
-				'update_package' => isset( $update_info ) && isset( $update_info['package'] ) ? $update_info['package'] : null,
-				'version'        => $details['Version'],
-				'update_id'      => $file,
-				'title'          => $details['Name'],
-				'description'    => wordwrap( $details['Description'] ),
-				'file'           => $file,
-				'auto_update'    => in_array( $file, $auto_updates, true ),
-				'author'         => $details['Author'],
-				'wp_org'         => $wporg_info['status'],
-				'wp_org_updated' => $wporg_info['last_updated'],
+				'name'               => $name,
+				'status'             => $this->get_status( $file ),
+				'update'             => (bool) $update_info,
+				'update_version'     => isset( $update_info ) && isset( $update_info['new_version'] ) ? $update_info['new_version'] : null,
+				'update_package'     => isset( $update_info ) && isset( $update_info['package'] ) ? $update_info['package'] : null,
+				'version'            => $details['Version'],
+				'update_id'          => $file,
+				'title'              => $details['Name'],
+				'description'        => wordwrap( $details['Description'] ),
+				'file'               => $file,
+				'auto_update'        => in_array( $file, $auto_updates, true ),
+				'author'             => $details['Author'],
+				'wporg_status'       => $wporg_info['status'],
+				'wporg_last_updated' => $wporg_info['last_updated'],
 			];
 
 			if ( null === $update_info ) {
@@ -770,7 +770,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			'status'       => 'no_wp_org',
 			'last_updated' => '-',
 		];
-		if ( ! $this->check_wporg['status'] && ! $this->check_wporg['update_date'] ) {
+		if ( ! $this->check_wporg['status'] && ! $this->check_wporg['last_updated'] ) {
 			return $data;
 		}
 
@@ -779,7 +779,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$response_code = wp_remote_retrieve_response_code( $request );
 			if ( 200 === $response_code ) {
 				$data['status'] = 'active';
-				if ( ! $this->check_wporg['update_date'] ) {
+				if ( ! $this->check_wporg['last_updated'] ) {
 					return $data; // The plugin is active on .org, but we don't need the date.
 				}
 			}
@@ -1252,8 +1252,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * * file
 	 * * auto_update
 	 * * author
-	 * * wp_org
-	 * * wp_org_updated
+	 * * wporg_status
+	 * * wporg_last_updated
 	 *
 	 * ## EXAMPLES
 	 *
@@ -1281,16 +1281,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	public function list_( $_, $assoc_args ) {
 		$fields = Utils\get_flag_value( $assoc_args, 'fields' );
 		if ( ! empty( $fields ) ) {
-			$fields                           = explode( ',', $fields );
-			$this->check_wporg['status']      = in_array( 'wp_org', $fields, true );
-			$this->check_wporg['update_date'] = in_array( 'wp_org_updated', $fields, true );
+			$fields                            = explode( ',', $fields );
+			$this->check_wporg['status']       = in_array( 'wporg_status', $fields, true );
+			$this->check_wporg['last_updated'] = in_array( 'wporg_last_updated', $fields, true );
 		}
 
 		$field = Utils\get_flag_value( $assoc_args, 'field' );
-		if ( 'wp_org' === $field ) {
+		if ( 'wporg_status' === $field ) {
 			$this->check_wporg['status'] = true;
-		} elseif ( 'wp_org_updated' === $field ) {
-			$this->check_wporg['update_date'] = true;
+		} elseif ( 'wporg_last_updated' === $field ) {
+			$this->check_wporg['last_updated'] = true;
 		}
 
 		parent::_list( $_, $assoc_args );
