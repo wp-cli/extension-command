@@ -2,6 +2,7 @@
 
 use WP_CLI\ParsePluginNameInput;
 use WP_CLI\Utils;
+use WP_CLI\WpOrgApi;
 
 /**
  * Manages plugins, including installs, activations, and updates.
@@ -775,9 +776,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		if ( $this->check_wporg ) {
-			$request       = wp_remote_head( 'https://api.wordpress.org/plugins/info/1.0/' . $plugin_name );
-			$response_code = wp_remote_retrieve_response_code( $request );
-			if ( 200 === $response_code ) {
+			try {
+				$plugin_data = ( new WpOrgApi() )->get_plugin_info( $plugin_name );
+			} catch ( Exception $e ) {
+				// Request failed. The plugin is not (active) on .org.
+				$plugin_data = false;
+			}
+			if ( $plugin_data ) {
 				$data['status'] = 'active';
 				if ( ! $this->check_wporg['last_updated'] ) {
 					return $data; // The plugin is active on .org, but we don't need the date.
