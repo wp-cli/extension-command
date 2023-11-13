@@ -2,7 +2,7 @@ Feature: List Recently Active WordPress plugins
 
   Scenario: Verify plugin installation, activation, deactivation and confirm listing recently active plugins list is correct
     Given a WP install
-    When I run `wp plugin install bbpress buddypress query-monitor --activate`
+    When I run `wp plugin install bbpress buddypress gutenberg --activate`
     Then STDOUT should contain:
       """
       Activating 'bbpress'...
@@ -13,7 +13,7 @@ Feature: List Recently Active WordPress plugins
       """
     And STDOUT should contain:
       """
-      Activating 'query-monitor'...
+      Activating 'gutenberg'...
       """
 
     When I run `wp plugin activate akismet`
