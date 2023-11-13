@@ -506,7 +506,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$all_items = array_filter(
 				$all_items,
 				function ( $value ) {
-					return isset( $value['recently_active'] ) && $value['recently_active'] === true;
+					return isset( $value['recently_active'] ) && true === $value['recently_active'];
 				}
 			);
 		}
