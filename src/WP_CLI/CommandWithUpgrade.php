@@ -503,9 +503,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// Only show plugins that are recently active.
 		if ( false !== (bool) Utils\get_flag_value( $assoc_args, 'recently-active', false ) ) {
-			$all_items = array_filter( $all_items, function ( $value ) {
-				return isset( $value['recently_active'] ) && $value['recently_active'] === true;
-			} );
+			$all_items = array_filter(
+				$all_items,
+				function ( $value ) {
+					return isset( $value['recently_active'] ) && $value['recently_active'] === true;
+				}
+			);
 		}
 
 		if ( ! is_array( $all_items ) ) {
