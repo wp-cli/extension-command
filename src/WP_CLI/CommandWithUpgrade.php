@@ -196,6 +196,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					add_filter( 'upgrader_source_selection', $filter, 10, 3 );
 				}
 
+				// Check if the URL the URL is cachable and whitelist it then.
+				self::maybe_cache( $slug, $this->item_type );
+
 				if ( $file_upgrader->install( $slug ) ) {
 					$slug   = $file_upgrader->result['destination_name'];
 					$result = true;
@@ -770,5 +773,22 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	private function parse_url_host_component( $url, $component ) {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- parse_url will only be used in absence of wp_parse_url.
 		return function_exists( 'wp_parse_url' ) ? wp_parse_url( $url, $component ) : parse_url( $url, $component );
+	}
+
+	/**
+	 * Whitelist GitHub URLs for caching.
+	 *
+	 * @param string $url The URL to check.
+	 */
+	public static function maybe_cache( $url, $item_type ) {
+		$matches = [];
+
+		// cache release URLs like `https://github.com/wp-cli-test/generic-example-plugin/releases/download/v0.1.0/generic-example-plugin.0.1.0.zip`
+		if ( preg_match( '#github\.com/[^/]+/([^/]+)/releases/download/tags/([^/]+)/(.+)\.zip#', $url, $matches ) ) {
+			WP_CLI::get_http_cache_manager()->whitelist_package( $url, $item_type, $matches[2], $matches[3] );
+		// cache archive URLs like `https://github.com/wp-cli-test/generic-example-plugin/archive/v0.1.0.zip`
+		} elseif ( preg_match( '#github\.com/[^/]+/([^/]+)/archive/(version/|)([^/]+)\.zip#', $url, $matches ) ) {
+			WP_CLI::get_http_cache_manager()->whitelist_package( $url, $item_type, $matches[1], $matches[3] );
+		}
 	}
 }
