@@ -145,7 +145,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	public function install( $args, $assoc_args ) {
-
 		$successes = 0;
 		$errors    = 0;
 		foreach ( $args as $slug ) {
@@ -158,6 +157,23 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$result = false;
 
 			$is_remote = false !== strpos( $slug, '://' );
+
+			$github_parser = new ParseGithubUrlInput();
+
+			if ( $is_remote && $github_repo = $github_parser->get_github_repo_from_url( $slug ) ) {
+				$version = $github_parser->get_the_latest_github_version( $github_repo );
+
+				if ( is_wp_error( $version ) ) {
+					WP_CLI::error( $version->get_error_message() );
+				}
+
+				/**
+				 * Sets the $slug that will trigger the installation based on a zip file.
+				 */
+				$slug = $version['url'];
+
+				WP_CLI::log( 'Latest release resolved to ' . $version['name'] );
+			}
 
 			// Check if a URL to a remote or local zip has been specified.
 			if ( $is_remote || ( pathinfo( $slug, PATHINFO_EXTENSION ) === 'zip' && is_file( $slug ) ) ) {
