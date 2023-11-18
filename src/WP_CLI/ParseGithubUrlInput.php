@@ -27,8 +27,11 @@ final class ParseGithubUrlInput {
 	 */
 	public function get_the_latest_github_version( $repo_slug ) {
 		$api_url = sprintf( $this->github_releases_api_endpoint, $repo_slug );
+		$token   = getenv( 'GITHUB_TOKEN' );
 
-		$response = \wp_remote_get( $api_url );
+		$request_arguments = $token ? [ 'headers' => 'Authorization: Bearer ' . getenv( 'GITHUB_TOKEN' ) ] : [];
+
+		$response = \wp_remote_get( $api_url, $request_arguments );
 
 		if ( \is_wp_error( $response ) ) {
 			return $response;
@@ -38,7 +41,10 @@ final class ParseGithubUrlInput {
 		$decoded_body = json_decode( $body );
 
 		if ( wp_remote_retrieve_response_code( $response ) === \WP_Http::FORBIDDEN ) {
-			return new \WP_Error( \WP_Http::FORBIDDEN, $decoded_body->message . PHP_EOL . $decoded_body->documentation_url );
+			return new \WP_Error(
+				\WP_Http::FORBIDDEN,
+				$this->build_rate_limiting_error_message( $decoded_body )
+			);
 		}
 
 		if ( null === $decoded_body ) {
@@ -51,7 +57,10 @@ final class ParseGithubUrlInput {
 
 		$latest_release = $decoded_body[0];
 
-		return [ 'name' => $latest_release->name, 'url' => $this->get_asset_url_from_release( $latest_release ) ];
+		return [
+			'name' => $latest_release->name,
+			'url'  => $this->get_asset_url_from_release( $latest_release ),
+		];
 	}
 
 	/**
@@ -84,5 +93,16 @@ final class ParseGithubUrlInput {
 		preg_match( $this->github_latest_release_url, $url, $matches );
 
 		return isset( $matches[1] ) ? $matches[1] : null;
+	}
+
+	/**
+	 * Build the error message we display in WP-CLI for the API Rate limiting error response.
+	 *
+	 * @param $decoded_body
+	 *
+	 * @return string
+	 */
+	private function build_rate_limiting_error_message( $decoded_body ) {
+		return $decoded_body->message . PHP_EOL . $decoded_body->documentation_url . PHP_EOL . 'In order to pass the token to WP-CLI, you need to use the GITHUB_TOKEN environment variable.';
 	}
 }
