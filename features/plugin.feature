@@ -580,7 +580,7 @@ Feature: Manage WordPress plugins
       """
       akismet
       jetpack
-      user-switching
+      duplicate-page
       """
     And a wp-content/mu-plugins/hide-us-plugin.php file:
       """
@@ -592,7 +592,7 @@ Feature: Manage WordPress plugins
        */
 
        add_filter( 'all_plugins', function( $all_plugins ) {
-          unset( $all_plugins['user-switching/user-switching.php'] );
+          unset( $all_plugins['duplicate-page/duplicatepage.php'] );
           return $all_plugins;
        } );
        """
@@ -600,7 +600,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list --fields=name`
     Then STDOUT should not contain:
       """
-      user-switching
+      duplicate-page
       """
 
   Scenario: Show dropins plugin list

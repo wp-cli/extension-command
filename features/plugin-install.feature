@@ -113,14 +113,14 @@ Feature: Install WordPress plugins
   Scenario: Return code is 1 when one or more plugin installations fail
     Given a WP install
 
-    When I try `wp plugin install user-switching user-switching-not-a-plugin`
+    When I try `wp plugin install duplicate-page duplicate-page-not-a-plugin`
     Then STDERR should contain:
       """
       Warning:
       """
     And STDERR should contain:
       """
-      user-switching-not-a-plugin
+      duplicate-page-not-a-plugin
       """
     And STDERR should contain:
       """
@@ -136,25 +136,25 @@ Feature: Install WordPress plugins
       """
     And the return code should be 1
 
-    When I try `wp plugin install user-switching`
+    When I try `wp plugin install duplicate-page`
     Then STDOUT should be:
       """
       Success: Plugin already installed.
       """
     And STDERR should be:
       """
-      Warning: user-switching: Plugin already installed.
+      Warning: duplicate-page: Plugin already installed.
       """
     And the return code should be 0
 
-    When I try `wp plugin install user-switching-not-a-plugin`
+    When I try `wp plugin install duplicate-page-not-a-plugin`
     Then STDERR should contain:
       """
       Warning:
       """
     And STDERR should contain:
       """
-      user-switching-not-a-plugin
+      duplicate-page-not-a-plugin
       """
     And STDERR should contain:
       """
@@ -222,18 +222,18 @@ Feature: Install WordPress plugins
   Scenario: Verify installed plugin activation
     Given a WP install
 
-    When I run `wp plugin install user-switching`
+    When I run `wp plugin install duplicate-page`
     Then STDOUT should not be empty
 
-    When I try `wp plugin install user-switching --activate`
+    When I try `wp plugin install duplicate-page --activate`
     Then STDERR should contain:
     """
-    Warning: user-switching: Plugin already installed.
+    Warning: duplicate-page: Plugin already installed.
     """
 
     And STDOUT should contain:
     """
-    Activating 'user-switching'...
-    Plugin 'user-switching' activated.
+    Activating 'duplicate-page'...
+    Plugin 'duplicate-page' activated.
     Success: Plugin already installed.
     """
