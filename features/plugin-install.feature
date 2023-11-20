@@ -128,7 +128,7 @@ Feature: Install WordPress plugins
       """
     And STDOUT should contain:
       """
-      Installing User Switching
+      Installing Duplicate Page
       """
     And STDOUT should contain:
       """
