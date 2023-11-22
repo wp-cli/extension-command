@@ -275,17 +275,19 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		foreach ( $raw_items as $name => $item_data ) {
 			$description    = ! empty( $raw_data[ $name ][0] ) ? $raw_data[ $name ][0] : '';
 			$items[ $name ] = [
-				'name'           => $name,
-				'title'          => $item_data['Title'],
-				'description'    => $description,
-				'status'         => 'dropin',
-				'update'         => false,
-				'update_version' => null,
-				'update_package' => null,
-				'update_id'      => '',
-				'file'           => $name,
-				'auto_update'    => false,
-				'author'         => $item_data['Author'],
+				'name'               => $name,
+				'title'              => $item_data['Title'],
+				'description'        => $description,
+				'status'             => 'dropin',
+				'update'             => false,
+				'update_version'     => null,
+				'update_package'     => null,
+				'update_id'          => '',
+				'file'               => $name,
+				'auto_update'        => false,
+				'author'             => $item_data['Author'],
+				'wporg_status'       => 'no_wp_org',
+				'wporg_last_updated' => '-',
 			];
 		}
 
