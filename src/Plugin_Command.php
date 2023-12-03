@@ -317,6 +317,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Plugin 'bbpress' activated.
 	 *     Plugin 'buddypress' activated.
 	 *     Success: Activated 2 of 3 plugins.
+	 *
+	 *
+	 *      # Activate plugin that were recently active on a mu site.
+	 *      $ wp plugin activate $(wp plugin list --recently-active --field=name) --network
+	 *      Plugin 'bbpress' network activated.
+	 *      Plugin 'buddypress' network activated.
+	 *      Success: Activated 2 of 3 plugins.
 	 */
 	public function activate( $args, $assoc_args = array() ) {
 		$network_wide = Utils\get_flag_value( $assoc_args, 'network', false );
@@ -705,7 +712,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$auto_updates = [];
 		}
 
-		$recently_active = is_multisite() ? get_site_option( 'recently_activated' ) : get_option( 'recently_activated' );
+		$recently_active = is_network_admin() ? get_site_option( 'recently_activated' ) : get_option( 'recently_activated' );
 
 		if ( false === $recently_active ) {
 			$recently_active = [];
