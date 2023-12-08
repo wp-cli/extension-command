@@ -585,8 +585,8 @@ Feature: Manage WordPress plugins
       """
       <?php
       /**
-       * Plugin Name: Hide User Switchign on Production
-       * Description: Hides the User Switching plugin on production sites
+       * Plugin Name: Hide Site Secrets on Production
+       * Description: Hides the Site Secrets plugin on production sites
        * Author: WP-CLI tests
        */
 
