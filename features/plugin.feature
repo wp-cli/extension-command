@@ -579,7 +579,6 @@ Feature: Manage WordPress plugins
     And these installed and active plugins:
       """
       akismet
-      jetpack
       site-secrets
       """
     And a wp-content/mu-plugins/hide-us-plugin.php file:
