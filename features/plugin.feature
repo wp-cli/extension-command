@@ -579,20 +579,19 @@ Feature: Manage WordPress plugins
     And these installed and active plugins:
       """
       akismet
-      jetpack
-      user-switching
+      site-secrets
       """
     And a wp-content/mu-plugins/hide-us-plugin.php file:
       """
       <?php
       /**
-       * Plugin Name: Hide User Switchign on Production
-       * Description: Hides the User Switching plugin on production sites
+       * Plugin Name: Hide Site Secrets on Production
+       * Description: Hides the Site Secrets plugin on production sites
        * Author: WP-CLI tests
        */
 
        add_filter( 'all_plugins', function( $all_plugins ) {
-          unset( $all_plugins['user-switching/user-switching.php'] );
+          unset( $all_plugins['site-secrets/site-secrets.php'] );
           return $all_plugins;
        } );
        """
@@ -600,7 +599,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list --fields=name`
     Then STDOUT should not contain:
       """
-      user-switching
+      site-secrets
       """
 
   Scenario: Show dropins plugin list

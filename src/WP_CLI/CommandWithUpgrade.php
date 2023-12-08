@@ -170,7 +170,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						// Don't attempt to rename ZIPs uploaded to the releases page or coming from a raw source.
 						&& ! preg_match( '#github\.com/[^/]+/[^/]+/(?:releases/download|raw)/#', $slug ) ) {
 
-					$filter = function ( $source, $remote_source, $upgrader ) use ( $slug ) {
+					$filter = function ( $source ) use ( $slug ) {
 
 						$slug_dir = Utils\basename( $this->parse_url_host_component( $slug, PHP_URL_PATH ), '.zip' );
 
@@ -193,7 +193,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 						return new WP_Error( 'wpcli_install_github', "Couldn't move Github-based project to appropriate directory." );
 					};
-					add_filter( 'upgrader_source_selection', $filter, 10, 3 );
+					add_filter( 'upgrader_source_selection', $filter, 10 );
 				}
 
 				if ( $file_upgrader->install( $slug ) ) {
