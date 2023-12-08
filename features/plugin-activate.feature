@@ -35,7 +35,7 @@ Feature: Activate WordPress plugins
     And the return code should be 1
 
   Scenario: Activate all when one plugin is hidden by "all_plugins" filter
-    Given I run `wp plugin install user-switching`
+    Given I run `wp plugin install site-secrets`
     And a wp-content/mu-plugins/hide-us-plugin.php file:
       """
       <?php
@@ -46,7 +46,7 @@ Feature: Activate WordPress plugins
        */
 
        add_filter( 'all_plugins', function( $all_plugins ) {
-          unset( $all_plugins['user-switching/user-switching.php'] );
+          unset( $all_plugins['site-secrets/site-secrets.php'] );
           return $all_plugins;
        } );
        """
@@ -59,7 +59,7 @@ Feature: Activate WordPress plugins
       """
     And STDOUT should not contain:
       """
-      Plugin 'user-switching' activated.
+      Plugin 'site-secrets' activated.
       """
 
   @require-php-7
