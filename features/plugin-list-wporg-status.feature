@@ -1,4 +1,4 @@
-Feature: Update WordPress plugins
+Feature: Check the status of plugins on WordPress.org
 
   @require-wp-5.2
   Scenario: Install plugins and check the status on wp.org.
