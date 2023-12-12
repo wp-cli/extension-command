@@ -24,18 +24,18 @@ Feature: Update WordPress plugins
       | name                   | wporg_status    |
       | wordpress-importer     | active          |
       | no-longer-in-directory | closed          |
-      | never-wporg            | no_wp_org       |
+      | never-wporg            |                 |
 
     When I run `wp plugin list --fields=name,wporg_last_updated`
     Then STDOUT should be a table containing rows:
       | name                   | wporg_last_updated |
       | wordpress-importer     | {COMMIT_DATE}      |
       | no-longer-in-directory | 2017-11-13         |
-      | never-wporg            | -                  |
+      | never-wporg            |                    |
 
     When I run `wp plugin list --fields=name,wporg_status,wporg_last_updated`
     Then STDOUT should be a table containing rows:
       | name                   | wporg_status    | wporg_last_updated |
       | wordpress-importer     | active          | {COMMIT_DATE}      |
       | no-longer-in-directory | closed          | 2017-11-13         |
-      | never-wporg            | no_wp_org       | -                  |
+      | never-wporg            |                 |                    |

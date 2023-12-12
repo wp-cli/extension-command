@@ -286,8 +286,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'file'               => $name,
 				'auto_update'        => false,
 				'author'             => $item_data['Author'],
-				'wporg_status'       => 'no_wp_org',
-				'wporg_last_updated' => '-',
+				'wporg_status'       => '',
+				'wporg_last_updated' => '',
 			];
 		}
 
@@ -770,8 +770,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	protected function get_wporg_data( $plugin_name ) {
 		$data = [
-			'status'       => 'no_wp_org',
-			'last_updated' => '-',
+			'status'       => '',
+			'last_updated' => '',
 		];
 		if ( ! $this->check_wporg['status'] && ! $this->check_wporg['last_updated'] ) {
 			return $data;
