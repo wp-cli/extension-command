@@ -297,8 +297,6 @@ class Theme_AutoUpdates_Command {
 
 			$results[] = [
 				'name'   => $theme->stylesheet,
-				'name
-			'            => $theme->stylesheet,
 				'status' => $enabled ? 'enabled' : 'disabled',
 			];
 		}
