@@ -126,7 +126,7 @@ Feature: Update WordPress themes
 
   Scenario: Update a theme to its latest minor release
     Given a WP install
-    And I run `wp theme install --force twentytwelve --version=2.5.4`
+    And I run `wp theme install --force twentytwelve --version=3.0`
 
     When I run `wp theme update twentytwelve --minor`
     Then STDOUT should contain:
@@ -137,12 +137,12 @@ Feature: Update WordPress themes
     When I run `wp theme get twentytwelve --field=version`
     Then STDOUT should be:
       """
-      2.6.1
+      3.9
       """
   
   Scenario: Update a theme to its latest patch release
     Given a WP install
-    And I run `wp theme install --force twentytwelve --version=0.5`
+    And I run `wp theme install --force twentytwelve --version=1.1`
 
     When I run `wp theme update twentytwelve --patch`
     Then STDOUT should contain:
@@ -153,5 +153,5 @@ Feature: Update WordPress themes
     When I run `wp theme get twentytwelve --field=version`
     Then STDOUT should be:
       """
-      0.5.2
+      1.1.1
       """
