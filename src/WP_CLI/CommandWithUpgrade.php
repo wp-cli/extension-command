@@ -627,7 +627,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		foreach ( $items as $i => $item ) {
 			try {
 				$data = call_user_func(
-					[ $wp_org_api, "get_{$item_type}_info"],
+					[ $wp_org_api, "get_{$item_type}_info" ],
 					$item['name'],
 					// The default.
 					'en_US',
