@@ -439,7 +439,7 @@ class Theme_Command extends CommandWithUpgrade {
 	protected function filter_item_list( $items, $args ) {
 		$theme_files = array();
 		foreach ( $args as $arg ) {
-			$theme_files[] = $this->fetcher->get_check( $arg )->get_stylesheet_directory();
+			$theme_files[] = $this->fetcher->get_check( $arg )->get_stylesheet();
 		}
 
 		return Utils\pick_fields( $items, $theme_files );

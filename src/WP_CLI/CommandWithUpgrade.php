@@ -370,11 +370,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					}
 					unset( $items_to_update[ $plugin->file ] );
 				} elseif ( 'theme' === $this->item_type ) {
-					$theme_root = get_theme_root() . '/' . $item;
-					if ( ! is_dir( $theme_root ) ) {
-						continue;
+					$theme = wp_get_theme( $item );
+					if ( $theme->exists() ) {
+						unset( $items_to_update[ $theme->get_stylesheet() ] );
 					}
-					unset( $items_to_update[ $theme_root ] );
 				}
 			}
 		}
@@ -431,8 +430,13 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$transient_filter = function ( $transient ) use ( $items_to_update ) {
 				foreach ( $items_to_update as $name => $item_data ) {
 					if ( isset( $transient->response[ $name ] ) ) {
-						$transient->response[ $name ]->new_version = $item_data['update_version'];
-						$transient->response[ $name ]->package     = $item_data['update_package'];
+						if ( is_object( $transient->response[ $name ] ) ) {
+							$transient->response[ $name ]->new_version = $item_data['update_version'];
+							$transient->response[ $name ]->package     = $item_data['update_package'];
+						} else {
+							$transient->response[ $name ]['new_version'] = $item_data['update_version'];
+							$transient->response[ $name ]['package']     = $item_data['update_package'];
+						}
 					}
 				}
 				return $transient;
