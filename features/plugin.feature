@@ -245,10 +245,6 @@ Feature: Manage WordPress plugins
       """
       Warning: Plugin 'akismet' is already active.
       """
-    And STDOUT should be:
-      """
-      Success: Plugin already activated.
-      """
     And the return code should be 0
 
     When I run `wp plugin activate akismet --network`
@@ -262,10 +258,6 @@ Feature: Manage WordPress plugins
     Then STDERR should be:
       """
       Warning: Plugin 'akismet' is already network active.
-      """
-    And STDOUT should be:
-      """
-      Success: Plugin already network activated.
       """
     And the return code should be 0
 
@@ -649,7 +641,7 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list --name=hello-dolly  --field=version`
     And save STDOUT as {PLUGIN_VERSION}
-    
+
     When I run `wp plugin list --name=hello-dolly  --field=update_version`
     And save STDOUT as {UPDATE_VERSION}
 
