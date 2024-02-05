@@ -148,3 +148,26 @@ Feature: Activate WordPress plugins
       Success:
       """
     And the return code should be 0
+
+  Scenario: Incompatible plugins cannot be activated
+    Given a WP installation
+    And a wp-content/plugins/incompatible-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Incompatible Plugin
+       * Requires PHP: 42.0
+       */
+      """
+    And I run `wp cli info | grep "PHP version" | awk '{print $3}'`
+    And save STDOUT as {PHP_VERSION}
+
+    When I try `wp plugin activate incompatible-plugin`
+    Then STDERR should contain:
+      """
+      Failed to activate plugin. Current PHP version ({PHP_VERSION}) does not meet minimum requirements for Incompatible Plugin. The plugin requires PHP 42.0.
+      """
+    And STDOUT should not contain:
+      """
+      Success:
+      """
