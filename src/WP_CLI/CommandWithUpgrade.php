@@ -348,12 +348,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$minor = (bool) Utils\get_flag_value( $assoc_args, 'minor', false );
 		$patch = (bool) Utils\get_flag_value( $assoc_args, 'patch', false );
 
-		if ( 'plugin' === $this->item_type
-			&& ( $minor || $patch ) ) {
+		if (
+			in_array( $this->item_type, [ 'plugin', 'theme' ], true ) &&
+			( $minor || $patch )
+		) {
 			$type     = $minor ? 'minor' : 'patch';
 			$insecure = (bool) Utils\get_flag_value( $assoc_args, 'insecure', false );
 
-			$items_to_update = self::get_minor_or_patch_updates( $items_to_update, $type, $insecure, true );
+			$items_to_update = self::get_minor_or_patch_updates( $items_to_update, $type, $insecure, true, $this->item_type );
 		}
 
 		$exclude = Utils\get_flag_value( $assoc_args, 'exclude' );
@@ -368,11 +370,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					}
 					unset( $items_to_update[ $plugin->file ] );
 				} elseif ( 'theme' === $this->item_type ) {
-					$theme_root = get_theme_root() . '/' . $item;
-					if ( ! is_dir( $theme_root ) ) {
-						continue;
+					$theme = wp_get_theme( $item );
+					if ( $theme->exists() ) {
+						unset( $items_to_update[ $theme->get_stylesheet() ] );
 					}
-					unset( $items_to_update[ $theme_root ] );
 				}
 			}
 		}
@@ -429,8 +430,13 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$transient_filter = function ( $transient ) use ( $items_to_update ) {
 				foreach ( $items_to_update as $name => $item_data ) {
 					if ( isset( $transient->response[ $name ] ) ) {
-						$transient->response[ $name ]->new_version = $item_data['update_version'];
-						$transient->response[ $name ]->package     = $item_data['update_package'];
+						if ( is_object( $transient->response[ $name ] ) ) {
+							$transient->response[ $name ]->new_version = $item_data['update_version'];
+							$transient->response[ $name ]->package     = $item_data['update_package'];
+						} else {
+							$transient->response[ $name ]['new_version'] = $item_data['update_version'];
+							$transient->response[ $name ]['package']     = $item_data['update_package'];
+						}
 					}
 				}
 				return $transient;
@@ -611,19 +617,27 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	/**
-	 * Get the minor or patch version for plugins with available updates
+	 * Get the minor or patch version for plugins and themes with available updates
 	 *
-	 * @param array  $items    Plugins with updates.
+	 * @param array  $items    Items with updates.
 	 * @param string $type     Either 'minor' or 'patch'.
 	 * @param bool   $insecure Whether to retry without certificate validation on TLS handshake failure.
 	 * @param bool   $require_stable Whether to require stable version when comparing versions.
+	 * @param string $item_type Item type, either 'plugin' or 'theme'.
 	 * @return array
 	 */
-	private function get_minor_or_patch_updates( $items, $type, $insecure, $require_stable ) {
+	private function get_minor_or_patch_updates( $items, $type, $insecure, $require_stable, $item_type ) {
 		$wp_org_api = new WpOrgApi( [ 'insecure' => $insecure ] );
 		foreach ( $items as $i => $item ) {
 			try {
-				$data = $wp_org_api->get_plugin_info( $item['name'] );
+				$data = call_user_func(
+					[ $wp_org_api, "get_{$item_type}_info" ],
+					$item['name'],
+					// The default.
+					'en_US',
+					// We are only interested in the versions field.
+					[ 'versions' => true ]
+				);
 			} catch ( Exception $exception ) {
 				unset( $items[ $i ] );
 				continue;

@@ -113,3 +113,45 @@ Feature: Update WordPress themes
       """
       Error: Can't find the requested theme's version 1.4.2 in the WordPress.org theme repository (HTTP code 404).
       """
+  
+  Scenario: Error when both --minor and --patch are provided
+    Given a WP install
+
+    When I try `wp theme update --patch --minor --all`
+    Then STDERR should be:
+      """
+      Error: --minor and --patch cannot be used together.
+      """
+    And the return code should be 1
+
+  Scenario: Update a theme to its latest minor release
+    Given a WP install
+    And I run `wp theme install --force twentytwelve --version=3.0`
+
+    When I run `wp theme update twentytwelve --minor`
+    Then STDOUT should contain:
+      """
+      Success: Updated 1 of 1 themes.
+      """
+
+    When I run `wp theme get twentytwelve --field=version`
+    Then STDOUT should be:
+      """
+      3.9
+      """
+  
+  Scenario: Update a theme to its latest patch release
+    Given a WP install
+    And I run `wp theme install --force twentytwelve --version=1.1`
+
+    When I run `wp theme update twentytwelve --patch`
+    Then STDOUT should contain:
+      """
+      Success: Updated 1 of 1 themes.
+      """
+
+    When I run `wp theme get twentytwelve --field=version`
+    Then STDOUT should be:
+      """
+      1.1.1
+      """

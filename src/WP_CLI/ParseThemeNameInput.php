@@ -76,38 +76,38 @@ trait ParseThemeNameInput {
 		}
 
 		foreach ( wp_get_themes() as $key => $theme ) {
-			$file = $theme->get_stylesheet_directory();
+			$stylesheet = $theme->get_stylesheet();
 
-			$update_info = ( isset( $all_update_info->response[ $theme->get_stylesheet() ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
+			$update_info = ( isset( $all_update_info->response[ $stylesheet ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
 
-			$items[ $file ] = [
+			$items[ $stylesheet ] = [
 				'name'           => $key,
 				'status'         => $this->get_status( $theme ),
 				'update'         => (bool) $update_info,
 				'update_version' => isset( $update_info['new_version'] ) ? $update_info['new_version'] : null,
 				'update_package' => isset( $update_info['package'] ) ? $update_info['package'] : null,
 				'version'        => $theme->get( 'Version' ),
-				'update_id'      => $theme->get_stylesheet(),
+				'update_id'      => $stylesheet,
 				'title'          => $theme->get( 'Name' ),
 				'description'    => wordwrap( $theme->get( 'Description' ) ),
 				'author'         => $theme->get( 'Author' ),
-				'auto_update'    => in_array( $theme->get_stylesheet(), $auto_updates, true ),
+				'auto_update'    => in_array( $stylesheet, $auto_updates, true ),
 			];
 
 			// Compare version and update information in theme list.
 			if ( isset( $theme_version_info[ $key ] ) && false === $theme_version_info[ $key ] ) {
-				$items[ $file ]['update'] = 'version higher than expected';
+				$items[ $stylesheet ]['update'] = 'version higher than expected';
 			}
 
 			if ( is_multisite() ) {
 				if ( ! empty( $site_enabled[ $key ] ) && ! empty( $network_enabled[ $key ] ) ) {
-					$items[ $file ]['enabled'] = 'network,site';
+					$items[ $stylesheet ]['enabled'] = 'network,site';
 				} elseif ( ! empty( $network_enabled[ $key ] ) ) {
-					$items[ $file ]['enabled'] = 'network';
+					$items[ $stylesheet ]['enabled'] = 'network';
 				} elseif ( ! empty( $site_enabled[ $key ] ) ) {
-					$items[ $file ]['enabled'] = 'site';
+					$items[ $stylesheet ]['enabled'] = 'site';
 				} else {
-					$items[ $file ]['enabled'] = 'no';
+					$items[ $stylesheet ]['enabled'] = 'no';
 				}
 			}
 		}

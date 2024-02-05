@@ -439,7 +439,7 @@ class Theme_Command extends CommandWithUpgrade {
 	protected function filter_item_list( $items, $args ) {
 		$theme_files = array();
 		foreach ( $args as $arg ) {
-			$theme_files[] = $this->fetcher->get_check( $arg )->get_stylesheet_directory();
+			$theme_files[] = $this->fetcher->get_check( $arg )->get_stylesheet();
 		}
 
 		return Utils\pick_fields( $items, $theme_files );
@@ -588,6 +588,12 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 * [--exclude=<theme-names>]
 	 * : Comma separated list of theme names that should be excluded from updating.
+	 *
+	 * [--minor]
+	 * : Only perform updates for minor releases (e.g. from 1.3 to 1.4 instead of 2.0)
+	 *
+	 * [--patch]
+	 * : Only perform updates for patch releases (e.g. from 1.3 to 1.3.3 instead of 1.4)
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
