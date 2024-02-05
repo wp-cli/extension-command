@@ -1364,7 +1364,7 @@ wp theme status [<theme>]
 Updates one or more themes.
 
 ~~~
-wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
+wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
 ~~~
 
 **OPTIONS**
@@ -1378,11 +1378,11 @@ wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--format=<format
 	[--exclude=<theme-names>]
 		Comma separated list of theme names that should be excluded from updating.
 
-    [--minor]
-        Only perform updates for minor releases (e.g. from 1.3 to 1.4 instead of 2.0)
+	[--minor]
+		Only perform updates for minor releases (e.g. from 1.3 to 1.4 instead of 2.0)
 
-    [--patch]
-        Only perform updates for patch releases (e.g. from 1.3 to 1.3.3 instead of 1.4)
+	[--patch]
+		Only perform updates for patch releases (e.g. from 1.3 to 1.3.3 instead of 1.4)
 
 	[--format=<format>]
 		Render output in a particular format.
