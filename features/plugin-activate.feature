@@ -149,6 +149,7 @@ Feature: Activate WordPress plugins
       """
     And the return code should be 0
 
+  @require-wp-5.1
   Scenario: Incompatible plugins cannot be activated
     Given a WP installation
     And a wp-content/plugins/incompatible-plugin.php file:
