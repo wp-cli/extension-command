@@ -374,7 +374,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			}
 		}
 
-		if ( ! $this->chained_command ) {
+		if ( ! $this->chained_command && ( $successes || $errors ) ) {
 			$verb = $network_wide ? 'network activate' : 'activate';
 			Utils\report_batch_operation_results( 'plugin', $verb, count( $args ), $successes, $errors );
 		}
