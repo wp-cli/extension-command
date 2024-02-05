@@ -368,6 +368,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				$message = wp_strip_all_tags( $message );
 				$message = str_replace( 'Error: ', '', $message );
 				WP_CLI::warning( "Failed to activate plugin. {$message}" );
+				++$errors;
 			} else {
 				$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
 				++$successes;

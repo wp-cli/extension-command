@@ -117,7 +117,7 @@ Feature: Activate WordPress plugins
        */
        """
     And I run `wp plugin deactivate --all`
-    And I run `php -r 'echo PHP_VERSION;'`
+    And I run `wp cli info | grep "PHP version" | awk '{print $3}'`
     And save STDOUT as {PHP_VERSION}
 
     When I try `wp plugin activate high-requirements`
@@ -128,6 +128,10 @@ Feature: Activate WordPress plugins
     And STDOUT should not contain:
       """
       1 out of 1
+      """
+    And STDOUT should not contain:
+      """
+      Success:
       """
 
   Scenario: Adding --exclude with plugin activate --all should exclude the plugins specified via --exclude
