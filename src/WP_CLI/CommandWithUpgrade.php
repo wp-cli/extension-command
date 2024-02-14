@@ -532,6 +532,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	// phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Whitelisting to provide backward compatibility to classes possibly extending this class.
 	protected function _list( $_, $assoc_args ) {
 
+		// If `--force-check` flag is present, delete the ${item_type} transient.
+		if ( true === (bool) Utils\get_flag_value( $assoc_args, 'force-check', false ) ) {
+			delete_site_transient( $this->item_type . 's' );
+		}
+
 		// Force WordPress to check for updates if `--skip-update-check` is not passed.
 		if ( false === (bool) Utils\get_flag_value( $assoc_args, 'skip-update-check', false ) ) {
 			call_user_func( $this->upgrade_refresh );
