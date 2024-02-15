@@ -376,6 +376,7 @@ These fields will be displayed by default for each plugin:
 * update
 * version
 * update_version
+* auto_update
 
 These fields are optionally available:
 
@@ -384,7 +385,6 @@ These fields are optionally available:
 * title
 * description
 * file
-* auto_update
 * author
 * wporg_status
 * wporg_last_updated
@@ -393,25 +393,25 @@ These fields are optionally available:
 
     # List active plugins on the site.
     $ wp plugin list --status=active --format=json
-    [{"name":"dynamic-hostname","status":"active","update":"none","version":"0.4.2","update_version": ""},{"name":"tinymce-templates","status":"active","update":"none","version":"4.4.3","update_version": ""},{"name":"wp-multibyte-patch","status":"active","update":"none","version":"2.4","update_version": ""},{"name":"wp-total-hacks","status":"active","update":"none","version":"2.0.1","update_version": ""}]
+    [{"name":"dynamic-hostname","status":"active","update":"none","version":"0.4.2","update_version":"","auto_update":"off"},{"name":"tinymce-templates","status":"active","update":"none","version":"4.8.1","update_version":"","auto_update":"off"},{"name":"wp-multibyte-patch","status":"active","update":"none","version":"2.9","update_version":"","auto_update":"off"},{"name":"wp-total-hacks","status":"active","update":"none","version":"4.7.2","update_version":"","auto_update":"off"}]
 
     # List plugins on each site in a network.
     $ wp site list --field=url | xargs -I % wp plugin list --url=%
-    +---------+----------------+--------+---------+----------------+
-    | name    | status         | update | version | update_version |
-    +---------+----------------+--------+---------+----------------+
-    | akismet | active-network | none   | 3.1.11  |                |
-    | hello   | inactive       | none   | 1.6     | 1.7.2          |
-    +---------+----------------+--------+---------+----------------+
-    +---------+----------------+--------+---------+----------------+
-    | name    | status         | update | version | update_version |
-    +---------+----------------+--------+---------+----------------+
-    | akismet | active-network | none   | 3.1.11  |                |
-    | hello   | inactive       | none   | 1.6     | 1.7.2          |
-    +---------+----------------+--------+---------+----------------+
+    +---------+----------------+-----------+---------+-----------------+------------+
+    | name    | status         | update    | version | update_version | auto_update |
+    +---------+----------------+-----------+---------+----------------+-------------+
+    | akismet | active-network | none      | 5.3.1   |                | on          |
+    | hello   | inactive       | available | 1.6     | 1.7.2          | off         |
+    +---------+----------------+-----------+---------+----------------+-------------+
+    +---------+----------------+-----------+---------+----------------+-------------+
+    | name    | status         | update    | version | update_version | auto_update |
+    +---------+----------------+-----------+---------+----------------+-------------+
+    | akismet | active-network | none      | 5.3.1   |                | on          |
+    | hello   | inactive       | available | 1.6     | 1.7.2          | off         |
+    +---------+----------------+-----------+---------+----------------+-------------+
 
     # Check whether plugins are still active on WordPress.org
-    $ wp plugin list --format=csv --fields=name,wporg_status,wporg_last_updated
+    $ wp plugin list --fields=name,wporg_status,wporg_last_updated
     +--------------------+--------------+--------------------+
     | name               | wporg_status | wporg_last_updated |
     +--------------------+--------------+--------------------+
