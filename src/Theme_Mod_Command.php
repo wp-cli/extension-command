@@ -7,7 +7,7 @@
  *
  *     # Set the 'background_color' theme mod to '000000'.
  *     $ wp theme mod set background_color 000000
- *     Success: Theme mod background_color set to 000000
+ *     Success: Theme mod background_color set to 000000.
  *
  *     # Get single theme mod in JSON format.
  *     $ wp theme mod get background_color --format=json
@@ -231,7 +231,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 *
 	 *     # Set theme mod
 	 *     $ wp theme mod set background_color 000000
-	 *     Success: Theme mod background_color set to 000000
+	 *     Success: Theme mod background_color set to 000000.
 	 */
 	public function set( $args = array(), $assoc_args = array() ) {
 		list( $mod, $value ) = $args;
