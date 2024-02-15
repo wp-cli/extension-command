@@ -763,6 +763,7 @@ See the WordPress [Theme Handbook](https://developer.wordpress.org/themes/) deve
     Theme installed successfully.
     Activating 'twentysixteen'...
     Success: Switched to 'Twenty Sixteen' theme.
+    Success: Installed 1 of 1 themes.
 
     # Get details of an installed theme
     $ wp theme get twentysixteen --fields=name,title,version
@@ -987,6 +988,7 @@ wp theme install <theme|zip|url>... [--version=<version>] [--force] [--activate]
     Theme installed successfully.
     Activating 'twentysixteen'...
     Success: Switched to 'Twenty Sixteen' theme.
+    Success: Installed 1 of 1 themes.
 
     # Install from a local zip file
     $ wp theme install ../my-theme.zip
@@ -1072,6 +1074,7 @@ These fields will be displayed by default for each theme:
 * update
 * version
 * update_version
+* auto_update
 
 These fields are optionally available:
 
@@ -1079,15 +1082,14 @@ These fields are optionally available:
 * update_id
 * title
 * description
-* auto_update
 
 **EXAMPLES**
 
-    # List themes
+    # List inactive themes.
     $ wp theme list --status=inactive --format=csv
-    name,status,update,version,update_version
-    twentyfourteen,inactive,none,1.7,
-    twentysixteen,inactive,available,1.1,
+    name,status,update,version,update_version,auto_update
+    twentyfourteen,inactive,none,3.8,,off
+    twentysixteen,inactive,available,3.0,3.1,off
 
 
 
@@ -1103,7 +1105,7 @@ wp theme mod
 
     # Set the 'background_color' theme mod to '000000'.
     $ wp theme mod set background_color 000000
-    Success: Theme mod background_color set to 000000
+    Success: Theme mod background_color set to 000000.
 
     # Get single theme mod in JSON format.
     $ wp theme mod get background_color --format=json
@@ -1198,7 +1200,7 @@ wp theme mod set <mod> <value>
 
     # Set theme mod
     $ wp theme mod set background_color 000000
-    Success: Theme mod background_color set to 000000
+    Success: Theme mod background_color set to 000000.
 
 
 
