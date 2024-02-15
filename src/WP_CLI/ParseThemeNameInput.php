@@ -139,7 +139,7 @@ trait ParseThemeNameInput {
 	/**
 	 * Get the status for a given theme.
 	 *
-	 * @param string $theme Theme to get the status for.
+	 * @param WP_Theme $theme Theme to get the status for.
 	 *
 	 * @return string Status of the theme.
 	 */
@@ -158,7 +158,7 @@ trait ParseThemeNameInput {
 	/**
 	 * Check whether a given theme is the active theme.
 	 *
-	 * @param string $theme Theme to check.
+	 * @param WP_Theme $theme Theme to check.
 	 *
 	 * @return bool Whether the provided theme is the active theme.
 	 */
@@ -169,7 +169,7 @@ trait ParseThemeNameInput {
 	/**
 	 * Check whether a given theme is the active theme parent.
 	 *
-	 * @param string $theme Theme to check.
+	 * @param WP_Theme $theme Theme to check.
 	 *
 	 * @return bool Whether the provided theme is the active theme.
 	 */
