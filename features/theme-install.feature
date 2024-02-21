@@ -105,3 +105,12 @@ Feature: Install WordPress themes
     Success: Switched to 'Twenty Twelve' theme.
     Success: Theme already installed.
     """
+
+  Scenario: Installation of multiple themes with activate
+    Given a WP install
+
+    When I try `wp theme install p2 moina --activate`
+    Then STDERR should contain:
+    """
+    Warning: Only a single theme can be active.
+    """
