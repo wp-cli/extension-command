@@ -1,71 +1,56 @@
 Feature: List WordPress plugins
 
-  Background:
+  Scenario: Refresh update_plugins transient when listing plugins with --force-check flag
     Given a WP install
     And I run `wp plugin uninstall --all`
     And I run `wp plugin install hello-dolly`
-    And a setup.php file:
+    And a update-transient.php file:
       """
       <?php
-      $plugin_transient = get_site_transient('update_plugins') ;
-      # manually set the version
-      $fake_version = '10.0.0';
-      $plugin_transient->no_update["hello-dolly/hello.php"]->new_version = $fake_version;
-      $return = set_site_transient( 'update_plugins', $plugin_transient );
+      $transient = get_site_transient( 'update_plugins' );
+      $transient->response['hello-dolly/hello.php'] = (object) array(
+        'id'          => 'w.org/plugins/hello-dolly',
+        'slug'        => 'hello-dolly',
+        'plugin'      => 'hello-dolly/hello.php',
+        'new_version' => '100.0.0',
+        'url'         => 'https://wordpress.org/plugins/hello-dolly/',
+        'package'     => 'https://downloads.wordpress.org/plugin/hello-dolly.100.0.0.zip',
+      );
+      $transient->checked = array(
+        'hello-dolly/hello.php' => '1.7.2',
+      );
+      unset( $transient->no_update['hello-dolly/hello.php'] );
+      set_site_transient( 'update_plugins', $transient );
+      WP_CLI::success( 'Transient updated.' );
       """
-#    And a wp-content/mu-plugins/test-plugin-update.php file:
-#      """
-#      <?php
-#      /**
-#       * Plugin Name: Test Plugin Update
-#       * Description: Fakes installed plugin's data to verify plugin version mismatch
-#       * Author: WP-CLI tests
-#       */
-#
-#      add_filter( 'site_transient_update_plugins', function( $value ) {
-#          if ( ! is_object( $value ) ) {
-#              return $value;
-#          }
-#          $fake_version = '10.0.0';
-#
-#          unset( $value->response['hello-dolly/hello.php'] );
-#          $value->no_update['hello-dolly/hello.php']->new_version = $fake_version;
-#
-#          return $value;
-#      } );
-#      ?>
-#      """
 
-  Scenario: Refresh update_plugins transient when listing plugins with --force-check flag
+    # Populates the initial transient in the database
+    When I run `wp plugin list --fields=name,status,update`
+    Then STDOUT should be a table containing rows:
+      | name         | status   | update |
+      | hello-dolly  | inactive | none   |
 
-    # Listing the plugins will populate the transient in the database
-    When I run `wp plugin list`
-    Then STDOUT should not be empty
-    And save STDOUT as {PLUGIN_LIST_ORIGINAL_VERSIONS}
+    # Modify the transient in the database to simulate an update
+    When I run `wp eval-file update-transient.php`
+    Then STDOUT should be:
+      """
+      Success: Transient updated.
+      """
 
-    # Write a test value
-    When I run `wp eval-file setup.php`
-    Then STDOUT should be empty
+    # Verify the fake transient value produces the expected output
+    When I run `wp plugin list --fields=name,status,update`
+    Then STDOUT should be a table containing rows:
+      | name         | status   | update    |
+      | hello-dolly  | inactive | available |
 
-    # Get value of plugin transient
-    #When I run `wp option get _site_transient_update_plugins`
-    #Then STDOUT should be empty
+    # Repeating the same command again should produce the same results
+    When I run `wp plugin list --fields=name,status,update`
+    Then STDOUT should be a table containing rows:
+      | name         | status   | update    |
+      | hello-dolly  | inactive | available |
 
-    # Run list again
-    When I run `wp plugin list`
-    Then STDOUT should be empty
-    And save STDOUT as {PLUGIN_LIST_FAKE_VERSIONS}
-
-    # TODO: compare {PLUGIN_LIST_ORIGINAL_VERSIONS} to {PLUGIN_LIST_FAKE_VERSIONS}
-    # expected result: they should be different
-
-    # Get value of plugin transient
-    When I run `wp option get _site_transient_update_plugins`
-    Then STDOUT should be empty
-
-    When I run `wp plugin list --force-check`
-    Then STDOUT should not be empty
-    And save STDOUT as {PLUGIN_LIST_FORCE_CHECK_VERSIONS}
-
-    # TODO: compare {PLUGIN_LIST_ORIGINAL_VERSIONS} to {PLUGIN_LIST_FORCE_CHECK_VERSIONS}
-    # expected result: they should be the same
+    # Using the --force-check flag should refresh the transient back to the original value
+    When I run `wp plugin list --fields=name,status,update --force-check`
+    Then STDOUT should be a table containing rows:
+      | name         | status   | update |
+      | hello-dolly  | inactive | none   |
