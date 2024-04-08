@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\ParsePluginNameInput;
+use WP_CLI\ParsePluginReadme;
 use WP_CLI\Utils;
 use WP_CLI\WpOrgApi;
 
@@ -43,6 +44,7 @@ use WP_CLI\WpOrgApi;
 class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	use ParsePluginNameInput;
+	use ParsePluginReadme;
 
 	protected $item_type         = 'plugin';
 	protected $upgrade_refresh   = 'wp_update_plugins';
@@ -59,6 +61,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		'version',
 		'update_version',
 		'auto_update',
+		'tested',
 	);
 
 	/**
@@ -265,6 +268,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'description'        => $mu_description,
 				'file'               => $file,
 				'auto_update'        => false,
+				'tested_up_to'       => '',
 				'wporg_status'       => $wporg_info['status'],
 				'wporg_last_updated' => $wporg_info['last_updated'],
 			);
@@ -286,6 +290,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'file'               => $name,
 				'auto_update'        => false,
 				'author'             => $item_data['Author'],
+				'tested_up_to'       => '',
 				'wporg_status'       => '',
 				'wporg_last_updated' => '',
 			];
@@ -738,6 +743,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'wporg_status'       => $wporg_info['status'],
 				'wporg_last_updated' => $wporg_info['last_updated'],
 			];
+
+			// Include information from the plugin readme.txt headers.
+			$plugin_headers = $this->get_plugin_headers( $name );
+			$items[ $file ]['tested_up_to'] = isset( $plugin_headers['tested_up_to'] ) ? $plugin_headers['tested_up_to'] : '';
 
 			if ( null === $update_info ) {
 				// Get info for all plugins that don't have an update.
@@ -1251,6 +1260,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * * version
 	 * * update_version
 	 * * auto_update
+	 * * tested_up_to
 	 *
 	 * These fields are optionally available:
 	 *
