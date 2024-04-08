@@ -39,7 +39,7 @@ trait ParsePluginReadme {
 		$context  = stream_context_create(
 			array(
 				'http' => array(
-					'user_agent' => 'WordPress.org Plugin Readme Parser',
+					'user_agent' => 'WP-CLI Plugin Readme Parser',
 				),
 			)
 		);
