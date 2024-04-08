@@ -744,7 +744,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			];
 
 			// Include information from the plugin readme.txt headers.
-			$plugin_headers = $this->get_plugin_headers( $name );
+			$plugin_headers                 = $this->get_plugin_headers( $name );
 			$items[ $file ]['tested_up_to'] = isset( $plugin_headers['tested_up_to'] ) ? $plugin_headers['tested_up_to'] : '';
 
 			if ( null === $update_info ) {
