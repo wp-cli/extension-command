@@ -52,6 +52,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		'status'       => false,
 		'last_updated' => false,
 	];
+	protected $check_headers     = [
+		'tested_up_to' => false,
+	];
 
 	protected $obj_fields = array(
 		'name',
@@ -743,12 +746,14 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'wporg_last_updated' => $wporg_info['last_updated'],
 			];
 
-			// Include information from the plugin readme.txt headers.
-			$plugin_readme = WP_PLUGIN_DIR . '/' . $name . '/readme.txt';
+			if ( $this->check_headers['tested_up_to'] ) {
+				// Include information from the plugin readme.txt headers.
+				$plugin_readme = WP_PLUGIN_DIR . '/' . $name . '/readme.txt';
 
-			if ( file_exists( $plugin_readme ) ) {
-				$readme_parser                  = new Parser( $plugin_readme );
-				$items[ $file ]['tested_up_to'] = $readme_parser->tested ? $readme_parser->tested : '';
+				if ( file_exists( $plugin_readme ) ) {
+					$readme_parser                  = new Parser( $plugin_readme );
+					$items[ $file ]['tested_up_to'] = $readme_parser->tested ? $readme_parser->tested : '';
+				}
 			}
 
 			if ( null === $update_info ) {
@@ -1263,7 +1268,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * * version
 	 * * update_version
 	 * * auto_update
-	 * * tested_up_to
 	 *
 	 * These fields are optionally available:
 	 *
@@ -1273,6 +1277,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * * description
 	 * * file
 	 * * author
+	 * * tested_up_to
 	 * * wporg_status
 	 * * wporg_last_updated
 	 *
@@ -1316,6 +1321,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$fields                            = explode( ',', $fields );
 			$this->check_wporg['status']       = in_array( 'wporg_status', $fields, true );
 			$this->check_wporg['last_updated'] = in_array( 'wporg_last_updated', $fields, true );
+
+			$this->check_headers['tested_up_to'] = in_array( 'tested_up_to', $fields, true );
 		}
 
 		$field = Utils\get_flag_value( $assoc_args, 'field' );
@@ -1324,6 +1331,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		} elseif ( 'wporg_last_updated' === $field ) {
 			$this->check_wporg['last_updated'] = true;
 		}
+
+		$this->check_headers['tested_up_to'] = 'tested_up_to' === $field || $this->check_headers['tested_up_to'];
 
 		parent::_list( $_, $assoc_args );
 	}
