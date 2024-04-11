@@ -961,6 +961,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			'status'      => $this->get_status( $file ),
 		];
 
+		if ( isset( $plugin_data['RequiresPlugins'] ) && ! empty( $plugin_data['RequiresPlugins'] ) ) {
+			$plugin_obj->requires_plugins = $plugin_data['RequiresPlugins'];
+		}
+
 		if ( empty( $assoc_args['fields'] ) ) {
 			$plugin_array         = get_object_vars( $plugin_obj );
 			$assoc_args['fields'] = array_keys( $plugin_array );
