@@ -89,7 +89,7 @@ final class ParseGithubUrlInput {
 	 *
 	 * @return string|null
 	 */
-	public function get_github_repo_from_url( $url ) {
+	public function get_github_repo_from_releases_url( $url ) {
 		preg_match( $this->github_latest_release_url, $url, $matches );
 
 		return isset( $matches[1] ) ? $matches[1] : null;
