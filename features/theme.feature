@@ -3,7 +3,7 @@ Feature: Manage WordPress themes
   Scenario: Installing and deleting theme
     Given a WP install
 
-    When I run `wp theme install p2`
+    When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
 
     When I run `wp theme status p2`
@@ -74,7 +74,7 @@ Feature: Manage WordPress themes
   Scenario: Install a theme, activate, then force install an older version of the theme
     Given a WP install
 
-    When I run `wp theme install p2 --version=1.4.2`
+    When I run `wp theme install twentytwelve --version=1.4.2`
     Then STDOUT should not be empty
 
     When I run `wp theme list --name=p2 --field=update_version`
@@ -96,7 +96,7 @@ Feature: Manage WordPress themes
       Success: Deleted
       """
 
-    When I run `wp theme install p2 --version=1.4.1 --force`
+    When I run `wp theme install twentytwelve --version=1.4.1 --force`
     Then STDOUT should not be empty
 
     When I run `wp theme list`
@@ -117,7 +117,7 @@ Feature: Manage WordPress themes
       P2 updated successfully from version 1.4.1 to version
       """
 
-    When I run `wp theme install p2 --version=1.4.1 --force`
+    When I run `wp theme install twentytwelve --version=1.4.1 --force`
     Then STDOUT should not be empty
 
     When I run `wp theme update --all`
@@ -129,7 +129,7 @@ Feature: Manage WordPress themes
   Scenario: Exclude theme from bulk updates.
     Given a WP install
 
-    When I run `wp theme install p2 --version=1.4.1 --force`
+    When I run `wp theme install twentytwelve --version=1.4.1 --force`
     Then STDOUT should contain:
       """
       Downloading install
@@ -170,7 +170,7 @@ Feature: Manage WordPress themes
   Scenario: Get the path of an installed theme
     Given a WP install
 
-    When I run `wp theme install p2`
+    When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
 
     When I run `wp theme path p2 --dir`
@@ -182,7 +182,7 @@ Feature: Manage WordPress themes
   Scenario: Activate an already active theme
     Given a WP install
 
-    When I run `wp theme install p2`
+    When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
 
     When I run `wp theme activate p2`
@@ -231,7 +231,7 @@ Feature: Manage WordPress themes
     And I run `if test -d wp-content/themes; then echo "fail"; fi`
     Then STDOUT should be empty
 
-    When I run `wp theme install p2 --activate`
+    When I run `wp theme install twentytwelve --activate`
     Then STDOUT should not be empty
 
     When I run `wp theme list --fields=name,status`
@@ -486,7 +486,7 @@ Feature: Manage WordPress themes
   Scenario: Get status field in theme detail
     Given a WP install
 
-    When I run `wp theme install p2`
+    When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
 
     When I run `wp theme get p2`
@@ -512,7 +512,7 @@ Feature: Manage WordPress themes
   Scenario: Theme activation fails when slug does not match exactly
     Given a WP install
 
-    When I run `wp theme install p2`
+    When I run `wp theme install twentytwelve`
     Then the return code should be 0
 
     When I try `wp theme activate P2`
@@ -569,7 +569,7 @@ Feature: Manage WordPress themes
 
   Scenario: Parent theme is active when its child is active
     Given a WP install
-    And I run `wp theme install p2`
+    And I run `wp theme install twentytwelve`
     And I run `wp theme install moina-blog --activate`
 
     When I run `wp theme is-active moina-blog`
@@ -584,7 +584,7 @@ Feature: Manage WordPress themes
   Scenario: Excluding a missing theme should not throw an error
     Given a WP install
     And I run `wp theme delete --all --force`
-    And I run `wp theme install p2 --version=1.5.5 --activate`
+    And I run `wp theme install twentytwelve --version=1.5.5 --activate`
     And I run `wp theme update --all --exclude=missing-theme`
     Then STDERR should be empty
     And STDOUT should contain:

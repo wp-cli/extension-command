@@ -2,7 +2,7 @@ Feature: Delete WordPress themes
 
   Background:
     Given a WP install
-    And I run `wp theme install p2`
+    And I run `wp theme install twentytwelve`
 
   Scenario: Delete an installed theme
     When I run `wp theme delete p2`

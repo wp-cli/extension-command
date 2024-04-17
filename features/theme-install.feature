@@ -3,7 +3,7 @@ Feature: Install WordPress themes
   Scenario: Return code is 1 when one or more theme installations fail
     Given a WP install
 
-    When I try `wp theme install p2 p2-not-a-theme`
+    When I try `wp theme install twentytwelve p2-not-a-theme`
     Then STDERR should contain:
       """
       Warning:
@@ -26,7 +26,7 @@ Feature: Install WordPress themes
       """
     And the return code should be 1
 
-    When I try `wp theme install p2`
+    When I try `wp theme install twentytwelve`
     Then STDOUT should be:
       """
       Success: Theme already installed.
@@ -37,7 +37,7 @@ Feature: Install WordPress themes
       """
     And the return code should be 0
 
-    When I try `wp theme install p2-not-a-theme`
+    When I try `wp theme install twentytwelve-not-a-theme`
     Then STDERR should contain:
       """
       Warning:
@@ -90,10 +90,10 @@ Feature: Install WordPress themes
   Scenario: Verify installed theme activation
     Given a WP install
 
-    When I run `wp theme install p2`
+    When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
 
-    When I try `wp theme install p2 --activate`
+    When I try `wp theme install twentytwelve --activate`
     Then STDERR should contain:
     """
     Warning: p2: Theme already installed.

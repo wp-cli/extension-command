@@ -20,7 +20,7 @@ Feature: Update WordPress themes
   Scenario: Install a theme, then update to a specific version of that theme
     Given a WP install
 
-    When I run `wp theme install p2 --version=1.4.1`
+    When I run `wp theme install twentytwelve --version=1.4.1`
     Then STDOUT should not be empty
 
     When I run `wp theme update p2 --version=1.4.2`
@@ -51,7 +51,7 @@ Feature: Update WordPress themes
       """
 
     # One theme installed.
-    Given I run `wp theme install p2 --version=1.4.2`
+    Given I run `wp theme install twentytwelve --version=1.4.2`
 
     When I try `wp theme update`
     Then the return code should be 1
@@ -113,7 +113,7 @@ Feature: Update WordPress themes
       """
       Error: Can't find the requested theme's version 1.4.2 in the WordPress.org theme repository (HTTP code 404).
       """
-  
+
   Scenario: Error when both --minor and --patch are provided
     Given a WP install
 
@@ -139,7 +139,7 @@ Feature: Update WordPress themes
       """
       3.9
       """
-  
+
   Scenario: Update a theme to its latest patch release
     Given a WP install
     And I run `wp theme install --force twentytwelve --version=1.1`
