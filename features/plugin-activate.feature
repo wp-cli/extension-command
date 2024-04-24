@@ -40,8 +40,8 @@ Feature: Activate WordPress plugins
       """
       <?php
       /**
-       * Plugin Name: Hide User Switching on Production
-       * Description: Hides the User Switching plugin on production sites
+       * Plugin Name: Hide Site Secrets on Production
+       * Description: Hides the Site Secrets plugin on production sites
        * Author: WP-CLI tests
        */
 
