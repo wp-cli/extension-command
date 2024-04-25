@@ -52,7 +52,7 @@ Feature: Update WordPress themes
       """
 
     # One theme installed.
-    Given I run `wp theme install twentytwelve --version=1.4`
+    Given I run `wp theme install moina --version=1.0.2`
 
     When I try `wp theme update`
     Then the return code should be 1
@@ -75,7 +75,7 @@ Feature: Update WordPress themes
       """
 
     # Note: if given version then re-installs.
-    When I run `wp theme update --version=1.4 --all`
+    When I run `wp theme update --version=1.0.2 --all`
     Then STDOUT should contain:
       """
       Success: Installed 1 of 1 themes.
@@ -88,7 +88,7 @@ Feature: Update WordPress themes
       """
 
     # Two themes installed.
-    Given I run `wp theme install --force twentytwentyfour --version=1.1`
+    Given I run `wp theme install --force twentytwelve --version=1.0`
 
     When I run `wp theme update --all`
     Then STDOUT should contain:
@@ -104,8 +104,7 @@ Feature: Update WordPress themes
       """
 
     # Using version with all rarely makes sense and should probably error and do nothing.
-    # Version 1.1.1 is available for twentytwelve but not for twentytwentyfour.
-    When I try `wp theme update --version=1.1.1 --all`
+    When I try `wp theme update --version=1.0.3 --all`
     Then the return code should be 1
     And STDOUT should contain:
       """
@@ -113,7 +112,7 @@ Feature: Update WordPress themes
       """
     And STDERR should be:
       """
-      Error: Can't find the requested theme's version 1.1.1 in the WordPress.org theme repository (HTTP code 404).
+      Error: Can't find the requested theme's version 1.0.3 in the WordPress.org theme repository (HTTP code 404).
       """
 
   Scenario: Error when both --minor and --patch are provided
