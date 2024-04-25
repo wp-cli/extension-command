@@ -986,22 +986,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			'version'          => $plugin_data['Version'],
 			'description'      => wordwrap( $plugin_data['Description'] ),
 			'status'           => $this->get_status( $file ),
-			'requires_wp'      => '',
-			'requires_php'     => '',
-			'requires_plugins' => '',
+			'requires_wp'      => ! empty( $plugin_data['RequiresWP'] ) ? $plugin_data['RequiresWP'] : '',
+			'requires_php'     => ! empty( $plugin_data['RequiresPHP'] ) ? $plugin_data['RequiresPHP'] : '',
+			'requires_plugins' => ! empty( $plugin_data['RequiresPlugins'] ) ? $plugin_data['RequiresPlugins'] : '',
 		];
-
-		$require_fields = [
-			'requires_wp'      => 'RequiresWP',
-			'requires_php'     => 'RequiresPHP',
-			'requires_plugins' => 'RequiresPlugins',
-		];
-
-		foreach ( $require_fields as $field_key => $data_key ) {
-			if ( isset( $plugin_data[ $data_key ] ) && ! empty( $plugin_data[ $data_key ] ) ) {
-				$plugin_obj->{$field_key} = $plugin_data[ $data_key ];
-			}
-		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = $default_fields;
