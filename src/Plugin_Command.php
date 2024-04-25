@@ -941,29 +941,58 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *   - yaml
 	 * ---
 	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for the plugin:
+	 *
+	 * * name
+	 * * title
+	 * * author
+	 * * version
+	 * * description
+	 * * status
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * requires_wp
+	 * * requires_php
+	 * * requires_plugins
+	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Get plugin details.
 	 *     $ wp plugin get bbpress --format=json
-	 *     {"name":"bbpress","title":"bbPress","author":"The bbPress Contributors","version":"2.6-alpha","description":"bbPress is forum software with a twist from the creators of WordPress.","status":"active"}
+	 *     {"name":"bbpress","title":"bbPress","author":"The bbPress Contributors","version":"2.6.9","description":"bbPress is forum software with a twist from the creators of WordPress.","status":"active"}
 	 */
 	public function get( $args, $assoc_args ) {
+		$default_fields = array(
+			'name',
+			'title',
+			'author',
+			'version',
+			'description',
+			'status',
+		);
+
 		$plugin = $this->fetcher->get_check( $args[0] );
 		$file   = $plugin->file;
 
 		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
 
 		$plugin_obj = (object) [
-			'name'        => Utils\get_plugin_name( $file ),
-			'title'       => $plugin_data['Name'],
-			'author'      => $plugin_data['Author'],
-			'version'     => $plugin_data['Version'],
-			'description' => wordwrap( $plugin_data['Description'] ),
-			'status'      => $this->get_status( $file ),
+			'name'             => Utils\get_plugin_name( $file ),
+			'title'            => $plugin_data['Name'],
+			'author'           => $plugin_data['Author'],
+			'version'          => $plugin_data['Version'],
+			'description'      => wordwrap( $plugin_data['Description'] ),
+			'status'           => $this->get_status( $file ),
+			'requires_wp'      => ! empty( $plugin_data['RequiresWP'] ) ? $plugin_data['RequiresWP'] : '',
+			'requires_php'     => ! empty( $plugin_data['RequiresPHP'] ) ? $plugin_data['RequiresPHP'] : '',
+			'requires_plugins' => ! empty( $plugin_data['RequiresPlugins'] ) ? $plugin_data['RequiresPlugins'] : '',
 		];
 
 		if ( empty( $assoc_args['fields'] ) ) {
-			$plugin_array         = get_object_vars( $plugin_obj );
-			$assoc_args['fields'] = array_keys( $plugin_array );
+			$assoc_args['fields'] = $default_fields;
 		}
 
 		$formatter = $this->get_formatter( $assoc_args );
