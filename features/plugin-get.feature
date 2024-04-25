@@ -26,6 +26,12 @@ Feature: Get WordPress plugin
       | version | 1.0.0    |
       | status  | inactive |
 
+    When I run `wp plugin get foo --format=json`
+    Then STDOUT should be:
+      """
+      {"name":"foo","title":"Sample Plugin","author":"John Doe","version":"1.0.0","description":"Description for sample plugin.","status":"inactive"}
+      """
+
   @require-wp-6.5
   Scenario: Get Requires Plugins header of plugin
     Given a WP install
@@ -45,3 +51,24 @@ Feature: Get WordPress plugin
       """
       jetpack, woocommerce
       """
+
+  @require-wp-5.3
+  Scenario: Get Requires PHP and Requires WP header of plugin
+    Given a WP install
+    And a wp-content/plugins/foo.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo
+       * Description: Foo plugin
+       * Author: John Doe
+       * Requires at least: 6.2
+       * Requires PHP: 7.4
+       */
+       """
+
+    When I run `wp plugin get foo --fields=requires_wp,requires_php`
+    Then STDOUT should be a table containing rows:
+      | Field        | Value |
+      | requires_wp  | 6.2   |
+      | requires_php | 7.4   |
