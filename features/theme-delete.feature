@@ -2,32 +2,34 @@ Feature: Delete WordPress themes
 
   Background:
     Given a WP install
-    And I run `wp theme install p2`
+    And I run `wp theme delete --all --force`
+    And I run `wp theme install twentytwelve`
+    And I run `wp theme install twentyeleven --activate`
 
   Scenario: Delete an installed theme
-    When I run `wp theme delete p2`
+    When I run `wp theme delete twentytwelve`
     Then STDOUT should be:
       """
-      Deleted 'p2' theme.
+      Deleted 'twentytwelve' theme.
       Success: Deleted 1 of 1 themes.
       """
     And the return code should be 0
 
   Scenario: Delete an active theme
-    When I run `wp theme activate p2`
+    When I run `wp theme activate twentytwelve`
     Then STDOUT should not be empty
 
-    When I try `wp theme delete p2`
+    When I try `wp theme delete twentytwelve`
     Then STDERR should be:
       """
-      Warning: Can't delete the currently active theme: p2
+      Warning: Can't delete the currently active theme: twentytwelve
       Error: No themes deleted.
       """
 
-    When I try `wp theme delete p2 --force`
+    When I try `wp theme delete twentytwelve --force`
     Then STDOUT should contain:
       """
-      Deleted 'p2' theme.
+      Deleted 'twentytwelve' theme.
       """
 
   Scenario: Delete all installed themes
@@ -108,7 +110,7 @@ Feature: Delete WordPress themes
     Then STDOUT should be empty
 
   Scenario: Attempting to delete a theme that doesn't exist
-    When I run `wp theme delete p2`
+    When I run `wp theme delete twentytwelve`
     Then STDOUT should not be empty
 
     When I try the previous command again
@@ -118,6 +120,6 @@ Feature: Delete WordPress themes
       """
     And STDERR should be:
       """
-      Warning: The 'p2' theme could not be found.
+      Warning: The 'twentytwelve' theme could not be found.
       """
     And the return code should be 0

@@ -1,16 +1,18 @@
 Feature: Install WordPress themes
 
-  Scenario: Return code is 1 when one or more theme installations fail
+  Background:
     Given a WP install
+    And I run `wp theme delete --all --force`
 
-    When I try `wp theme install p2 p2-not-a-theme`
+  Scenario: Return code is 1 when one or more theme installations fail
+    When I try `wp theme install twentytwelve twentytwelve-not-a-theme`
     Then STDERR should contain:
       """
       Warning:
       """
     And STDERR should contain:
       """
-      p2-not-a-theme
+      twentytwelve-not-a-theme
       """
     And STDERR should contain:
       """
@@ -18,7 +20,7 @@ Feature: Install WordPress themes
       """
     And STDOUT should contain:
       """
-      Installing P2
+      Installing Twenty Twelve
       """
     And STDOUT should contain:
       """
@@ -26,25 +28,25 @@ Feature: Install WordPress themes
       """
     And the return code should be 1
 
-    When I try `wp theme install p2`
+    When I try `wp theme install twentytwelve`
     Then STDOUT should be:
       """
       Success: Theme already installed.
       """
     And STDERR should be:
       """
-      Warning: p2: Theme already installed.
+      Warning: twentytwelve: Theme already installed.
       """
     And the return code should be 0
 
-    When I try `wp theme install p2-not-a-theme`
+    When I try `wp theme install twentytwelve-not-a-theme`
     Then STDERR should contain:
       """
       Warning:
       """
     And STDERR should contain:
       """
-      p2-not-a-theme
+      twentytwelve-not-a-theme
       """
     And STDERR should contain:
       """
@@ -88,20 +90,18 @@ Feature: Install WordPress themes
       """
 
   Scenario: Verify installed theme activation
-    Given a WP install
-
-    When I run `wp theme install p2`
+    When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
 
-    When I try `wp theme install p2 --activate`
+    When I try `wp theme install twentytwelve --activate`
     Then STDERR should contain:
     """
-    Warning: p2: Theme already installed.
+    Warning: twentytwelve: Theme already installed.
     """
 
     And STDOUT should contain:
     """
-    Activating 'p2'...
-    Success: Switched to 'P2' theme.
+    Activating 'twentytwelve'...
+    Success: Switched to 'Twenty Twelve' theme.
     Success: Theme already installed.
     """

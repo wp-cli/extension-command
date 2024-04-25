@@ -2,36 +2,38 @@ Feature: Manage WordPress themes
 
   Scenario: Installing and deleting theme
     Given a WP install
+    And I run `wp theme delete --all --force`
+    And I run `wp theme install twentyeleven --activate`
 
-    When I run `wp theme install p2`
+    When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
 
-    When I run `wp theme status p2`
+    When I run `wp theme status twentytwelve`
     Then STDOUT should contain:
       """
-      Theme p2 details:
-          Name: P2
+      Theme twentytwelve details:
+          Name: Twenty Twelve
       """
 
-    When I run `wp theme path p2`
+    When I run `wp theme path twentytwelve`
     Then STDOUT should contain:
       """
-      /themes/p2/style.css
+      /themes/twentytwelve/style.css
       """
 
     When I run `wp option get stylesheet`
     Then save STDOUT as {PREVIOUS_THEME}
 
-    When I run `wp theme activate p2`
+    When I run `wp theme activate twentytwelve`
     Then STDOUT should be:
       """
-      Success: Switched to 'P2' theme.
+      Success: Switched to 'Twenty Twelve' theme.
       """
 
-    When I try `wp theme delete p2`
+    When I try `wp theme delete twentytwelve`
     Then STDERR should be:
       """
-      Warning: Can't delete the currently active theme: p2
+      Warning: Can't delete the currently active theme: twentytwelve
       Error: No themes deleted.
       """
     And STDOUT should be empty
@@ -40,13 +42,13 @@ Feature: Manage WordPress themes
     When I run `wp theme activate {PREVIOUS_THEME}`
     Then STDOUT should not be empty
 
-    When I run `wp theme delete p2`
+    When I run `wp theme delete twentytwelve`
     Then STDOUT should not be empty
 
     When I try the previous command again
     Then STDERR should be:
       """
-      Warning: The 'p2' theme could not be found.
+      Warning: The 'twentytwelve' theme could not be found.
       """
     And STDOUT should be:
       """
@@ -73,20 +75,22 @@ Feature: Manage WordPress themes
 
   Scenario: Install a theme, activate, then force install an older version of the theme
     Given a WP install
+    And I run `wp theme delete --all --force`
+    And I run `wp theme install twentyeleven --activate`
 
-    When I run `wp theme install p2 --version=1.4.2`
+    When I run `wp theme install twentytwelve --version=1.4`
     Then STDOUT should not be empty
 
-    When I run `wp theme list --name=p2 --field=update_version`
+    When I run `wp theme list --name=twentytwelve --field=update_version`
     Then STDOUT should not be empty
     And save STDOUT as {UPDATE_VERSION}
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name  | status   | update    | version   | update_version   | auto_update |
-      | p2    | inactive | available | 1.4.2     | {UPDATE_VERSION} | off         |
+      | name            | status   | update    | version | update_version   | auto_update |
+      | twentytwelve    | inactive | available | 1.4     | {UPDATE_VERSION} | off         |
 
-    When I run `wp theme activate p2`
+    When I run `wp theme activate twentytwelve`
     Then STDOUT should not be empty
 
     # Ensure no other themes interfere with update.
@@ -96,13 +100,13 @@ Feature: Manage WordPress themes
       Success: Deleted
       """
 
-    When I run `wp theme install p2 --version=1.4.1 --force`
+    When I run `wp theme install twentytwelve --version=1.5 --force`
     Then STDOUT should not be empty
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name  | status   | update    | version   | update_version   | auto_update |
-      | p2    | active   | available | 1.4.1     | {UPDATE_VERSION} | off         |
+      | name            | status   | update    | version | update_version   | auto_update |
+      | twentytwelve    | active   | available | 1.5     | {UPDATE_VERSION} | off         |
 
     When I try `wp theme update`
     Then STDERR should be:
@@ -114,10 +118,10 @@ Feature: Manage WordPress themes
     When I run `wp theme update --all --format=summary | grep 'updated successfully from'`
     Then STDOUT should contain:
       """
-      P2 updated successfully from version 1.4.1 to version
+      Twenty Twelve updated successfully from version 1.5 to version
       """
 
-    When I run `wp theme install p2 --version=1.4.1 --force`
+    When I run `wp theme install twentytwelve --version=1.4 --force`
     Then STDOUT should not be empty
 
     When I run `wp theme update --all`
@@ -128,18 +132,20 @@ Feature: Manage WordPress themes
 
   Scenario: Exclude theme from bulk updates.
     Given a WP install
+    And I run `wp theme delete --all --force`
+    And I run `wp theme install twentyeleven --activate`
 
-    When I run `wp theme install p2 --version=1.4.1 --force`
+    When I run `wp theme install twentytwelve --version=1.4 --force`
     Then STDOUT should contain:
       """
       Downloading install
       """
     And STDOUT should contain:
       """
-      package from https://downloads.wordpress.org/theme/p2.1.4.1.zip...
+      package from https://downloads.wordpress.org/theme/twentytwelve.1.4.zip...
       """
 
-    When I run `wp theme activate p2`
+    When I run `wp theme activate twentytwelve`
     Then STDOUT should not be empty
 
     # Ensure no other themes interfere with update.
@@ -149,19 +155,19 @@ Feature: Manage WordPress themes
       Success: Deleted
       """
 
-    When I run `wp theme status p2`
+    When I run `wp theme status twentytwelve`
     Then STDOUT should contain:
       """
       Update available
       """
 
-    When I run `wp theme update --all --exclude=p2 | grep 'Skipped'`
+    When I run `wp theme update --all --exclude=twentytwelve | grep 'Skipped'`
     Then STDOUT should contain:
       """
-      p2
+      twentytwelve
       """
 
-    When I run `wp theme status p2`
+    When I run `wp theme status twentytwelve`
     Then STDOUT should contain:
       """
       Update available
@@ -169,32 +175,34 @@ Feature: Manage WordPress themes
 
   Scenario: Get the path of an installed theme
     Given a WP install
+    And I run `wp theme delete --all --force`
 
-    When I run `wp theme install p2`
+    When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
 
-    When I run `wp theme path p2 --dir`
+    When I run `wp theme path twentytwelve --dir`
     Then STDOUT should contain:
        """
-       wp-content/themes/p2
+       wp-content/themes/twentytwelve
        """
 
   Scenario: Activate an already active theme
     Given a WP install
+    And I run `wp theme delete --all --force`
 
-    When I run `wp theme install p2`
+    When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
 
-    When I run `wp theme activate p2`
+    When I run `wp theme activate twentytwelve`
     Then STDOUT should be:
       """
-      Success: Switched to 'P2' theme.
+      Success: Switched to 'Twenty Twelve' theme.
       """
 
-    When I try `wp theme activate p2`
+    When I try `wp theme activate twentytwelve`
     Then STDERR should be:
       """
-      Warning: The 'P2' theme is already active.
+      Warning: The 'Twenty Twelve' theme is already active.
       """
     And STDOUT should be empty
     And the return code should be 0
@@ -226,18 +234,19 @@ Feature: Manage WordPress themes
 
   Scenario: Install a theme when the theme directory doesn't yet exist
     Given a WP install
+    And I run `wp theme delete --all --force`
 
     When I run `rm -rf wp-content/themes`
     And I run `if test -d wp-content/themes; then echo "fail"; fi`
     Then STDOUT should be empty
 
-    When I run `wp theme install p2 --activate`
+    When I run `wp theme install twentytwelve --activate`
     Then STDOUT should not be empty
 
     When I run `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
-      | name  | status   |
-      | p2    | active   |
+      | name            | status   |
+      | twentytwelve    | active   |
 
   Scenario: Attempt to activate or fetch a broken theme
     Given a WP install
@@ -354,7 +363,7 @@ Feature: Manage WordPress themes
   Scenario: Enabling and disabling a theme without multisite
   	Given a WP install
 
-    When I try `wp theme enable p2`
+    When I try `wp theme enable twentytwelve`
     Then STDERR should contain:
       """
       Error: This is not a multisite install
@@ -362,7 +371,7 @@ Feature: Manage WordPress themes
     And STDOUT should be empty
     And the return code should be 1
 
-    When I try `wp theme disable p2`
+    When I try `wp theme disable twentytwelve`
     Then STDERR should contain:
       """
       Error: This is not a multisite install
@@ -397,6 +406,7 @@ Feature: Manage WordPress themes
 
   Scenario: When updating a theme --format should be the same when using --dry-run
     Given a WP install
+    And I run `wp theme delete --all --force`
 
     When I run `wp theme install --force twentytwelve --version=1.0`
     Then STDOUT should not be empty
@@ -436,6 +446,7 @@ Feature: Manage WordPress themes
 
   Scenario: Check json and csv formats when updating a theme
     Given a WP install
+    And I run `wp theme delete --all --force`
 
     When I run `wp theme install --force twentytwelve --version=1.0`
     Then STDOUT should not be empty
@@ -485,25 +496,26 @@ Feature: Manage WordPress themes
 
   Scenario: Get status field in theme detail
     Given a WP install
+    And I run `wp theme delete --all --force`
 
-    When I run `wp theme install p2`
+    When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
 
-    When I run `wp theme get p2`
+    When I run `wp theme get twentytwelve`
     Then STDOUT should be a table containing rows:
     | Field   | Value     |
     | status  | inactive  |
 
-    When I run `wp theme get p2 --field=status`
+    When I run `wp theme get twentytwelve --field=status`
     Then STDOUT should be:
        """
        inactive
        """
 
-    When I run `wp theme activate p2`
+    When I run `wp theme activate twentytwelve`
     Then STDOUT should not be empty
 
-    When I run `wp theme get p2 --field=status`
+    When I run `wp theme get twentytwelve --field=status`
     Then STDOUT should be:
        """
        active
@@ -511,30 +523,31 @@ Feature: Manage WordPress themes
 
   Scenario: Theme activation fails when slug does not match exactly
     Given a WP install
+    And I run `wp theme delete --all --force`
 
-    When I run `wp theme install p2`
+    When I run `wp theme install twentytwelve`
     Then the return code should be 0
 
-    When I try `wp theme activate P2`
+    When I try `wp theme activate TwentyTwelve`
     Then STDERR should contain:
       """
-      Error: The 'P2' theme could not be found. Did you mean 'p2'?
+      Error: The 'TwentyTwelve' theme could not be found. Did you mean 'twentytwelve'?
       """
     And STDOUT should be empty
     And the return code should be 1
 
-    When I try `wp theme activate p3`
+    When I try `wp theme activate twentytwelve3`
     Then STDERR should contain:
       """
-      Error: The 'p3' theme could not be found. Did you mean 'p2'?
+      Error: The 'twentytwelve3' theme could not be found. Did you mean 'twentytwelve'?
       """
     And STDOUT should be empty
     And the return code should be 1
 
-    When I try `wp theme activate pb2`
+    When I try `wp theme activate twentytwelves2`
     Then STDERR should contain:
       """
-      Error: The 'pb2' theme could not be found. Did you mean 'p2'?
+      Error: The 'twentytwelves2' theme could not be found. Did you mean 'twentytwelve'?
       """
     And STDOUT should be empty
     And the return code should be 1
@@ -569,7 +582,8 @@ Feature: Manage WordPress themes
 
   Scenario: Parent theme is active when its child is active
     Given a WP install
-    And I run `wp theme install p2`
+    And I run `wp theme delete --all --force`
+    And I run `wp theme install twentytwelve`
     And I run `wp theme install moina-blog --activate`
 
     When I run `wp theme is-active moina-blog`
@@ -578,13 +592,13 @@ Feature: Manage WordPress themes
     When I run `wp theme is-active moina`
     Then the return code should be 0
 
-    When I try `wp theme is-active p2`
+    When I try `wp theme is-active twentytwelve`
     Then the return code should be 1
 
   Scenario: Excluding a missing theme should not throw an error
     Given a WP install
     And I run `wp theme delete --all --force`
-    And I run `wp theme install p2 --version=1.5.5 --activate`
+    And I run `wp theme install twentytwelve --version=1.5 --activate`
     And I run `wp theme update --all --exclude=missing-theme`
     Then STDERR should be empty
     And STDOUT should contain:
