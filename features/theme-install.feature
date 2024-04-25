@@ -2,7 +2,7 @@ Feature: Install WordPress themes
 
   Background:
     Given a WP install
-    And I try `wp theme delete twentytwelve --force`
+    And I run `wp theme delete --all --force`
 
   Scenario: Return code is 1 when one or more theme installations fail
     When I try `wp theme install twentytwelve twentytwelve-not-a-theme`

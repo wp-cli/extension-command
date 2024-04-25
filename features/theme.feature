@@ -2,7 +2,8 @@ Feature: Manage WordPress themes
 
   Scenario: Installing and deleting theme
     Given a WP install
-    And I run `wp theme delete twentytwelve --force`
+    And I run `wp theme delete --all --force`
+    And I run `wp theme install twentyeleven --activate`
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -74,7 +75,8 @@ Feature: Manage WordPress themes
 
   Scenario: Install a theme, activate, then force install an older version of the theme
     Given a WP install
-    And I run `wp theme delete twentytwelve --force`
+    And I run `wp theme delete --all --force`
+    And I run `wp theme install twentyeleven --activate`
 
     When I run `wp theme install twentytwelve --version=1.4`
     Then STDOUT should not be empty
@@ -130,7 +132,8 @@ Feature: Manage WordPress themes
 
   Scenario: Exclude theme from bulk updates.
     Given a WP install
-    And I run `wp theme delete twentytwelve --force`
+    And I run `wp theme delete --all --force`
+    And I run `wp theme install twentyeleven --activate`
 
     When I run `wp theme install twentytwelve --version=1.4 --force`
     Then STDOUT should contain:
@@ -172,7 +175,7 @@ Feature: Manage WordPress themes
 
   Scenario: Get the path of an installed theme
     Given a WP install
-    And I run `wp theme delete twentytwelve --force`
+    And I run `wp theme delete --all --force`
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -185,7 +188,7 @@ Feature: Manage WordPress themes
 
   Scenario: Activate an already active theme
     Given a WP install
-    And I run `wp theme delete twentytwelve --force`
+    And I run `wp theme delete --all --force`
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -231,6 +234,7 @@ Feature: Manage WordPress themes
 
   Scenario: Install a theme when the theme directory doesn't yet exist
     Given a WP install
+    And I run `wp theme delete --all --force`
 
     When I run `rm -rf wp-content/themes`
     And I run `if test -d wp-content/themes; then echo "fail"; fi`
@@ -402,6 +406,7 @@ Feature: Manage WordPress themes
 
   Scenario: When updating a theme --format should be the same when using --dry-run
     Given a WP install
+    And I run `wp theme delete --all --force`
 
     When I run `wp theme install --force twentytwelve --version=1.0`
     Then STDOUT should not be empty
@@ -441,6 +446,7 @@ Feature: Manage WordPress themes
 
   Scenario: Check json and csv formats when updating a theme
     Given a WP install
+    And I run `wp theme delete --all --force`
 
     When I run `wp theme install --force twentytwelve --version=1.0`
     Then STDOUT should not be empty
@@ -490,7 +496,7 @@ Feature: Manage WordPress themes
 
   Scenario: Get status field in theme detail
     Given a WP install
-    And I run `wp theme delete twentytwelve --force`
+    And I run `wp theme delete --all --force`
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -517,7 +523,7 @@ Feature: Manage WordPress themes
 
   Scenario: Theme activation fails when slug does not match exactly
     Given a WP install
-    And I run `wp theme delete twentytwelve --force`
+    And I run `wp theme delete --all --force`
 
     When I run `wp theme install twentytwelve`
     Then the return code should be 0
@@ -576,8 +582,7 @@ Feature: Manage WordPress themes
 
   Scenario: Parent theme is active when its child is active
     Given a WP install
-    And I run `wp theme delete twentytwelve --force`
-
+    And I run `wp theme delete --all --force`
     And I run `wp theme install twentytwelve`
     And I run `wp theme install moina-blog --activate`
 
