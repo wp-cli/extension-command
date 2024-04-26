@@ -107,9 +107,7 @@ Feature: Install WordPress themes
     """
 
   Scenario: Installation of multiple themes with activate
-    Given a WP install
-
-    When I try `wp theme install p2 moina --activate`
+    When I try `wp theme install twentytwelve twentyeleven --activate`
     Then STDERR should contain:
     """
     Warning: Only a single theme can be active.
