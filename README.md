@@ -404,6 +404,7 @@ These fields are optionally available:
 * description
 * file
 * author
+* tested_up_to
 * wporg_status
 * wporg_last_updated
 
