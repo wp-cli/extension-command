@@ -489,7 +489,8 @@ class Theme_Command extends CommandWithUpgrade {
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( count( $args ) > 1 && Utils\get_flag_value( $assoc_args, 'activate', false ) ) {
-			WP_CLI::warning( 'Only a single theme can be active.' );
+			WP_CLI::warning( sprintf( "Only this single theme will be activated: %s", end( $args ) ) );
+			reset( $args );
 		}
 
 		$theme_root = get_theme_root();

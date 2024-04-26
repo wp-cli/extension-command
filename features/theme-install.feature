@@ -109,6 +109,19 @@ Feature: Install WordPress themes
   Scenario: Installation of multiple themes with activate
     When I try `wp theme install twentytwelve twentyeleven --activate`
     Then STDERR should contain:
-    """
-    Warning: Only a single theme can be active.
-    """
+      """
+      Warning: Only this single theme will be activated: twentyeleven
+      """
+
+    When I run `wp theme list --field=name`
+    Then STDOUT should contain:
+      """
+      twentyeleven
+      twentytwelve
+      """
+
+    When I run `wp theme list --field=name --status=active`
+    Then STDOUT should contain:
+      """
+      twentyeleven
+      """
