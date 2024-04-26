@@ -748,7 +748,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			];
 
 			if ( $this->check_headers['tested_up_to'] ) {
-				$plugin_readme = normalize_path( WP_PLUGIN_DIR . '/' . $name . '/readme.txt' );
+				$plugin_readme = normalize_path( dirname( WP_PLUGIN_DIR . '/' . $file ) . '/readme.txt' );
 
 				if ( file_exists( $plugin_readme ) && is_readable( $plugin_readme ) ) {
 					$readme_obj = new SplFileObject( $plugin_readme );
