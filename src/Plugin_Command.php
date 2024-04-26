@@ -1,9 +1,10 @@
 <?php
 
-use WordPressdotorg\Plugin_Directory\Readme\Parser;
 use WP_CLI\ParsePluginNameInput;
 use WP_CLI\Utils;
 use WP_CLI\WpOrgApi;
+
+use function WP_CLI\Utils\normalize_path;
 
 /**
  * Manages plugins, including installs, activations, and updates.
@@ -747,12 +748,30 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			];
 
 			if ( $this->check_headers['tested_up_to'] ) {
-				// Include information from the plugin readme.txt headers.
-				$plugin_readme = WP_PLUGIN_DIR . '/' . $name . '/readme.txt';
+				$plugin_readme = normalize_path( WP_PLUGIN_DIR . '/' . $name . '/readme.txt' );
 
-				if ( file_exists( $plugin_readme ) ) {
-					$readme_parser                  = new Parser( $plugin_readme );
-					$items[ $file ]['tested_up_to'] = $readme_parser->tested ? $readme_parser->tested : '';
+				if ( file_exists( $plugin_readme ) && is_readable( $plugin_readme ) ) {
+					$readme_obj = new SplFileObject( $plugin_readme );
+					$readme_obj->setFlags( SplFileObject::READ_AHEAD | SplFileObject::SKIP_EMPTY );
+					$readme_line = 0;
+
+					// Reading the whole file can exhaust the memory, so only read the first 100 lines of the file,
+					// as the "Tested up to" header should be near the top.
+					while ( $readme_line < 100 && ! $readme_obj->eof() ) {
+						$line = $readme_obj->fgets();
+
+						// Similar to WP.org, it matches for both "Tested up to" and "Tested" header in the readme file.
+						preg_match( '/^tested(:| up to:) (.*)$/i', strtolower( $line ), $matches );
+
+						if ( isset( $matches[2] ) && ! empty( $matches[2] ) ) {
+							$items[ $file ]['tested_up_to'] = $matches[2];
+							break;
+						}
+
+						++$readme_line;
+					}
+
+					$file_obj = null;
 				}
 			}
 
