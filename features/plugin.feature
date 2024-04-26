@@ -649,7 +649,7 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list --name=hello-dolly  --field=version`
     And save STDOUT as {PLUGIN_VERSION}
-    
+
     When I run `wp plugin list --name=hello-dolly  --field=update_version`
     And save STDOUT as {UPDATE_VERSION}
 
@@ -720,3 +720,87 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name              | auto_update          |
       | hello             | on                   |
+
+  Scenario: Listing plugins should include tested_up_to from the 'tested up to' header
+    Given a WP install
+    And a wp-content/plugins/foo/foo.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo
+       * Description: A plugin for foo
+       * Author: Matt
+       */
+      """
+    And a wp-content/plugins/foo/readme.txt file:
+      """
+      === Foo ===
+      Contributors: matt
+      Donate link: https://example.com/
+      Tags: tag1, tag2
+      Requires at least: 4.7
+      Tested up to: 3.4
+      Stable tag: 4.3
+      Requires PHP: 7.0
+      License: GPLv2 or later
+      License URI: https://www.gnu.org/licenses/gpl-2.0.html
+      """
+    And I run `wp plugin activate foo`
+
+    When I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name       | status   | update  | version  | update_version | auto_update |
+      | foo        | active   | none    |          |                | off         |
+
+    When I run `wp plugin list --fields=name,tested_up_to`
+    Then STDOUT should be a table containing rows:
+      | name            | tested_up_to     |
+      | foo             | 3.4              |
+
+    And I run `wp plugin list --name=foo --field=tested_up_to`
+    Then STDOUT should be:
+      """
+      3.4
+      """
+
+  Scenario: Listing plugins should include tested_up_to from the 'tested' header
+    Given a WP install
+    And a wp-content/plugins/foo/foo.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo
+       * Description: A plugin for foo
+       * Author: Matt
+       */
+      """
+    And a wp-content/plugins/foo/readme.txt file:
+      """
+      === Foo ===
+      Tested: 5.5
+      Contributors: matt
+      Donate link: https://example.com/
+      Tags: tag1, tag2
+      Requires at least: 4.7
+      Stable tag: 4.3
+      Requires PHP: 7.0
+      License: GPLv2 or later
+      License URI: https://www.gnu.org/licenses/gpl-2.0.html
+      """
+    And I run `wp plugin activate foo`
+
+    When I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name       | status   | update  | version  | update_version | auto_update |
+      | foo        | active   | none    |          |                | off         |
+
+    When I run `wp plugin list --fields=name,tested_up_to`
+    Then STDOUT should be a table containing rows:
+      | name            | tested_up_to     |
+      | foo             | 5.5              |
+
+    And I run `wp plugin list --name=foo --field=tested_up_to`
+    Then STDOUT should be:
+      """
+      5.5
+      """

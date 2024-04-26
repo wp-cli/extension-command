@@ -4,6 +4,8 @@ use WP_CLI\ParsePluginNameInput;
 use WP_CLI\Utils;
 use WP_CLI\WpOrgApi;
 
+use function WP_CLI\Utils\normalize_path;
+
 /**
  * Manages plugins, including installs, activations, and updates.
  *
@@ -50,6 +52,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	protected $check_wporg       = [
 		'status'       => false,
 		'last_updated' => false,
+	];
+	protected $check_headers     = [
+		'tested_up_to' => false,
 	];
 
 	protected $obj_fields = array(
@@ -265,6 +270,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'description'        => $mu_description,
 				'file'               => $file,
 				'auto_update'        => false,
+				'tested_up_to'       => '',
 				'wporg_status'       => $wporg_info['status'],
 				'wporg_last_updated' => $wporg_info['last_updated'],
 			);
@@ -286,6 +292,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'file'               => $name,
 				'auto_update'        => false,
 				'author'             => $item_data['Author'],
+				'tested_up_to'       => '',
 				'wporg_status'       => '',
 				'wporg_last_updated' => '',
 			];
@@ -735,9 +742,38 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'file'               => $file,
 				'auto_update'        => in_array( $file, $auto_updates, true ),
 				'author'             => $details['Author'],
+				'tested_up_to'       => '',
 				'wporg_status'       => $wporg_info['status'],
 				'wporg_last_updated' => $wporg_info['last_updated'],
 			];
+
+			if ( $this->check_headers['tested_up_to'] ) {
+				$plugin_readme = normalize_path( dirname( WP_PLUGIN_DIR . '/' . $file ) . '/readme.txt' );
+
+				if ( file_exists( $plugin_readme ) && is_readable( $plugin_readme ) ) {
+					$readme_obj = new SplFileObject( $plugin_readme );
+					$readme_obj->setFlags( SplFileObject::READ_AHEAD | SplFileObject::SKIP_EMPTY );
+					$readme_line = 0;
+
+					// Reading the whole file can exhaust the memory, so only read the first 100 lines of the file,
+					// as the "Tested up to" header should be near the top.
+					while ( $readme_line < 100 && ! $readme_obj->eof() ) {
+						$line = $readme_obj->fgets();
+
+						// Similar to WP.org, it matches for both "Tested up to" and "Tested" header in the readme file.
+						preg_match( '/^tested(:| up to:) (.*)$/i', strtolower( $line ), $matches );
+
+						if ( isset( $matches[2] ) && ! empty( $matches[2] ) ) {
+							$items[ $file ]['tested_up_to'] = $matches[2];
+							break;
+						}
+
+						++$readme_line;
+					}
+
+					$file_obj = null;
+				}
+			}
 
 			if ( null === $update_info ) {
 				// Get info for all plugins that don't have an update.
@@ -1289,6 +1325,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * * description
 	 * * file
 	 * * author
+	 * * tested_up_to
 	 * * wporg_status
 	 * * wporg_last_updated
 	 *
@@ -1332,6 +1369,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$fields                            = explode( ',', $fields );
 			$this->check_wporg['status']       = in_array( 'wporg_status', $fields, true );
 			$this->check_wporg['last_updated'] = in_array( 'wporg_last_updated', $fields, true );
+
+			$this->check_headers['tested_up_to'] = in_array( 'tested_up_to', $fields, true );
 		}
 
 		$field = Utils\get_flag_value( $assoc_args, 'field' );
@@ -1340,6 +1379,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		} elseif ( 'wporg_last_updated' === $field ) {
 			$this->check_wporg['last_updated'] = true;
 		}
+
+		$this->check_headers['tested_up_to'] = 'tested_up_to' === $field || $this->check_headers['tested_up_to'];
 
 		parent::_list( $_, $assoc_args );
 	}
