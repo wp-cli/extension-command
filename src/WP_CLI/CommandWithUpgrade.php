@@ -826,9 +826,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$body         = \wp_remote_retrieve_body( $response );
 		$decoded_body = json_decode( $body );
 
-		if ( wp_remote_retrieve_response_code( $response ) === \WP_Http::FORBIDDEN ) {
+		// WP_Http::FORBIDDEN doesn't exist in WordPress 3.7
+		if ( 403 === wp_remote_retrieve_response_code( $response ) ) {
 			return new \WP_Error(
-				\WP_Http::FORBIDDEN,
+				403,
 				$this->build_rate_limiting_error_message( $decoded_body )
 			);
 		}
