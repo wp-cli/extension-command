@@ -5,8 +5,11 @@ Feature: Install WordPress plugins
     When I run `wp plugin install https://github.com/danielbachhuber/one-time-login/releases/latest`
     Then STDOUT should contain:
       """
-      Latest release resolved to Version 0.4.0
-      Downloading installation package from
+      Latest release resolved to Version
+      """
+    And STDOUT should contain:
+      """
+      Downloading installation package from https://api.github.com/repos/danielbachhuber/one-time-login/zipball/
       """
     And STDOUT should contain:
       """
