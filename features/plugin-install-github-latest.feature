@@ -9,7 +9,7 @@ Feature: Install WordPress plugins
       """
     And STDOUT should contain:
       """
-      Downloading installation package from https://api.github.com/repos/danielbachhuber/one-time-login/zipball/
+      package from https://api.github.com/repos/danielbachhuber/one-time-login/zipball/
       """
     And STDOUT should contain:
       """
