@@ -825,7 +825,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 *
 	 * @return array{ name: string, url: string }|\WP_Error
 	 */
-	public function get_the_latest_github_version( $repo_slug ) {
+	protected function get_the_latest_github_version( $repo_slug ) {
 		$api_url = sprintf( $this->github_releases_api_endpoint, $repo_slug );
 		$token   = getenv( 'GITHUB_TOKEN' );
 
@@ -886,7 +886,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 *
 	 * @return string|null
 	 */
-	public function get_github_repo_from_releases_url( $url ) {
+	protected function get_github_repo_from_releases_url( $url ) {
 		preg_match( $this->github_latest_release_url, $url, $matches );
 
 		return isset( $matches[1] ) ? $matches[1] : null;
