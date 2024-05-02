@@ -329,6 +329,18 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     $ wp plugin activate hello --network
 	 *     Plugin 'hello' network activated.
 	 *     Success: Network activated 1 of 1 plugins.
+	 *
+	 *     # Activate plugins that were recently active.
+	 *     $ wp plugin activate $(wp plugin list --recently-active --field=name)
+	 *     Plugin 'bbpress' activated.
+	 *     Plugin 'buddypress' activated.
+	 *     Success: Activated 2 of 2 plugins.
+	 *
+	 *     # Activate plugins that were recently active on a multisite.
+	 *     $ wp plugin activate $(wp plugin list --recently-active --field=name) --network
+	 *     Plugin 'bbpress' network activated.
+	 *     Plugin 'buddypress' network activated.
+	 *     Success: Activated 2 of 2 plugins.
 	 */
 	public function activate( $args, $assoc_args = array() ) {
 		$network_wide = Utils\get_flag_value( $assoc_args, 'network', false );
@@ -1370,6 +1382,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     | wordpress-importer | active       | 2023-04-28         |
 	 *     | local              |              |                    |
 	 *     +--------------------+--------------+--------------------+
+	 *
+	 *     # List recently active plugins on the site.
+	 *     $ wp plugin list --recently-active --field=name --format=json
+	 *     ["akismet","bbpress","buddypress"]
 	 *
 	 * @subcommand list
 	 */
