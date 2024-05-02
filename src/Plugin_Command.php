@@ -329,6 +329,18 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     $ wp plugin activate hello --network
 	 *     Plugin 'hello' network activated.
 	 *     Success: Network activated 1 of 1 plugins.
+	 *
+	 *     # Activate plugins that were recently active.
+	 *     $ wp plugin activate $(wp plugin list --recently-active --field=name)
+	 *     Plugin 'bbpress' activated.
+	 *     Plugin 'buddypress' activated.
+	 *     Success: Activated 2 of 2 plugins.
+	 *
+	 *     # Activate plugins that were recently active on a multisite.
+	 *     $ wp plugin activate $(wp plugin list --recently-active --field=name) --network
+	 *     Plugin 'bbpress' network activated.
+	 *     Plugin 'buddypress' network activated.
+	 *     Success: Activated 2 of 2 plugins.
 	 */
 	public function activate( $args, $assoc_args = array() ) {
 		$network_wide = Utils\get_flag_value( $assoc_args, 'network', false );
@@ -718,6 +730,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$auto_updates = [];
 		}
 
+		$recently_active = is_network_admin() ? get_site_option( 'recently_activated' ) : get_option( 'recently_activated' );
+
+		if ( false === $recently_active ) {
+			$recently_active = [];
+		}
+
 		foreach ( $this->get_all_plugins() as $file => $details ) {
 			$all_update_info = $this->get_update_info();
 			$update_info     = ( isset( $all_update_info->response[ $file ] ) && null !== $all_update_info->response[ $file ] ) ? (array) $all_update_info->response[ $file ] : null;
@@ -745,6 +763,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'tested_up_to'       => '',
 				'wporg_status'       => $wporg_info['status'],
 				'wporg_last_updated' => $wporg_info['last_updated'],
+				'recently_active'    => in_array( $file, array_keys( $recently_active ), true ),
 			];
 
 			if ( $this->check_headers['tested_up_to'] ) {
@@ -1306,6 +1325,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--skip-update-check]
 	 * : If set, the plugin update check will be skipped.
 	 *
+	 * [--recently-active]
+	 * : If set, only recently active plugins will be shown and the status filter will be ignored.
+	 *
 	 * ## AVAILABLE FIELDS
 	 *
 	 * These fields will be displayed by default for each plugin:
@@ -1360,6 +1382,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     | wordpress-importer | active       | 2023-04-28         |
 	 *     | local              |              |                    |
 	 *     +--------------------+--------------+--------------------+
+	 *
+	 *     # List recently active plugins on the site.
+	 *     $ wp plugin list --recently-active --field=name --format=json
+	 *     ["akismet","bbpress","buddypress"]
 	 *
 	 * @subcommand list
 	 */
