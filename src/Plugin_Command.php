@@ -718,6 +718,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$auto_updates = [];
 		}
 
+		$recently_active = is_network_admin() ? get_site_option( 'recently_activated' ) : get_option( 'recently_activated' );
+
+		if ( false === $recently_active ) {
+			$recently_active = [];
+		}
+
 		foreach ( $this->get_all_plugins() as $file => $details ) {
 			$all_update_info = $this->get_update_info();
 			$update_info     = ( isset( $all_update_info->response[ $file ] ) && null !== $all_update_info->response[ $file ] ) ? (array) $all_update_info->response[ $file ] : null;
@@ -745,6 +751,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'tested_up_to'       => '',
 				'wporg_status'       => $wporg_info['status'],
 				'wporg_last_updated' => $wporg_info['last_updated'],
+				'recently_active'    => in_array( $file, array_keys( $recently_active ), true ),
 			];
 
 			if ( $this->check_headers['tested_up_to'] ) {
@@ -1305,6 +1312,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--skip-update-check]
 	 * : If set, the plugin update check will be skipped.
+	 *
+	 * [--recently-active]
+	 * : If set, only recently active plugins will be shown and the status filter will be ignored.
 	 *
 	 * ## AVAILABLE FIELDS
 	 *

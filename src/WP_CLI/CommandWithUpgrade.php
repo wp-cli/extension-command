@@ -539,6 +539,15 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$all_items = $this->get_all_items();
 
+		if ( false !== (bool) Utils\get_flag_value( $assoc_args, 'recently-active', false ) ) {
+			$all_items = array_filter(
+				$all_items,
+				function ( $value ) {
+					return isset( $value['recently_active'] ) && true === $value['recently_active'];
+				}
+			);
+		}
+
 		if ( ! is_array( $all_items ) ) {
 			WP_CLI::error( "No {$this->item_type}s found." );
 		}
