@@ -86,6 +86,18 @@ wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network]
     Plugin 'hello' network activated.
     Success: Network activated 1 of 1 plugins.
 
+    # Activate plugins that were recently active.
+    $ wp plugin activate $(wp plugin list --recently-active --field=name)
+    Plugin 'bbpress' activated.
+    Plugin 'buddypress' activated.
+    Success: Activated 2 of 2 plugins.
+
+    # Activate plugins that were recently active on a multisite.
+    $ wp plugin activate $(wp plugin list --recently-active --field=name) --network
+    Plugin 'bbpress' network activated.
+    Plugin 'buddypress' network activated.
+    Success: Activated 2 of 2 plugins.
+
 
 
 ### wp plugin deactivate
@@ -340,7 +352,7 @@ Returns exit code 0 when installed, 1 when uninstalled.
 Gets a list of plugins.
 
 ~~~
-wp plugin list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--status=<status>] [--skip-update-check]
+wp plugin list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--status=<status>] [--skip-update-check] [--recently-active]
 ~~~
 
 Displays a list of the plugins installed on the site with activation
@@ -384,6 +396,9 @@ Use `--status=dropin` to list installed dropins (e.g. `object-cache.php`).
 
 	[--skip-update-check]
 		If set, the plugin update check will be skipped.
+
+	[--recently-active]
+		If set, only recently active plugins will be shown and the status filter will be ignored.
 
 **AVAILABLE FIELDS**
 
@@ -439,6 +454,10 @@ These fields are optionally available:
     | wordpress-importer | active       | 2023-04-28         |
     | local              |              |                    |
     +--------------------+--------------+--------------------+
+
+    # List recently active plugins on the site.
+    $ wp plugin list --recently-active --field=name --format=json
+    ["akismet","bbpress","buddypress"]
 
 
 
