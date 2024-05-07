@@ -54,3 +54,11 @@ Feature: List WordPress plugins
     Then STDOUT should be a table containing rows:
       | name         | status   | update |
       | hello-dolly  | inactive | none   |
+
+    When I try `wp plugin list --skip-update-check --force-check`
+    Then STDERR should contain:
+      """
+      Error: plugin updates cannot be both force-checked and skipped. Choose one.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
