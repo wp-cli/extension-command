@@ -1327,7 +1327,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--force-check]
 	 * : Bypass the transient cache and force a fresh update check.
-     *
+	 *
 	 * [--recently-active]
 	 * : If set, only recently active plugins will be shown and the status filter will be ignored.
 	 *
