@@ -56,7 +56,7 @@ Feature: List WordPress themes
     When I try `wp theme list --skip-update-check --force-check`
     Then STDERR should contain:
       """
-      Error: theme updates cannot be both force-checked and skipped. Choose one.
+      Error: Theme updates cannot be both force-checked and skipped. Choose one.
       """
     And STDOUT should be empty
     And the return code should be 1

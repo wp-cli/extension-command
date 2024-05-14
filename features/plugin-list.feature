@@ -58,7 +58,7 @@ Feature: List WordPress plugins
     When I try `wp plugin list --skip-update-check --force-check`
     Then STDERR should contain:
       """
-      Error: plugin updates cannot be both force-checked and skipped. Choose one.
+      Error: Plugin updates cannot be both force-checked and skipped. Choose one.
       """
     And STDOUT should be empty
     And the return code should be 1

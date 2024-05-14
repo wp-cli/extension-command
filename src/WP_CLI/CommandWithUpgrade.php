@@ -534,7 +534,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// If `--force-check` and `--skip-update-check` flags are both present, abort.
 		if ( true === (bool) Utils\get_flag_value( $assoc_args, 'force-check', false ) && true === (bool) Utils\get_flag_value( $assoc_args, 'skip-update-check', false ) ) {
-			WP_CLI::error( "{$this->item_type} updates cannot be both force-checked and skipped. Choose one." );
+			WP_CLI::error( ucfirst( "{$this->item_type} updates cannot be both force-checked and skipped. Choose one." ) );
 		}
 
 		// If `--force-check` flag is present, delete the upgrade transient.
