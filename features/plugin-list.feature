@@ -44,7 +44,7 @@ Feature: List WordPress plugins
       | hello-dolly  | inactive | available |
 
     # Repeating the same command again should produce the same results
-    When I run `wp plugin list --fields=name,status,update`
+    When I run the previous command again
     Then STDOUT should be a table containing rows:
       | name         | status   | update    |
       | hello-dolly  | inactive | available |
