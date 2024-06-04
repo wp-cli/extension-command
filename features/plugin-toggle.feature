@@ -19,10 +19,10 @@ Feature: Toggle the activation status of a plugin
       """
 
   Scenario: Toggling the status of a plugin that doesn't exist
-    When I try `wp plugin toggle akismet edit-flow`
+    When I try `wp plugin toggle akismet debug-bar`
     Then STDERR should be:
       """
-      Warning: The 'edit-flow' plugin could not be found.
+      Warning: The 'debug-bar' plugin could not be found.
       Error: Only toggled 1 of 2 plugins.
       """
     And STDOUT should be:
@@ -31,10 +31,10 @@ Feature: Toggle the activation status of a plugin
       """
     And the return code should be 1
 
-    When I try `wp plugin toggle edit-flow co-authors-plus`
+    When I try `wp plugin toggle debug-bar co-authors-plus`
     Then STDERR should be:
       """
-      Warning: The 'edit-flow' plugin could not be found.
+      Warning: The 'debug-bar' plugin could not be found.
       Warning: The 'co-authors-plus' plugin could not be found.
       Error: No plugins toggled.
       """

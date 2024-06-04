@@ -13,18 +13,18 @@ Feature: Activate WordPress plugins
     And the return code should be 0
 
   Scenario: Attempt to activate a plugin that's not installed
-    When I try `wp plugin activate edit-flow`
+    When I try `wp plugin activate debug-bar`
     Then STDERR should be:
       """
-      Warning: The 'edit-flow' plugin could not be found.
+      Warning: The 'debug-bar' plugin could not be found.
       Error: No plugins activated.
       """
     And the return code should be 1
 
-    When I try `wp plugin activate akismet hello edit-flow`
+    When I try `wp plugin activate akismet hello debug-bar`
     Then STDERR should be:
       """
-      Warning: The 'edit-flow' plugin could not be found.
+      Warning: The 'debug-bar' plugin could not be found.
       Error: Only activated 2 of 3 plugins.
       """
     And STDOUT should be:

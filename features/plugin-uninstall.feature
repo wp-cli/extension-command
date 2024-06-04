@@ -26,10 +26,10 @@ Feature: Uninstall a WordPress plugin
     And the return code should be 1
 
   Scenario: Attempting to uninstall a plugin that doesn't exist
-    When I try `wp plugin uninstall edit-flow`
+    When I try `wp plugin uninstall debug-bar`
     Then STDERR should be:
       """
-      Warning: The 'edit-flow' plugin could not be found.
+      Warning: The 'debug-bar' plugin could not be found.
       Error: No plugins uninstalled.
       """
     And the return code should be 1
