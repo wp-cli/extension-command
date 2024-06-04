@@ -14,19 +14,19 @@ Feature: Deactivate WordPress plugins
     And the return code should be 0
 
   Scenario: Attempt to deactivate a plugin that's not installed
-    When I try `wp plugin deactivate edit-flow`
+    When I try `wp plugin deactivate debug-bar`
     Then STDERR should be:
       """
-      Warning: The 'edit-flow' plugin could not be found.
+      Warning: The 'debug-bar' plugin could not be found.
       Error: No plugins deactivated.
       """
     And STDOUT should be empty
     And the return code should be 1
 
-    When I try `wp plugin deactivate akismet hello edit-flow`
+    When I try `wp plugin deactivate akismet hello debug-bar`
     Then STDERR should be:
       """
-      Warning: The 'edit-flow' plugin could not be found.
+      Warning: The 'debug-bar' plugin could not be found.
       Error: Only deactivated 2 of 3 plugins.
       """
     And STDOUT should be:

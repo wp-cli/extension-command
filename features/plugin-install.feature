@@ -92,10 +92,10 @@ Feature: Install WordPress plugins
       define( 'WP_PROXY_PORT', '443' );
       """
 
-    When I try `wp --require=invalid-proxy-details.php plugin install edit-flow`
+    When I try `wp --require=invalid-proxy-details.php plugin install debug-bar`
     Then STDERR should contain:
       """
-      Warning: edit-flow: An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration.
+      Warning: debug-bar: An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration.
       """
     And STDERR should contain:
       """
@@ -104,7 +104,7 @@ Feature: Install WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
-    When I run `wp plugin install edit-flow`
+    When I run `wp plugin install debug-bar`
     Then STDOUT should contain:
       """
       Plugin installed successfully.
