@@ -863,7 +863,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		// Check the last update date.
 		$r_body = wp_remote_retrieve_body( $request );
-		if ( str_contains( $r_body, 'pubDate' ) ) {
+		if ( strpos( $r_body, 'pubDate' ) !== false ) {
 			// Very raw check, not validating the format or anything else.
 			$xml          = simplexml_load_string( $r_body );
 			$xml_pub_date = $xml->xpath( '//pubDate' );
