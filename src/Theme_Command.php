@@ -857,6 +857,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 * [--skip-update-check]
 	 * : If set, the theme update check will be skipped.
 	 *
+	 * [--force-check]
+	 * : Bypass the transient cache and force a fresh update check.
+	 *
 	 * ## AVAILABLE FIELDS
 	 *
 	 * These fields will be displayed by default for each theme:
