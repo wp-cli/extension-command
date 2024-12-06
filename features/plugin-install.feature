@@ -237,3 +237,35 @@ Feature: Install WordPress plugins
     Plugin 'site-secrets' activated.
     Success: Plugin already installed.
     """
+
+  Scenario: Can't install plugin that requires a newer version of WordPress
+    Given a WP install
+
+    When I run `wp core download --version=6.4 --force`
+    And I run `rm -r wp-content/themes/*`
+
+    And I try `wp plugin install wp-super-cache`
+    Then STDERR should contain:
+    """
+    Warning: wp-super-cache: This plugin does not work with your version of WordPress
+    """
+
+    And STDERR should contain:
+    """
+    Error: No plugins installed.
+    """
+
+  @less-than-php-7.4
+  Scenario: Can't install plugin that requires a newer version of PHP
+    Given a WP install
+
+    And I try `wp plugin install contact-form-7`
+    Then STDERR should contain:
+    """
+    Warning: contact-form-7: This plugin does not work with your version of PHP
+    """
+
+    And STDERR should contain:
+    """
+    Error: No plugins installed.
+    """

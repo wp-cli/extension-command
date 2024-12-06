@@ -590,6 +590,20 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( isset( $assoc_args['version'] ) ) {
 			self::alter_api_response( $api, $assoc_args['version'] );
+		} else {
+			$requires_php = isset( $api->requires_php ) ? $api->requires_php : null;
+			$requires_wp  = isset( $api->requires ) ? $api->requires : null;
+
+			$compatible_php = is_php_version_compatible( $requires_php );
+			$compatible_wp  = is_wp_version_compatible( $requires_wp );
+
+			if ( ! $compatible_wp ) {
+				return new WP_Error( 'requirements_not_met', "This plugin does not work with your version of WordPress. Minimum WordPress requirement is $requires_wp" );
+			}
+
+			if ( ! $compatible_php ) {
+				return new WP_Error( 'requirements_not_met', "This plugin does not work with your version of PHP. Minimum PHP required is $compatible_php" );
+			}
 		}
 
 		$status = install_plugin_install_status( $api );

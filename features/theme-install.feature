@@ -125,3 +125,35 @@ Feature: Install WordPress themes
       """
       twentyeleven
       """
+
+  Scenario: Can't install theme that requires a newer version of WordPress
+    Given a WP install
+
+    When I run `wp core download --version=6.4 --force`
+    And I run `rm -r wp-content/themes/*`
+
+    And I try `wp theme install twentytwentyfive`
+    Then STDERR should contain:
+    """
+    Warning: twentytwentyfive: This theme does not work with your version of WordPress.
+    """
+
+    And STDERR should contain:
+    """
+    Error: No themes installed.
+    """
+
+  @less-than-php-7.4
+  Scenario: Can't install theme that requires a newer version of PHP
+    Given a WP install
+
+    And I try `wp theme install oceanwp`
+    Then STDERR should contain:
+    """
+    Warning: oceanwp: This theme does not work with your version of PHP.
+    """
+
+    And STDERR should contain:
+    """
+    Error: No themes installed.
+    """
