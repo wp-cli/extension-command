@@ -143,7 +143,7 @@ Feature: Install WordPress themes
     Error: No themes installed.
     """
 
-  @less-than-php-7.4
+  @less-than-php-7.4 @require-wp-5.6
   Scenario: Can't install theme that requires a newer version of PHP
     Given a WP install
 

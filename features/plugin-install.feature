@@ -255,7 +255,7 @@ Feature: Install WordPress plugins
     Error: No plugins installed.
     """
 
-  @less-than-php-7.4
+  @less-than-php-7.4 @require-wp-6.6
   Scenario: Can't install plugin that requires a newer version of PHP
     Given a WP install
 
