@@ -1098,9 +1098,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			return;
 		}
 
-		$successes = 0;
-		$errors    = 0;
-		$plugins   = $this->fetcher->get_many( $args );
+		$successes            = 0;
+		$errors               = 0;
+		$delete_errors        = array();
+		$deleted_plugin_files = array();
+
+		$plugins = $this->fetcher->get_many( $args );
 		if ( count( $plugins ) < count( $args ) ) {
 			$errors = count( $args ) - count( $plugins );
 		}
@@ -1140,6 +1143,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				foreach ( $translations as $translation => $data ) {
 					$wp_filesystem->delete( WP_LANG_DIR . '/plugins/' . $plugin_slug . '-' . $translation . '.po' );
 					$wp_filesystem->delete( WP_LANG_DIR . '/plugins/' . $plugin_slug . '-' . $translation . '.mo' );
+					$wp_filesystem->delete( WP_LANG_DIR . '/plugins/' . $plugin_slug . '-' . $translation . '.l10n.php' );
 
 					$json_translation_files = glob( WP_LANG_DIR . '/plugins/' . $plugin_slug . '-' . $translation . '-*.json' );
 					if ( $json_translation_files ) {
@@ -1148,13 +1152,35 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				}
 			}
 
-			if ( ! Utils\get_flag_value( $assoc_args, 'skip-delete' ) && $this->delete_plugin( $plugin ) ) {
-				WP_CLI::log( "Uninstalled and deleted '$plugin->name' plugin." );
+			if ( ! Utils\get_flag_value( $assoc_args, 'skip-delete' ) ) {
+				if ( $this->delete_plugin( $plugin ) ) {
+					$deleted_plugin_files[] = $plugin->file;
+					WP_CLI::log( "Uninstalled and deleted '$plugin->name' plugin." );
+				} else {
+					$delete_errors[] = $plugin->file;
+					WP_CLI::log( "Ran uninstall procedure for '$plugin->name' plugin. Deletion failed" );
+					++$errors;
+					continue;
+				}
 			} else {
 				WP_CLI::log( "Ran uninstall procedure for '$plugin->name' plugin without deleting." );
 			}
 			++$successes;
 		}
+
+		// Remove deleted plugins from the plugin updates list.
+		$current = get_site_transient( 'update_plugins' );
+		if ( $current ) {
+			// Don't remove the plugins that weren't deleted.
+			$deleted = array_diff( $deleted_plugin_files, $delete_errors );
+
+			foreach ( $deleted as $plugin_file ) {
+				unset( $current->response[ $plugin_file ] );
+			}
+
+			set_site_transient( 'update_plugins', $current );
+		}
+
 		if ( ! $this->chained_command ) {
 			Utils\report_batch_operation_results( 'plugin', 'uninstall', count( $args ), $successes, $errors );
 		}
@@ -1474,7 +1500,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		return $plugin_folder[ $plugin_file ];
 	}
 
+	/**
+	 * Performs deletion of plugin files
+	 *
+	 * @param $plugin - Plugin fetcher object (name, file)
+	 * @return bool - If plugin was deleted
+	 */
 	private function delete_plugin( $plugin ) {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		do_action( 'delete_plugin', $plugin->file );
+
 		$plugin_dir = dirname( $plugin->file );
 		if ( '.' === $plugin_dir ) {
 			$plugin_dir = $plugin->file;
@@ -1495,6 +1530,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$command = 'rm -rf ';
 		}
 
-		return ! WP_CLI::launch( $command . escapeshellarg( $path ), false );
+		$result = ! WP_CLI::launch( $command . escapeshellarg( $path ), false );
+
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		do_action( 'deleted_plugin', $plugin->file, $result );
+
+		return $result;
 	}
 }
