@@ -1158,7 +1158,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 					WP_CLI::log( "Uninstalled and deleted '$plugin->name' plugin." );
 				} else {
 					$delete_errors[] = $plugin->file;
-					WP_CLI::log( "Ran uninstall procedure for '$plugin->name' plugin. Deletion failed" );
+					WP_CLI::log( "Ran uninstall procedure for '$plugin->name' plugin. Deletion of plugin files failed" );
 					++$errors;
 					continue;
 				}
