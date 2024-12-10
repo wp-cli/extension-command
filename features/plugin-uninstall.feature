@@ -3,7 +3,7 @@ Feature: Uninstall a WordPress plugin
   Background:
     Given a WP install
 
-  Scenario: Uninstall an installed plugin
+  Scenario: Uninstall an installed plugin should uninstall, delete files
     When I run `wp plugin uninstall akismet`
     Then STDOUT should be:
       """
@@ -13,7 +13,6 @@ Feature: Uninstall a WordPress plugin
     And the return code should be 0
     And STDERR should be empty
     And the wp-content/plugins/akismet directory should not exist
-
 
   Scenario: Uninstall an installed plugin but do not delete its files
     When I run `wp plugin uninstall akismet --skip-delete`
@@ -38,7 +37,7 @@ Feature: Uninstall a WordPress plugin
     And the wp-content/plugins/hello.php file should not exist
 
   Scenario: Missing required inputs
-    When I run `wp plugin uninstall`
+    When I try `wp plugin uninstall`
     Then STDERR should be:
       """
       Error: Please specify one or more plugins, or use --all.
@@ -145,7 +144,7 @@ Feature: Uninstall a WordPress plugin
     And the return code should be 0
 
   @require-wp-5.2
-  Scenario: Uninstalling a plugin should remove its language pack too
+  Scenario: Uninstalling a plugin should remove its language pack
     Given a WP install
     And I run `wp plugin install wordpress-importer`
     And I run `wp core language install fr_FR`
