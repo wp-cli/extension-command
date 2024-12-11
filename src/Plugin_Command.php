@@ -1169,7 +1169,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		// Remove deleted plugins from the plugin updates list.
-		$current = get_site_transient( 'update_plugins' );
+		$current = get_site_transient( $this->upgrade_transient );
 		if ( $current ) {
 			// Don't remove the plugins that weren't deleted.
 			$deleted = array_diff( $deleted_plugin_files, $delete_errors );
@@ -1178,7 +1178,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				unset( $current->response[ $plugin_file ] );
 			}
 
-			set_site_transient( 'update_plugins', $current );
+			set_site_transient( $this->upgrade_transient, $current );
 		}
 
 		if ( ! $this->chained_command ) {
