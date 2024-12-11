@@ -169,6 +169,7 @@ Feature: Uninstall a WordPress plugin
     And the wp-content/languages/plugins/wordpress-importer-fr_FR.l10n.php file should not exist
     And STDERR should be empty
 
+  @require-wp-5.2
   Scenario: Uninstalling a plugin should remove its update info
     Given a WP install
     And I run `wp plugin install wordpress-importer --version=0.6`
