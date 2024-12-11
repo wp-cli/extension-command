@@ -126,6 +126,7 @@ Feature: Install WordPress themes
       twentyeleven
       """
 
+  @require-php-7
   Scenario: Can't install theme that requires a newer version of WordPress
     Given a WP install
 

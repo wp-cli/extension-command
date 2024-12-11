@@ -238,6 +238,7 @@ Feature: Install WordPress plugins
     Success: Plugin already installed.
     """
 
+  @require-php-7
   Scenario: Can't install plugin that requires a newer version of WordPress
     Given a WP install
 
