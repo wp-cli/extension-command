@@ -168,3 +168,26 @@ Feature: Uninstall a WordPress plugin
     And the wp-content/languages/plugins/wordpress-importer-fr_FR.po file should not exist
     And the wp-content/languages/plugins/wordpress-importer-fr_FR.l10n.php file should not exist
     And STDERR should be empty
+
+  Scenario: Uninstalling a plugin should remove its update info
+    Given a WP install
+    And I run `wp plugin install wordpress-importer --version=0.6`
+    And I run `wp plugin status wordpress-importer`
+
+    And I run `wp transient get --network update_plugins`
+    Then STDOUT should contain:
+      """
+      wordpress-importer
+      """
+
+    When I run `wp plugin uninstall wordpress-importer`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `wp transient get --network update_plugins`
+    Then STDOUT should not contain:
+      """
+      wordpress-importer
+      """
