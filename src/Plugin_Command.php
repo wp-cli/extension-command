@@ -593,7 +593,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			return $api;
 		}
 
-		if ( isset( $assoc_args['version'] ) ) {
+		if ( isset( $assoc_args['version'] ) || isset( $assoc_args['ignore-requirements'] ) ) {
 			self::alter_api_response( $api, $assoc_args['version'] );
 		} else {
 			$requires_php = isset( $api->requires_php ) ? $api->requires_php : null;
@@ -914,6 +914,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--force]
 	 * : If set, the command will overwrite any installed version of the plugin, without prompting
 	 * for confirmation.
+	 *
+	 * [--ignore-requirements]
+	 * :If set, the command will install the plugin while ignoring any requirements specified by the plugin authors.
 	 *
 	 * [--activate]
 	 * : If set, the plugin will be activated immediately after install.
