@@ -171,7 +171,7 @@ Feature: Install WordPress plugins
     When I run `rm wp-content/plugins/akismet/akismet.php`
     Then the return code should be 0
 
-    When I try `wp plugin install akismet`
+    When I try `wp plugin install akismet --ignore-requirements`
     Then STDERR should contain:
       """
       Warning: Destination folder already exists. "{WORKING_DIR}/wp-content/plugins/akismet/"
@@ -236,4 +236,37 @@ Feature: Install WordPress plugins
     Activating 'site-secrets'...
     Plugin 'site-secrets' activated.
     Success: Plugin already installed.
+    """
+
+  @require-php-7
+  Scenario: Can't install plugin that requires a newer version of WordPress
+    Given a WP install
+
+    When I run `wp core download --version=6.4 --force`
+    And I run `rm -r wp-content/themes/*`
+
+    And I try `wp plugin install wp-super-cache`
+    Then STDERR should contain:
+    """
+    Warning: wp-super-cache: This plugin does not work with your version of WordPress
+    """
+
+    And STDERR should contain:
+    """
+    Error: No plugins installed.
+    """
+
+  @less-than-php-7.4 @require-wp-6.6
+  Scenario: Can't install plugin that requires a newer version of PHP
+    Given a WP install
+
+    And I try `wp plugin install contact-form-7`
+    Then STDERR should contain:
+    """
+    Warning: contact-form-7: This plugin does not work with your version of PHP
+    """
+
+    And STDERR should contain:
+    """
+    Error: No plugins installed.
     """

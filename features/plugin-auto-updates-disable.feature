@@ -2,7 +2,7 @@ Feature: Disable auto-updates for WordPress plugins
 
   Background:
     Given a WP install
-    And I run `wp plugin install duplicate-post`
+    And I run `wp plugin install duplicate-post --ignore-requirements`
     And I run `wp plugin auto-updates enable --all`
 
   @require-wp-5.5

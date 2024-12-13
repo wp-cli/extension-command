@@ -395,6 +395,11 @@ class Theme_Command extends CommandWithUpgrade {
 	}
 
 	protected function install_from_repo( $slug, $assoc_args ) {
+		global $wp_version;
+		// Extract the major WordPress version (e.g., "6.3") from the full version string
+		list($wp_core_version) = explode( '-', $wp_version );
+		$wp_core_version       = implode( '.', array_slice( explode( '.', $wp_core_version ), 0, 2 ) );
+
 		$api = themes_api( 'theme_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
@@ -403,6 +408,20 @@ class Theme_Command extends CommandWithUpgrade {
 
 		if ( isset( $assoc_args['version'] ) ) {
 			self::alter_api_response( $api, $assoc_args['version'] );
+		} elseif ( ! Utils\get_flag_value( $assoc_args, 'ignore-requirements', false ) ) {
+			$requires_php = isset( $api->requires_php ) ? $api->requires_php : null;
+			$requires_wp  = isset( $api->requires ) ? $api->requires : null;
+
+			$compatible_php = empty( $requires_php ) || version_compare( PHP_VERSION, $requires_php, '>=' );
+			$compatible_wp  = empty( $requires_wp ) || version_compare( $wp_core_version, $requires_wp, '>=' );
+
+			if ( ! $compatible_wp ) {
+				return new WP_Error( 'requirements_not_met', "This theme does not work with your version of WordPress. Minimum WordPress requirement is $requires_wp" );
+			}
+
+			if ( ! $compatible_php ) {
+				return new WP_Error( 'requirements_not_met', "This theme does not work with your version of PHP. Minimum PHP required is $requires_php" );
+			}
 		}
 
 		if ( ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
@@ -461,6 +480,10 @@ class Theme_Command extends CommandWithUpgrade {
 	 * [--force]
 	 * : If set, the command will overwrite any installed version of the theme, without prompting
 	 * for confirmation.
+	 *
+	 * [--ignore-requirements]
+	 * : If set, the command will install the theme while ignoring any WordPress or PHP version requirements
+	 * specified by the theme authors.
 	 *
 	 * [--activate]
 	 * : If set, the theme will be activated immediately after install.
