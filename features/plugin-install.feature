@@ -171,7 +171,7 @@ Feature: Install WordPress plugins
     When I run `rm wp-content/plugins/akismet/akismet.php`
     Then the return code should be 0
 
-    When I try `wp plugin install akismet`
+    When I try `wp plugin install akismet --ignore-requirements`
     Then STDERR should contain:
       """
       Warning: Destination folder already exists. "{WORKING_DIR}/wp-content/plugins/akismet/"

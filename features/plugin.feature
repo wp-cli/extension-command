@@ -329,7 +329,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin activate akismet hello`
     Then STDOUT should not be empty
 
-    When I run `wp plugin install wordpress-importer`
+    When I run `wp plugin install wordpress-importer --ignore-requirements`
     Then STDOUT should not be empty
 
     When I run `wp plugin activate network-only`
@@ -373,6 +373,8 @@ Feature: Manage WordPress plugins
       | name               | status   | update   |
       | wordpress-importer | inactive | none     |
 
+  # WordPress Importer requires WP 5.2.
+  @require-wp-5.2
   Scenario: Install a plugin when directory doesn't yet exist
     Given a WP install
 
@@ -448,6 +450,8 @@ Feature: Manage WordPress plugins
       must-use
       """
 
+  # WordPress Importer requires WP 5.2.
+  @require-wp-5.2
   Scenario: Deactivate and uninstall a plugin, part one
     Given a WP install
     And these installed and active plugins:
@@ -472,6 +476,8 @@ Feature: Manage WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
+  # WordPress Importer requires WP 5.2.
+  @require-wp-5.2
   Scenario: Deactivate and uninstall a plugin, part two
     Given a WP install
     And these installed and active plugins:
