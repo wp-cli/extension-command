@@ -406,9 +406,9 @@ class Theme_Command extends CommandWithUpgrade {
 			return $api;
 		}
 
-		if ( isset( $assoc_args['version'] ) || Utils\get_flag_value( $assoc_args, 'ignore-requirements' ) ) {
+		if ( isset( $assoc_args['version'] ) ) {
 			self::alter_api_response( $api, $assoc_args['version'] );
-		} else {
+		} elseif ( ! Utils\get_flag_value( $assoc_args, 'ignore-requirements', false ) ) {
 			$requires_php = isset( $api->requires_php ) ? $api->requires_php : null;
 			$requires_wp  = isset( $api->requires ) ? $api->requires : null;
 
