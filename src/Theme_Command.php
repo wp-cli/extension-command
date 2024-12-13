@@ -406,7 +406,7 @@ class Theme_Command extends CommandWithUpgrade {
 			return $api;
 		}
 
-		if ( isset( $assoc_args['version'] ) || isset( $assoc_args['ignore-requirements'] ) ) {
+		if ( isset( $assoc_args['version'] ) || Utils\get_flag_value( $assoc_args, 'ignore-requirements' ) ) {
 			self::alter_api_response( $api, $assoc_args['version'] );
 		} else {
 			$requires_php = isset( $api->requires_php ) ? $api->requires_php : null;
@@ -482,7 +482,8 @@ class Theme_Command extends CommandWithUpgrade {
 	 * for confirmation.
 	 *
 	 * [--ignore-requirements]
-	 * : If set, the command will install the theme while ignoring any requirements specified by the theme authors.
+	 * : If set, the command will install the theme while ignoring any WordPress or PHP version requirements
+	 * specified by the theme authors.
 	 *
 	 * [--activate]
 	 * : If set, the theme will be activated immediately after install.
