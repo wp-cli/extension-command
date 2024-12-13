@@ -239,7 +239,7 @@ These fields are optionally available:
 Installs one or more plugins.
 
 ~~~
-wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--activate] [--activate-network] [--insecure]
+wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-requirements] [--activate] [--activate-network] [--insecure]
 ~~~
 
 **OPTIONS**
@@ -254,6 +254,10 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--activat
 	[--force]
 		If set, the command will overwrite any installed version of the plugin, without prompting
 		for confirmation.
+
+[--ignore-requirements]
+:If set, the command will install the plugin while ignoring any WordPress or PHP version requirements
+specified by the plugin authors.
 
 	[--activate]
 		If set, the plugin will be activated immediately after install.
@@ -993,7 +997,7 @@ wp theme get <theme> [--field=<field>] [--fields=<fields>] [--format=<format>]
 Installs one or more themes.
 
 ~~~
-wp theme install <theme|zip|url>... [--version=<version>] [--force] [--activate] [--insecure]
+wp theme install <theme|zip|url>... [--version=<version>] [--force] [--ignore-requirements] [--activate] [--insecure]
 ~~~
 
 **OPTIONS**
@@ -1008,6 +1012,10 @@ wp theme install <theme|zip|url>... [--version=<version>] [--force] [--activate]
 	[--force]
 		If set, the command will overwrite any installed version of the theme, without prompting
 		for confirmation.
+
+	[--ignore-requirements]
+		If set, the command will install the theme while ignoring any WordPress or PHP version requirements
+		specified by the theme authors.
 
 	[--activate]
 		If set, the theme will be activated immediately after install.
