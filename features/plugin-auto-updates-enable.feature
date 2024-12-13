@@ -2,7 +2,7 @@ Feature: Enable auto-updates for WordPress plugins
 
   Background:
     Given a WP install
-    And I run `wp plugin install duplicate-post`
+    And I run `wp plugin install duplicate-post --ignore-requirements`
 
   @require-wp-5.5
   Scenario: Show an error if required params are missing
