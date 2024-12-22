@@ -620,3 +620,31 @@ Feature: Manage WordPress themes
     Then STDOUT should be a table containing rows:
       | auto_update          |
       | on                   |
+
+  @require-php-7
+  Scenario: Show theme update as unavailable if it doesn't meet WordPress requirements
+    Given a WP install
+
+    When I run `wp core download --version=6.2 --force`
+    And I run `rm -r wp-content/themes/*`
+    And I run `wp theme install kadence --version=1.1.1`
+
+    When I run `wp theme list --name=kadence --field=update_version`
+    And save STDOUT as {UPDATE_VERSION}
+
+    When I run `wp theme list --name=kadence --field=requires`
+    And save STDOUT as {REQUIRES}
+
+    When I run `wp theme list --name=kadence --field=requires_php`
+    And save STDOUT as {REQUIRES_PHP}
+
+    And I run `wp theme list`
+    Then STDOUT should be a table containing rows:
+      | name    | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
+      | kadence | inactive | unavailable  | 1.1.1    | {UPDATE_VERSION} | off         | {REQUIRES} | {REQUIRES_PHP} |
+
+    When I try `wp theme update kadence`
+    Then STDERR should contain:
+      """
+      Warning: kadence: Requires a newer version of WordPress
+      """

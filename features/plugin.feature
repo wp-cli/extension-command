@@ -810,3 +810,58 @@ Feature: Manage WordPress plugins
       """
       5.5
       """
+
+  @require-php-7
+  Scenario: Show plugin update as unavailable if it doesn't meet WordPress requirements
+    Given a WP install
+
+    When I run `wp core download --version=6.4 --force`
+    And I run `rm -r wp-content/themes/*`
+    And I run `wp plugin install wp-super-cache --version=1.9.4`
+
+    When I run `wp plugin list --name=wp-super-cache --field=update_version`
+    And save STDOUT as {UPDATE_VERSION}
+
+    When I run `wp plugin list --name=wp-super-cache --field=requires`
+    And save STDOUT as {REQUIRES}
+
+    When I run `wp plugin list --name=wp-super-cache --field=requires_php`
+    And save STDOUT as {REQUIRES_PHP}
+
+    And I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
+      | wp-super-cache  | inactive | unavailable  | 1.9.4    | {UPDATE_VERSION} | off         | {REQUIRES} | {REQUIRES_PHP} |
+
+    When I try `wp plugin update wp-super-cache`
+    Then STDERR should contain:
+      """
+      Warning: wp-super-cache: Requires a newer version of WordPress
+      """
+
+  @less-than-php-8.0 @require-wp-5.6
+  Scenario: Show plugin update as unavailable if it doesn't meet PHP requirements
+    Given a WP install
+
+    And I run `wp plugin install edit-flow --version=0.9.8`
+
+    When I run `wp plugin list --name=edit-flow --field=update_version`
+    And save STDOUT as {UPDATE_VERSION}
+
+    When I run `wp plugin list --name=edit-flow --field=requires`
+    And save STDOUT as {REQUIRES}
+
+    When I run `wp plugin list --name=edit-flow --field=requires_php`
+    And save STDOUT as {REQUIRES_PHP}
+
+    And I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
+      | edit-flow       | inactive | unavailable  | 0.9.8    | {UPDATE_VERSION} | off         | {REQUIRES} | {REQUIRES_PHP} |
+
+    When I try `wp plugin update edit-flow`
+    Then STDERR should contain:
+      """
+      Warning: edit-flow: Requires a newer version of PHP
+      """
+
