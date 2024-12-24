@@ -377,7 +377,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$items_to_update = array_filter(
 			$items,
 			function ( $item ) {
-				return isset( $item['update'] ) && $item['update'] !== 'none';
+				return isset( $item['update'] ) && 'none' !== $item['update'];
 			}
 		);
 
