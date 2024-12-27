@@ -836,7 +836,7 @@ Feature: Manage WordPress plugins
     When I try `wp plugin update wp-super-cache`
     Then STDERR should contain:
       """
-      Warning: wp-super-cache: Requires a newer version of WordPress
+      Warning: wp-super-cache: This update requires WordPress version
       """
 
   @less-than-php-8.0 @require-wp-5.6
@@ -862,6 +862,6 @@ Feature: Manage WordPress plugins
     When I try `wp plugin update edit-flow`
     Then STDERR should contain:
       """
-      Warning: edit-flow: Requires a newer version of PHP
+      Warning: edit-flow: This update requires PHP version
       """
 

@@ -94,9 +94,10 @@ trait ParseThemeNameInput {
 			$compatible_wp  = empty( $requires ) || version_compare( $wp_version, $requires, '>=' );
 
 			if ( ! $compatible_php ) {
-				$update                    = 'unavailable';
+				$update = 'unavailable';
+
 				$update_unavailable_reason = sprintf(
-					'Requires a newer version of PHP [%s] than installed [%s]',
+					'This update requires PHP version %s, but the version installed is %s.',
 					$requires_php,
 					PHP_VERSION
 				);
@@ -105,8 +106,9 @@ trait ParseThemeNameInput {
 			}
 
 			if ( ! $compatible_wp ) {
-				$update                    = 'unavailable';
-				$update_unavailable_reason = "Requires a newer version of WordPress [$requires] than installed [$wp_version]";
+				$update = 'unavailable';
+
+				$update_unavailable_reason = "This update requires WordPress version $requires, but the version installed is $wp_version.";
 			} else {
 				$update = $update_info ? 'available' : 'none';
 			}

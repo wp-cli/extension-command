@@ -646,5 +646,5 @@ Feature: Manage WordPress themes
     When I try `wp theme update kadence`
     Then STDERR should contain:
       """
-      Warning: kadence: Requires a newer version of WordPress
+      Warning: kadence: This update requires WordPress version
       """
