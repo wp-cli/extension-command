@@ -92,10 +92,10 @@ Feature: Install WordPress plugins
       define( 'WP_PROXY_PORT', '443' );
       """
 
-    When I try `wp --require=invalid-proxy-details.php plugin install edit-flow`
+    When I try `wp --require=invalid-proxy-details.php plugin install debug-bar`
     Then STDERR should contain:
       """
-      Warning: edit-flow: An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration.
+      Warning: debug-bar: An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration.
       """
     And STDERR should contain:
       """
@@ -104,7 +104,7 @@ Feature: Install WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
-    When I run `wp plugin install edit-flow`
+    When I run `wp plugin install debug-bar`
     Then STDOUT should contain:
       """
       Plugin installed successfully.
@@ -171,7 +171,7 @@ Feature: Install WordPress plugins
     When I run `rm wp-content/plugins/akismet/akismet.php`
     Then the return code should be 0
 
-    When I try `wp plugin install akismet`
+    When I try `wp plugin install akismet --ignore-requirements`
     Then STDERR should contain:
       """
       Warning: Destination folder already exists. "{WORKING_DIR}/wp-content/plugins/akismet/"
@@ -236,4 +236,37 @@ Feature: Install WordPress plugins
     Activating 'site-secrets'...
     Plugin 'site-secrets' activated.
     Success: Plugin already installed.
+    """
+
+  @require-php-7
+  Scenario: Can't install plugin that requires a newer version of WordPress
+    Given a WP install
+
+    When I run `wp core download --version=6.4 --force`
+    And I run `rm -r wp-content/themes/*`
+
+    And I try `wp plugin install wp-super-cache`
+    Then STDERR should contain:
+    """
+    Warning: wp-super-cache: This plugin does not work with your version of WordPress
+    """
+
+    And STDERR should contain:
+    """
+    Error: No plugins installed.
+    """
+
+  @less-than-php-7.4 @require-wp-6.6
+  Scenario: Can't install plugin that requires a newer version of PHP
+    Given a WP install
+
+    And I try `wp plugin install contact-form-7`
+    Then STDERR should contain:
+    """
+    Warning: contact-form-7: This plugin does not work with your version of PHP
+    """
+
+    And STDERR should contain:
+    """
+    Error: No plugins installed.
     """
