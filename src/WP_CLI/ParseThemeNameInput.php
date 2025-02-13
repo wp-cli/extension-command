@@ -101,14 +101,14 @@ trait ParseThemeNameInput {
 					$requires_php,
 					PHP_VERSION
 				);
-			} else {
-				$update = $update_info ? 'available' : 'none';
-			}
-
-			if ( ! $compatible_wp ) {
+			} elseif ( ! $compatible_wp ) {
 				$update = 'unavailable';
 
-				$update_unavailable_reason = "This update requires WordPress version $requires, but the version installed is $wp_version.";
+				$update_unavailable_reason = sprintf(
+					'This update requires WordPress version %s, but the version installed is %s.',
+					$requires,
+					$wp_version
+				);
 			} else {
 				$update = $update_info ? 'available' : 'none';
 			}
