@@ -811,57 +811,95 @@ Feature: Manage WordPress plugins
       5.5
       """
 
-  @require-php-7
   Scenario: Show plugin update as unavailable if it doesn't meet WordPress requirements
     Given a WP install
+    And a wp-content/plugins/example/example.php file:
+      """
+      <?php
+        /**
+        * Plugin Name: Example Plugin
+        * Version: 1.0.0
+        * Requires at least: 3.7
+        * Tested up to: 6.7
+      """
 
-    When I run `wp core download --version=6.4 --force`
-    And I run `rm -r wp-content/themes/*`
-    And I run `wp plugin install wp-super-cache --version=1.9.4`
+    Given that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
 
-    When I run `wp plugin list --name=wp-super-cache --field=update_version`
-    And save STDOUT as {UPDATE_VERSION}
+      {
+        "plugins": [],
+        "translations": [],
+        "no_update": {
+          "example/example.php": {
+            "id": "w.org/plugins/example",
+            "slug": "example",
+            "plugin": "example/example.php",
+            "new_version": "2.0.0",
 
-    When I run `wp plugin list --name=wp-super-cache --field=requires`
-    And save STDOUT as {REQUIRES}
-
-    When I run `wp plugin list --name=wp-super-cache --field=requires_php`
-    And save STDOUT as {REQUIRES_PHP}
+            "requires": "100",
+            "requires_php": "7.2",
+            "requires_plugins": [],
+            "compatibility": []
+          }
+        }
+      }
+      """
 
     And I run `wp plugin list`
     Then STDOUT should be a table containing rows:
       | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
-      | wp-super-cache  | inactive | unavailable  | 1.9.4    | {UPDATE_VERSION} | off         | {REQUIRES} | {REQUIRES_PHP} |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 100        | 7.2            |
 
-    When I try `wp plugin update wp-super-cache`
+    When I try `wp plugin update example`
     Then STDERR should contain:
       """
-      Warning: wp-super-cache: This update requires WordPress version
+      Warning: example: This update requires WordPress version 100
       """
 
-  @less-than-php-8.0 @require-wp-5.6
-  Scenario: Show plugin update as unavailable if it doesn't meet PHP requirements
+ Scenario: Show plugin update as unavailable if it doesn't meet PHP requirements
     Given a WP install
+    And a wp-content/plugins/example/example.php file:
+      """
+      <?php
+        /**
+        * Plugin Name: Example Plugin
+        * Version: 1.0.0
+        * Requires at least: 3.7
+        * Tested up to: 6.7
+      """
 
-    And I run `wp plugin install edit-flow --version=0.9.8`
+    Given that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+    """
+    HTTP/1.1 200 OK
 
-    When I run `wp plugin list --name=edit-flow --field=update_version`
-    And save STDOUT as {UPDATE_VERSION}
-
-    When I run `wp plugin list --name=edit-flow --field=requires`
-    And save STDOUT as {REQUIRES}
-
-    When I run `wp plugin list --name=edit-flow --field=requires_php`
-    And save STDOUT as {REQUIRES_PHP}
+    {
+      "plugins": {
+        "example/example.php": {
+          "id": "w.org/plugins/example",
+          "slug": "example",
+          "plugin": "example/example.php",
+          "new_version": "2.0.0",
+          "requires": "3.7",
+          "tested": "6.6",
+          "requires_php": "100",
+          "requires_plugins": [],
+          "compatibility": []
+      }
+    },
+      "translations": [],
+      "no_update": []
+    }
+    """
 
     And I run `wp plugin list`
     Then STDOUT should be a table containing rows:
       | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
-      | edit-flow       | inactive | unavailable  | 0.9.8    | {UPDATE_VERSION} | off         | {REQUIRES} | {REQUIRES_PHP} |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 3.7        | 100            |
 
-    When I try `wp plugin update edit-flow`
+    When I try `wp plugin update example`
     Then STDERR should contain:
       """
-      Warning: edit-flow: This update requires PHP version
+      Warning: example: This update requires PHP version 100
       """
 

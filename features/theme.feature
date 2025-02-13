@@ -624,27 +624,88 @@ Feature: Manage WordPress themes
   @require-php-7
   Scenario: Show theme update as unavailable if it doesn't meet WordPress requirements
     Given a WP install
+    And a wp-content/themes/example/style.css file:
+      """
+      /*
+      Theme Name: example
+      Version: 1.0.0
+      */
+      """
+    And a wp-content/themes/example/index.php file:
+      """
+      <?php
+      // Silence is golden.
+      """
 
-    When I run `wp core download --version=6.2 --force`
-    And I run `rm -r wp-content/themes/*`
-    And I run `wp theme install kadence --version=1.1.1`
+    Given that HTTP requests to https://api.wordpress.org/themes/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
 
-    When I run `wp theme list --name=kadence --field=update_version`
-    And save STDOUT as {UPDATE_VERSION}
-
-    When I run `wp theme list --name=kadence --field=requires`
-    And save STDOUT as {REQUIRES}
-
-    When I run `wp theme list --name=kadence --field=requires_php`
-    And save STDOUT as {REQUIRES_PHP}
+      {
+        "themes": {
+          "example": {
+            "theme": "example",
+            "new_version": "2.0.0",
+            "requires": "100",
+            "requires_php": "5.6"
+          }
+        },
+        "translations": [],
+        "no_update": []
+      }
+      """
 
     And I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name    | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
-      | kadence | inactive | unavailable  | 1.1.1    | {UPDATE_VERSION} | off         | {REQUIRES} | {REQUIRES_PHP} |
+      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 100        | 5.6            |
 
-    When I try `wp theme update kadence`
+    When I try `wp theme update example`
     Then STDERR should contain:
       """
-      Warning: kadence: This update requires WordPress version
+      Warning: example: This update requires WordPress version 100
+      """
+
+   Scenario: Show theme update as unavailable if it doesn't meet PHP requirements
+    Given a WP install
+    And a wp-content/themes/example/style.css file:
+      """
+      /*
+      Theme Name: example
+      Version: 1.0.0
+      */
+      """
+    And a wp-content/themes/example/index.php file:
+      """
+      <?php
+      // Silence is golden.
+      """
+
+    Given that HTTP requests to https://api.wordpress.org/themes/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
+
+    {
+      "themes": {
+        "example": {
+          "theme": "example",
+          "new_version": "2.0.0",
+          "requires": "3.7",
+          "requires_php": "100"
+        }
+    },
+      "translations": [],
+      "no_update": []
+    }
+    """
+
+    And I run `wp theme list`
+    Then STDOUT should be a table containing rows:
+      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 3.7        | 100            |
+
+    When I try `wp theme update example`
+    Then STDERR should contain:
+      """
+      Warning: example: This update requires PHP version 100
       """
