@@ -210,10 +210,10 @@ Feature: Manage WordPress themes
   Scenario: Flag `--skip-update-check` skips update check when running `wp theme list`
     Given a WP install
 
-    When I run `wp theme install twentythirteen --version=1.1`
+    When I run `wp theme install twentythirteen --version=1.1 --force`
     Then STDOUT should contain:
       """
-      Theme installed successfully.
+      Installed 1 of 1 themes
       """
 
     When I run `wp theme list --fields=name,status,update`
