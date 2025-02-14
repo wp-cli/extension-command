@@ -210,7 +210,7 @@ Feature: Manage WordPress themes
   Scenario: Flag `--skip-update-check` skips update check when running `wp theme list`
     Given a WP install
 
-    When I run `wp theme install astra --version=1.0.0`
+    When I run `wp theme install twentythirteen --version=1.1`
     Then STDOUT should contain:
       """
       Theme installed successfully.
@@ -218,8 +218,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list --fields=name,status,update`
     Then STDOUT should be a table containing rows:
-      | name  | status   | update    |
-      | astra | inactive | available |
+      | name           | status   | update    |
+      | twentythirteen | inactive | available |
 
     When I run `wp transient delete update_themes --network`
     Then STDOUT should be:
@@ -229,8 +229,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list --fields=name,status,update --skip-update-check`
     Then STDOUT should be a table containing rows:
-      | name  | status   | update |
-      | astra | inactive | none   |
+      | name           | status   | update |
+      | twentythirteen | inactive | none   |
 
   Scenario: Install a theme when the theme directory doesn't yet exist
     Given a WP install
