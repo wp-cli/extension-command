@@ -811,6 +811,7 @@ Feature: Manage WordPress plugins
       5.5
       """
 
+  @require-wp-4.0
   Scenario: Show plugin update as unavailable if it doesn't meet WordPress requirements
     Given a WP install
     And a wp-content/plugins/example/example.php file:
@@ -857,6 +858,7 @@ Feature: Manage WordPress plugins
       Warning: example: This update requires WordPress version 100
       """
 
+ @require-wp-4.0
  Scenario: Show plugin update as unavailable if it doesn't meet PHP requirements
     Given a WP install
     And a wp-content/plugins/example/example.php file:
