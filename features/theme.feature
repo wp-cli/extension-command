@@ -210,7 +210,7 @@ Feature: Manage WordPress themes
   Scenario: Flag `--skip-update-check` skips update check when running `wp theme list`
     Given a WP install
 
-    When I run `wp theme install twentythirteen --version=1.1 --force`
+    When I run `wp theme install twentyten --version=4.0`
     Then STDOUT should contain:
       """
       Installed 1 of 1 themes
@@ -218,8 +218,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list --fields=name,status,update`
     Then STDOUT should be a table containing rows:
-      | name           | status   | update    |
-      | twentythirteen | inactive | available |
+      | name      | status   | update    |
+      | twentyten | inactive | available |
 
     When I run `wp transient delete update_themes --network`
     Then STDOUT should be:
@@ -229,8 +229,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list --fields=name,status,update --skip-update-check`
     Then STDOUT should be a table containing rows:
-      | name           | status   | update |
-      | twentythirteen | inactive | none   |
+      | name      | status   | update |
+      | twentyten | inactive | none   |
 
   Scenario: Install a theme when the theme directory doesn't yet exist
     Given a WP install
@@ -284,6 +284,7 @@ Feature: Manage WordPress themes
       Theme updated successfully.
       """
 
+  @require-wp-5.7
   Scenario: Enabling and disabling a theme
   	Given a WP multisite install
     And I run `wp theme install moina`
@@ -379,6 +380,7 @@ Feature: Manage WordPress themes
     And STDOUT should be empty
     And the return code should be 1
 
+  @require-wp-5.7
   Scenario: Install and attempt to activate a child theme without its parent
     Given a WP install
     And I run `wp theme install moina-blog`
@@ -392,6 +394,7 @@ Feature: Manage WordPress themes
     And STDOUT should be empty
     And the return code should be 1
 
+  @require-wp-5.7
   Scenario: List an active theme with its parent
     Given a WP install
     And I run `wp theme install moina`
@@ -470,6 +473,7 @@ Feature: Manage WordPress themes
       twentytwelve,1.0,{UPDATE_VERSION},Updated
       """
 
+  @require-wp-5.7
   Scenario: Automatically install parent theme for a child theme
     Given a WP install
 
@@ -579,7 +583,7 @@ Feature: Manage WordPress themes
       Error: Parameter errors:
        Invalid value specified for 'status' (Filter the output by theme status.)
       """
-
+  @require-wp-5.7
   Scenario: Parent theme is active when its child is active
     Given a WP install
     And I run `wp theme delete --all --force`
@@ -621,7 +625,6 @@ Feature: Manage WordPress themes
       | auto_update          |
       | on                   |
 
-  @require-php-7
   Scenario: Show theme update as unavailable if it doesn't meet WordPress requirements
     Given a WP install
     And a wp-content/themes/example/style.css file:
