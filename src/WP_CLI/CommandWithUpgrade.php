@@ -103,7 +103,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$padding = $this->get_padding( $items );
 
 		foreach ( $items as $file => $details ) {
-			if ( $details['update'] ) {
+			if ( 'available' === $details['update'] ) {
 				$line = ' %yU%n';
 			} else {
 				$line = '  ';
@@ -150,8 +150,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$this->map['long'][ $status ]
 			);
 		}
-
-		if ( in_array( true, wp_list_pluck( $items, 'update' ), true ) ) {
+		if ( in_array( 'available', wp_list_pluck( $items, 'update' ), true ) ) {
 			$legend_line[] = '%yU = Update Available%n';
 		}
 
@@ -375,7 +374,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$errors = count( $args ) - count( $items );
 		}
 
-		$items_to_update = wp_list_filter( $items, [ 'update' => true ] );
+		$items_to_update = array_filter(
+			$items,
+			function ( $item ) {
+				return isset( $item['update'] ) && 'none' !== $item['update'];
+			}
+		);
 
 		$minor = (bool) Utils\get_flag_value( $assoc_args, 'minor', false );
 		$patch = (bool) Utils\get_flag_value( $assoc_args, 'patch', false );
@@ -414,6 +418,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		foreach ( $items_to_update as $item_key => $item_info ) {
 			if ( static::INVALID_VERSION_MESSAGE === $item_info['update'] ) {
 				WP_CLI::warning( "{$item_info['name']}: " . static::INVALID_VERSION_MESSAGE . '.' );
+				++$skipped;
+				unset( $items_to_update[ $item_key ] );
+			}
+			if ( 'unavailable' === $item_info['update'] ) {
+				WP_CLI::warning( "{$item_info['name']}: {$item_info['update_unavailable_reason']}" );
 				++$skipped;
 				unset( $items_to_update[ $item_key ] );
 			}
@@ -564,10 +573,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 			foreach ( $item as $field => &$value ) {
 				if ( 'update' === $field ) {
-					if ( true === $value ) {
-						$value = 'available';
-					} elseif ( false === $value ) {
-						$value = 'none';
+					// If an update is unavailable, make sure to also show these fields which will explain why
+					if ( 'unavailable' === $value ) {
+						if ( ! in_array( 'requires', $this->obj_fields, true ) ) {
+							array_push( $this->obj_fields, 'requires' );
+						}
+						if ( ! in_array( 'requires_php', $this->obj_fields, true ) ) {
+							array_push( $this->obj_fields, 'requires_php' );
+						}
 					}
 				} elseif ( 'auto_update' === $field ) {
 					if ( true === $value ) {

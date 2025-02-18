@@ -3,6 +3,7 @@ Feature: Manage WordPress themes and plugins
   Background:
     Given an empty cache
 
+  @require-wp-4.5
   Scenario Outline: Installing, upgrading and deleting a theme or plugin
     Given a WP install
     And I run `wp <type> path`

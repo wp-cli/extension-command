@@ -810,3 +810,98 @@ Feature: Manage WordPress plugins
       """
       5.5
       """
+
+  @require-wp-4.0
+  Scenario: Show plugin update as unavailable if it doesn't meet WordPress requirements
+    Given a WP install
+    And a wp-content/plugins/example/example.php file:
+      """
+      <?php
+        /**
+        * Plugin Name: Example Plugin
+        * Version: 1.0.0
+        * Requires at least: 3.7
+        * Tested up to: 6.7
+      """
+
+    Given that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
+
+      {
+        "plugins": [],
+        "translations": [],
+        "no_update": {
+          "example/example.php": {
+            "id": "w.org/plugins/example",
+            "slug": "example",
+            "plugin": "example/example.php",
+            "new_version": "2.0.0",
+
+            "requires": "100",
+            "requires_php": "7.2",
+            "requires_plugins": [],
+            "compatibility": []
+          }
+        }
+      }
+      """
+
+    And I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 100        | 7.2            |
+
+    When I try `wp plugin update example`
+    Then STDERR should contain:
+      """
+      Warning: example: This update requires WordPress version 100
+      """
+
+ @require-wp-4.0
+ Scenario: Show plugin update as unavailable if it doesn't meet PHP requirements
+    Given a WP install
+    And a wp-content/plugins/example/example.php file:
+      """
+      <?php
+        /**
+        * Plugin Name: Example Plugin
+        * Version: 1.0.0
+        * Requires at least: 3.7
+        * Tested up to: 6.7
+      """
+
+    Given that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+    """
+    HTTP/1.1 200 OK
+
+    {
+      "plugins": {
+        "example/example.php": {
+          "id": "w.org/plugins/example",
+          "slug": "example",
+          "plugin": "example/example.php",
+          "new_version": "2.0.0",
+          "requires": "3.7",
+          "tested": "6.6",
+          "requires_php": "100",
+          "requires_plugins": [],
+          "compatibility": []
+      }
+    },
+      "translations": [],
+      "no_update": []
+    }
+    """
+
+    And I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 3.7        | 100            |
+
+    When I try `wp plugin update example`
+    Then STDERR should contain:
+      """
+      Warning: example: This update requires PHP version 100
+      """
+

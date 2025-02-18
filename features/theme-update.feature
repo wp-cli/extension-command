@@ -32,6 +32,7 @@ Feature: Update WordPress themes
       | name         | version   |
       | twentytwelve | 4.0       |
 
+  @require-wp-4.5
   Scenario: Not giving a slug on update should throw an error unless --all given
     Given a WP install
     And I run `wp theme path`
