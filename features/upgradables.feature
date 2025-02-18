@@ -3,6 +3,7 @@ Feature: Manage WordPress themes and plugins
   Background:
     Given an empty cache
 
+  @require-wp-4.5
   Scenario Outline: Installing, upgrading and deleting a theme or plugin
     Given a WP install
     And I run `wp <type> path`
@@ -208,5 +209,5 @@ Feature: Manage WordPress themes and plugins
 
     Examples:
       | type   | type_name | item                    | item_title              | version | zip_file                                                               | file_to_check                                                     |
-      | theme  | Theme     | twentyten                      | Twenty Ten                      | 4.0   | https://wordpress.org/themes/download/twentyten.4.0.zip                     | {CONTENT_DIR}/twentyten/style.css                                        |
+      | theme  | Theme     | moina                      | Moina                      | 1.1.2   | https://wordpress.org/themes/download/moina.1.1.2.zip                     | {CONTENT_DIR}/moina/style.css                                        |
       | plugin | Plugin    | category-checklist-tree | Category Checklist Tree | 1.2     | https://downloads.wordpress.org/plugin/category-checklist-tree.1.2.zip | {CONTENT_DIR}/category-checklist-tree/category-checklist-tree.php |
