@@ -209,5 +209,5 @@ Feature: Manage WordPress themes and plugins
 
     Examples:
       | type   | type_name | item                    | item_title              | version | zip_file                                                               | file_to_check                                                     |
-      | theme  | Theme     | moina                      | Moina                      | 1.1.2   | https://wordpress.org/themes/download/moina.1.1.2.zip                     | {CONTENT_DIR}/moina/style.css                                        |
+      | theme  | Theme     | moina                   | Moina                   | 1.1.2   | https://wordpress.org/themes/download/moina.1.1.2.zip                  | {CONTENT_DIR}/moina/style.css                                     |
       | plugin | Plugin    | category-checklist-tree | Category Checklist Tree | 1.2     | https://downloads.wordpress.org/plugin/category-checklist-tree.1.2.zip | {CONTENT_DIR}/category-checklist-tree/category-checklist-tree.php |
