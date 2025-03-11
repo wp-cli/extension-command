@@ -107,7 +107,8 @@ Feature: Manage WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
-  @require-wp-4.0
+  # WordPress Importer currently requires at least WP 5.2.
+  @require-wp-5.2
   Scenario: Install a plugin, activate, then force install an older version of the plugin
     Given a WP install
 
