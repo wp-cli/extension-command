@@ -76,7 +76,7 @@ trait ParseThemeNameInput {
 
 		$auto_updates = get_site_option( Theme_AutoUpdates_Command::SITE_OPTION );
 
-		if ( false === $auto_updates ) {
+		if ( false === $auto_updates || ! is_array( $auto_updates ) ) {
 			$auto_updates = [];
 		}
 
