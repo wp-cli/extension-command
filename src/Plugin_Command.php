@@ -751,7 +751,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$auto_updates = get_site_option( Plugin_AutoUpdates_Command::SITE_OPTION );
 
-		if ( false === $auto_updates || ! is_array( $auto_updates ) ) {
+		if ( ! is_array( $auto_updates ) ) {
 			$auto_updates = [];
 		}
 
