@@ -233,6 +233,34 @@ Feature: Manage WordPress themes
       | name      | status   | update |
       | astra     | inactive | none   |
 
+
+  Scenario: Doing wp theme list does a force check by default, deleting any existing transient values
+    Given a WP install
+
+    When I run `wp theme list`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo get_site_transient("update_themes")->last_checked;'`
+    And save STDOUT as {LAST_UPDATED}
+
+    When I run `wp theme list --skip-update-check`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo get_site_transient("update_themes")->last_checked;'`
+    Then STDOUT should be:
+      """
+      {LAST_UPDATED}
+      """
+
+    When I run `wp theme list`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo get_site_transient("update_themes")->last_checked;'`
+    Then STDOUT should not contain:
+      """
+      {LAST_UPDATED}
+      """
+
   Scenario: Install a theme when the theme directory doesn't yet exist
     Given a WP install
     And I run `wp theme delete --all --force`
