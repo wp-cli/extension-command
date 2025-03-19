@@ -61,7 +61,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin status`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list`
+    When I run `wp plugin list --fields=name,status,update,version,update_version,auto_update`
     Then STDOUT should be a table containing rows:
       | name       | status | update | version | update_version | auto_update |
       | Zombieland | active | none   | 0.1.0   |                | off         |
@@ -586,7 +586,7 @@ Feature: Manage WordPress plugins
     Given a WP install
     And these installed and active plugins:
       """
-      akismet
+      hello-dolly
       site-secrets
       """
     And a wp-content/mu-plugins/hide-us-plugin.php file:
@@ -755,7 +755,7 @@ Feature: Manage WordPress plugins
       """
     And I run `wp plugin activate foo`
 
-    When I run `wp plugin list`
+    When I run `wp plugin list --fields=name,status,update,version,update_version,auto_update`
     Then STDOUT should be a table containing rows:
       | name       | status   | update  | version  | update_version | auto_update |
       | foo        | active   | none    |          |                | off         |
@@ -797,7 +797,7 @@ Feature: Manage WordPress plugins
       """
     And I run `wp plugin activate foo`
 
-    When I run `wp plugin list`
+    When I run `wp plugin list --fields=name,status,update,version,update_version,auto_update`
     Then STDOUT should be a table containing rows:
       | name       | status   | update  | version  | update_version | auto_update |
       | foo        | active   | none    |          |                | off         |

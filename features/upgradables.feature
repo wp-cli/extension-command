@@ -6,6 +6,8 @@ Feature: Manage WordPress themes and plugins
   @require-wp-4.5
   Scenario Outline: Installing, upgrading and deleting a theme or plugin
     Given a WP install
+    # Akismet ships with WordPress but does not work with older versions we test
+    And I run `wp plugin delete akismet`
     And I run `wp <type> path`
     And save STDOUT as {CONTENT_DIR}
 
