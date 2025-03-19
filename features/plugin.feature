@@ -61,7 +61,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin status`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list`
+    When I run `wp plugin list --fields=name,status,update,version,update_version,auto_update`
     Then STDOUT should be a table containing rows:
       | name       | status | update | version | update_version | auto_update |
       | Zombieland | active | none   | 0.1.0   |                | off         |
@@ -107,7 +107,8 @@ Feature: Manage WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
-  @require-wp-4.0
+  # WordPress Importer currently requires at least WP 5.2.
+  @require-wp-5.2
   Scenario: Install a plugin, activate, then force install an older version of the plugin
     Given a WP install
 
@@ -579,12 +580,13 @@ Feature: Manage WordPress plugins
       """
     And the return code should be 0
 
-  @require-wp-4.7
+  # Akismet currently requires WordPress 5.8, so there's a warning because of it.
+  @require-wp-5.8
   Scenario: Plugin hidden by "all_plugins" filter
     Given a WP install
     And these installed and active plugins:
       """
-      akismet
+      hello-dolly
       site-secrets
       """
     And a wp-content/mu-plugins/hide-us-plugin.php file:
@@ -753,7 +755,7 @@ Feature: Manage WordPress plugins
       """
     And I run `wp plugin activate foo`
 
-    When I run `wp plugin list`
+    When I run `wp plugin list --fields=name,status,update,version,update_version,auto_update`
     Then STDOUT should be a table containing rows:
       | name       | status   | update  | version  | update_version | auto_update |
       | foo        | active   | none    |          |                | off         |
@@ -795,7 +797,7 @@ Feature: Manage WordPress plugins
       """
     And I run `wp plugin activate foo`
 
-    When I run `wp plugin list`
+    When I run `wp plugin list --fields=name,status,update,version,update_version,auto_update`
     Then STDOUT should be a table containing rows:
       | name       | status   | update  | version  | update_version | auto_update |
       | foo        | active   | none    |          |                | off         |

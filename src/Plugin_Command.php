@@ -1255,6 +1255,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 			foreach ( $deleted as $plugin_file ) {
 				unset( $current->response[ $plugin_file ] );
+				unset( $current->checked[ $plugin_file ] );
 			}
 
 			set_site_transient( $this->upgrade_transient, $current );
