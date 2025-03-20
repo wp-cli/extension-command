@@ -318,6 +318,27 @@ Feature: Manage WordPress plugins
       Automattic
       """
 
+    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    And save STDOUT as {LAST_UPDATED}
+
+    When I run `wp plugin list --skip-update-check`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    Then STDOUT should be:
+      """
+      {LAST_UPDATED}
+      """
+
+    When I run `wp plugin list`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    Then STDOUT should not contain:
+      """
+      {LAST_UPDATED}
+      """
+
   Scenario: List plugin by multiple statuses
     Given a WP multisite install
     And a wp-content/plugins/network-only.php file:
