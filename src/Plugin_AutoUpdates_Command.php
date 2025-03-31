@@ -85,7 +85,7 @@ class Plugin_AutoUpdates_Command {
 		$plugins      = $this->fetcher->get_many( $args );
 		$auto_updates = get_site_option( static::SITE_OPTION );
 
-		if ( false === $auto_updates ) {
+		if ( ! is_array( $auto_updates ) ) {
 			$auto_updates = [];
 		}
 
@@ -162,7 +162,7 @@ class Plugin_AutoUpdates_Command {
 		$plugins      = $this->fetcher->get_many( $args );
 		$auto_updates = get_site_option( static::SITE_OPTION );
 
-		if ( false === $auto_updates ) {
+		if ( ! is_array( $auto_updates ) ) {
 			$auto_updates = [];
 		}
 
@@ -278,7 +278,7 @@ class Plugin_AutoUpdates_Command {
 		$plugins      = $this->fetcher->get_many( $args );
 		$auto_updates = get_site_option( static::SITE_OPTION );
 
-		if ( false === $auto_updates ) {
+		if ( ! is_array( $auto_updates ) ) {
 			$auto_updates = [];
 		}
 
