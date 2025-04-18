@@ -209,7 +209,7 @@ Feature: Update WordPress plugins
       """
       Error:
       """
-    Then STDOUT should not contain:
+    And STDOUT should not contain:
       """
       Success:
       """
@@ -220,7 +220,7 @@ Feature: Update WordPress plugins
       """
       Error:
       """
-    Then STDOUT should contain:
+    And STDOUT should contain:
       """
       Success:
       """

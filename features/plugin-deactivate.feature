@@ -50,13 +50,13 @@ Feature: Deactivate WordPress plugins
           unset( $all_plugins['akismet/akismet.php'] );
           return $all_plugins;
        } );
-       """
+      """
 
     When I run `wp plugin deactivate --all`
     Then STDOUT should not contain:
-    """
-    Plugin 'akismet' deactivated.
-    """
+      """
+      Plugin 'akismet' deactivated.
+      """
 
   Scenario: Not giving a slug on deactivate should throw an error unless --all given
     When I try `wp plugin deactivate`

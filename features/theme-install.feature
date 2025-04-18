@@ -95,16 +95,16 @@ Feature: Install WordPress themes
 
     When I try `wp theme install twentytwelve --activate`
     Then STDERR should contain:
-    """
-    Warning: twentytwelve: Theme already installed.
-    """
+      """
+      Warning: twentytwelve: Theme already installed.
+      """
 
     And STDOUT should contain:
-    """
-    Activating 'twentytwelve'...
-    Success: Switched to 'Twenty Twelve' theme.
-    Success: Theme already installed.
-    """
+      """
+      Activating 'twentytwelve'...
+      Success: Switched to 'Twenty Twelve' theme.
+      Success: Theme already installed.
+      """
 
   Scenario: Installation of multiple themes with activate
     When I try `wp theme install twentytwelve twentyeleven --activate`
@@ -135,14 +135,14 @@ Feature: Install WordPress themes
 
     And I try `wp theme install twentytwentyfive`
     Then STDERR should contain:
-    """
-    Warning: twentytwentyfive: This theme does not work with your version of WordPress.
-    """
+      """
+      Warning: twentytwentyfive: This theme does not work with your version of WordPress.
+      """
 
     And STDERR should contain:
-    """
-    Error: No themes installed.
-    """
+      """
+      Error: No themes installed.
+      """
 
   @less-than-php-7.4 @require-wp-5.6
   Scenario: Can't install theme that requires a newer version of PHP
@@ -150,11 +150,11 @@ Feature: Install WordPress themes
 
     And I try `wp theme install oceanwp`
     Then STDERR should contain:
-    """
-    Warning: oceanwp: This theme does not work with your version of PHP.
-    """
+      """
+      Warning: oceanwp: This theme does not work with your version of PHP.
+      """
 
     And STDERR should contain:
-    """
-    Error: No themes installed.
-    """
+      """
+      Error: No themes installed.
+      """

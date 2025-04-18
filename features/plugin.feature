@@ -319,7 +319,7 @@ Feature: Manage WordPress plugins
       """
 
     When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
-    And save STDOUT as {LAST_UPDATED}
+    Then save STDOUT as {LAST_UPDATED}
 
     When I run `wp plugin list --skip-update-check`
     Then STDOUT should not be empty
@@ -623,7 +623,7 @@ Feature: Manage WordPress plugins
           unset( $all_plugins['site-secrets/site-secrets.php'] );
           return $all_plugins;
        } );
-       """
+      """
 
     When I run `wp plugin list --fields=name`
     Then STDOUT should not contain:
@@ -677,10 +677,10 @@ Feature: Manage WordPress plugins
       """
 
     When I run `wp plugin list --name=hello-dolly  --field=version`
-    And save STDOUT as {PLUGIN_VERSION}
+    Then save STDOUT as {PLUGIN_VERSION}
 
     When I run `wp plugin list --name=hello-dolly  --field=update_version`
-    And save STDOUT as {UPDATE_VERSION}
+    Then save STDOUT as {UPDATE_VERSION}
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
@@ -689,17 +689,17 @@ Feature: Manage WordPress plugins
 
     When I try `wp plugin update --all`
     Then STDERR should be:
-    """
-    Warning: hello-dolly: version higher than expected.
-    Error: No plugins updated.
-    """
+      """
+      Warning: hello-dolly: version higher than expected.
+      Error: No plugins updated.
+      """
 
     When I try `wp plugin update hello-dolly`
     Then STDERR should be:
-    """
-    Warning: hello-dolly: version higher than expected.
-    Error: No plugins updated.
-    """
+      """
+      Warning: hello-dolly: version higher than expected.
+      Error: No plugins updated.
+      """
 
   Scenario: Only valid status filters are accepted when listing plugins
     Given a WP install
@@ -786,7 +786,7 @@ Feature: Manage WordPress plugins
       | name            | tested_up_to     |
       | foo             | 3.4              |
 
-    And I run `wp plugin list --name=foo --field=tested_up_to`
+    When I run `wp plugin list --name=foo --field=tested_up_to`
     Then STDOUT should be:
       """
       3.4
@@ -828,7 +828,7 @@ Feature: Manage WordPress plugins
       | name            | tested_up_to     |
       | foo             | 5.5              |
 
-    And I run `wp plugin list --name=foo --field=tested_up_to`
+    When I run `wp plugin list --name=foo --field=tested_up_to`
     Then STDOUT should be:
       """
       5.5
@@ -846,8 +846,7 @@ Feature: Manage WordPress plugins
         * Requires at least: 3.7
         * Tested up to: 6.7
       """
-
-    Given that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+    And that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
       """
       HTTP/1.1 200 OK
 
@@ -870,7 +869,7 @@ Feature: Manage WordPress plugins
       }
       """
 
-    And I run `wp plugin list`
+    When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
       | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
       | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 100        | 7.2            |
@@ -881,8 +880,8 @@ Feature: Manage WordPress plugins
       Warning: example: This update requires WordPress version 100
       """
 
- @require-wp-4.0
- Scenario: Show plugin update as unavailable if it doesn't meet PHP requirements
+  @require-wp-4.0
+  Scenario: Show plugin update as unavailable if it doesn't meet PHP requirements
     Given a WP install
     And a wp-content/plugins/example/example.php file:
       """
@@ -893,31 +892,30 @@ Feature: Manage WordPress plugins
         * Requires at least: 3.7
         * Tested up to: 6.7
       """
+    And that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
 
-    Given that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
-    """
-    HTTP/1.1 200 OK
-
-    {
-      "plugins": {
-        "example/example.php": {
-          "id": "w.org/plugins/example",
-          "slug": "example",
-          "plugin": "example/example.php",
-          "new_version": "2.0.0",
-          "requires": "3.7",
-          "tested": "6.6",
-          "requires_php": "100",
-          "requires_plugins": [],
-          "compatibility": []
+      {
+        "plugins": {
+          "example/example.php": {
+            "id": "w.org/plugins/example",
+            "slug": "example",
+            "plugin": "example/example.php",
+            "new_version": "2.0.0",
+            "requires": "3.7",
+            "tested": "6.6",
+            "requires_php": "100",
+            "requires_plugins": [],
+            "compatibility": []
+        }
+      },
+        "translations": [],
+        "no_update": []
       }
-    },
-      "translations": [],
-      "no_update": []
-    }
-    """
+      """
 
-    And I run `wp plugin list`
+    When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
       | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
       | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 3.7        | 100            |
@@ -927,4 +925,3 @@ Feature: Manage WordPress plugins
       """
       Warning: example: This update requires PHP version 100
       """
-

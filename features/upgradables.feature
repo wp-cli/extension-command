@@ -44,15 +44,15 @@ Feature: Manage WordPress themes and plugins
 
     When I run `wp <type> get <item> --field=title`
     Then STDOUT should contain:
-       """
-       <item_title>
-       """
+      """
+      <item_title>
+      """
 
     When I run `wp <type> get <item> --field=title --format=json`
     Then STDOUT should contain:
-       """
-       "<item_title>"
-       """
+      """
+      "<item_title>"
+      """
 
     When I run `wp <type> list --name=<item> --field=update_version`
     Then STDOUT should not be empty
@@ -140,7 +140,6 @@ Feature: Manage WordPress themes and plugins
       Deleted '<item>' <type>.
       """
     And the <file_to_check> file should not exist
-
 
     # Install <item> from a local zip file
     When I run `wp <type> install {SUITE_CACHE_DIR}/<type>/<item>-<version>.zip`

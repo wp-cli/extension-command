@@ -9,7 +9,7 @@ Feature: Manage WordPress theme mods list
     When I run `wp theme mod list`
     Then STDOUT should be a table containing rows:
       | key  | value   |
-    
+
     When I run `wp theme mod list --field=key`
     Then STDOUT should be:
       """
