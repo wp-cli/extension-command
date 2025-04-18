@@ -71,7 +71,7 @@ Feature: Delete WordPress plugins
       """
       Error: No plugins deleted.
       """
-    Then STDOUT should not contain:
+    And STDOUT should not contain:
       """
       Success:
       """
@@ -82,7 +82,7 @@ Feature: Delete WordPress plugins
       """
       Error:
       """
-    Then STDOUT should contain:
+    And STDOUT should contain:
       """
       Success:
       """

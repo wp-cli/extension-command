@@ -34,7 +34,7 @@ Feature: Delete WordPress themes
 
   Scenario: Delete all installed themes
     When I run `wp theme list --status=active --field=name --porcelain`
-    And save STDOUT as {ACTIVE_THEME}
+    Then save STDOUT as {ACTIVE_THEME}
 
     When I try `wp theme delete --all`
     Then STDOUT should contain:
