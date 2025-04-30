@@ -893,6 +893,13 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			);
 		}
 
+		if ( 404 === wp_remote_retrieve_response_code( $response ) ) {
+			return new \WP_Error(
+				$decoded_body->status,
+				$decoded_body->message
+			);
+		}
+
 		if ( null === $decoded_body ) {
 			return new \WP_Error( 500, 'Empty response received from GitHub.com API' );
 		}
