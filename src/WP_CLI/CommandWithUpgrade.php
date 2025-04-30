@@ -855,10 +855,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// cache release URLs like `https://github.com/wp-cli-test/generic-example-plugin/releases/download/v0.1.0/generic-example-plugin.0.1.0.zip`
 		if ( preg_match( '#github\.com/[^/]+/([^/]+)/releases/download/v?([^/]+)/.+\.zip#', $url, $matches ) ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $url, $item_type, $matches[1], $matches[2] );
-		// cache archive URLs like `https://github.com/wp-cli-test/generic-example-plugin/archive/v0.1.0.zip`
+			// cache archive URLs like `https://github.com/wp-cli-test/generic-example-plugin/archive/v0.1.0.zip`
 		} elseif ( preg_match( '#github\.com/[^/]+/([^/]+)/archive/(version/|)v?([^/]+)\.zip#', $url, $matches ) ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $url, $item_type, $matches[1], $matches[3] );
-		// cache release URLs like `https://api.github.com/repos/danielbachhuber/one-time-login/zipball/v0.4.0`
+			// cache release URLs like `https://api.github.com/repos/danielbachhuber/one-time-login/zipball/v0.4.0`
 		} elseif ( preg_match( '#api\.github\.com/repos/[^/]+/([^/]+)/zipball/v?([^/]+)#', $url, $matches ) ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $url, $item_type, $matches[1], $matches[2] );
 		}
