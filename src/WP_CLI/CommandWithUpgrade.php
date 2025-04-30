@@ -227,7 +227,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					add_filter( 'upgrader_source_selection', $filter, 10 );
 				}
 
-				// Check if the URL the URL is cachable and whitelist it then.
+				// Add item to cache allowlist if it matches certain URL patterns.
 				self::maybe_cache( $slug, $this->item_type );
 
 				if ( $file_upgrader->install( $slug ) ) {
@@ -845,11 +845,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	/**
-	 * Whitelist GitHub URLs for caching.
+	 * Add versioned GitHub URLs to cache allowlist.
 	 *
 	 * @param string $url The URL to check.
 	 */
-	public static function maybe_cache( $url, $item_type ) {
+	protected static function maybe_cache( $url, $item_type ) {
 		$matches = [];
 
 		// cache release URLs like `https://github.com/wp-cli-test/generic-example-plugin/releases/download/v0.1.0/generic-example-plugin.0.1.0.zip`
@@ -858,6 +858,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// cache archive URLs like `https://github.com/wp-cli-test/generic-example-plugin/archive/v0.1.0.zip`
 		} elseif ( preg_match( '#github\.com/[^/]+/([^/]+)/archive/(version/|)([^/]+)\.zip#', $url, $matches ) ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $url, $item_type, $matches[1], $matches[3] );
+		} elseif ( preg_match( '#api\.github\.com/repos/[^/]+/([^/]+)/zipball/([^/]+)#', $url, $matches ) ) {
+			WP_CLI::get_http_cache_manager()->whitelist_package( $url, $item_type, $matches[1], $matches[2] );
 		}
 	}
 
