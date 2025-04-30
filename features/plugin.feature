@@ -61,7 +61,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin status`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list`
+    When I run `wp plugin list --fields=name,status,update,version,update_version,auto_update`
     Then STDOUT should be a table containing rows:
       | name       | status | update | version | update_version | auto_update |
       | Zombieland | active | none   | 0.1.0   |                | off         |
@@ -107,7 +107,8 @@ Feature: Manage WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
-  @require-wp-4.0
+  # WordPress Importer currently requires at least WP 5.2.
+  @require-wp-5.2
   Scenario: Install a plugin, activate, then force install an older version of the plugin
     Given a WP install
 
@@ -317,6 +318,27 @@ Feature: Manage WordPress plugins
       Automattic
       """
 
+    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    Then save STDOUT as {LAST_UPDATED}
+
+    When I run `wp plugin list --skip-update-check`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    Then STDOUT should be:
+      """
+      {LAST_UPDATED}
+      """
+
+    When I run `wp plugin list`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    Then STDOUT should not contain:
+      """
+      {LAST_UPDATED}
+      """
+
   Scenario: List plugin by multiple statuses
     Given a WP multisite install
     And a wp-content/plugins/network-only.php file:
@@ -329,7 +351,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin activate akismet hello`
     Then STDOUT should not be empty
 
-    When I run `wp plugin install wordpress-importer`
+    When I run `wp plugin install wordpress-importer --ignore-requirements`
     Then STDOUT should not be empty
 
     When I run `wp plugin activate network-only`
@@ -373,6 +395,8 @@ Feature: Manage WordPress plugins
       | name               | status   | update   |
       | wordpress-importer | inactive | none     |
 
+  # WordPress Importer requires WP 5.2.
+  @require-wp-5.2
   Scenario: Install a plugin when directory doesn't yet exist
     Given a WP install
 
@@ -448,6 +472,8 @@ Feature: Manage WordPress plugins
       must-use
       """
 
+  # WordPress Importer requires WP 5.2.
+  @require-wp-5.2
   Scenario: Deactivate and uninstall a plugin, part one
     Given a WP install
     And these installed and active plugins:
@@ -472,6 +498,8 @@ Feature: Manage WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
+  # WordPress Importer requires WP 5.2.
+  @require-wp-5.2
   Scenario: Deactivate and uninstall a plugin, part two
     Given a WP install
     And these installed and active plugins:
@@ -573,34 +601,34 @@ Feature: Manage WordPress plugins
       """
     And the return code should be 0
 
-  @require-wp-4.7
+  # Akismet currently requires WordPress 5.8, so there's a warning because of it.
+  @require-wp-5.8
   Scenario: Plugin hidden by "all_plugins" filter
     Given a WP install
     And these installed and active plugins:
       """
-      akismet
-      jetpack
-      user-switching
+      hello-dolly
+      site-secrets
       """
     And a wp-content/mu-plugins/hide-us-plugin.php file:
       """
       <?php
       /**
-       * Plugin Name: Hide User Switchign on Production
-       * Description: Hides the User Switching plugin on production sites
+       * Plugin Name: Hide Site Secrets on Production
+       * Description: Hides the Site Secrets plugin on production sites
        * Author: WP-CLI tests
        */
 
        add_filter( 'all_plugins', function( $all_plugins ) {
-          unset( $all_plugins['user-switching/user-switching.php'] );
+          unset( $all_plugins['site-secrets/site-secrets.php'] );
           return $all_plugins;
        } );
-       """
+      """
 
     When I run `wp plugin list --fields=name`
     Then STDOUT should not contain:
       """
-      user-switching
+      site-secrets
       """
 
   Scenario: Show dropins plugin list
@@ -649,10 +677,10 @@ Feature: Manage WordPress plugins
       """
 
     When I run `wp plugin list --name=hello-dolly  --field=version`
-    And save STDOUT as {PLUGIN_VERSION}
-    
+    Then save STDOUT as {PLUGIN_VERSION}
+
     When I run `wp plugin list --name=hello-dolly  --field=update_version`
-    And save STDOUT as {UPDATE_VERSION}
+    Then save STDOUT as {UPDATE_VERSION}
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
@@ -661,17 +689,17 @@ Feature: Manage WordPress plugins
 
     When I try `wp plugin update --all`
     Then STDERR should be:
-    """
-    Warning: hello-dolly: version higher than expected.
-    Error: No plugins updated.
-    """
+      """
+      Warning: hello-dolly: version higher than expected.
+      Error: No plugins updated.
+      """
 
     When I try `wp plugin update hello-dolly`
     Then STDERR should be:
-    """
-    Warning: hello-dolly: version higher than expected.
-    Error: No plugins updated.
-    """
+      """
+      Warning: hello-dolly: version higher than expected.
+      Error: No plugins updated.
+      """
 
   Scenario: Only valid status filters are accepted when listing plugins
     Given a WP install
@@ -721,3 +749,179 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name              | auto_update          |
       | hello             | on                   |
+
+  Scenario: Listing plugins should include tested_up_to from the 'tested up to' header
+    Given a WP install
+    And a wp-content/plugins/foo/foo.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo
+       * Description: A plugin for foo
+       * Author: Matt
+       */
+      """
+    And a wp-content/plugins/foo/readme.txt file:
+      """
+      === Foo ===
+      Contributors: matt
+      Donate link: https://example.com/
+      Tags: tag1, tag2
+      Requires at least: 4.7
+      Tested up to: 3.4
+      Stable tag: 4.3
+      Requires PHP: 7.0
+      License: GPLv2 or later
+      License URI: https://www.gnu.org/licenses/gpl-2.0.html
+      """
+    And I run `wp plugin activate foo`
+
+    When I run `wp plugin list --fields=name,status,update,version,update_version,auto_update`
+    Then STDOUT should be a table containing rows:
+      | name       | status   | update  | version  | update_version | auto_update |
+      | foo        | active   | none    |          |                | off         |
+
+    When I run `wp plugin list --fields=name,tested_up_to`
+    Then STDOUT should be a table containing rows:
+      | name            | tested_up_to     |
+      | foo             | 3.4              |
+
+    When I run `wp plugin list --name=foo --field=tested_up_to`
+    Then STDOUT should be:
+      """
+      3.4
+      """
+
+  Scenario: Listing plugins should include tested_up_to from the 'tested' header
+    Given a WP install
+    And a wp-content/plugins/foo/foo.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo
+       * Description: A plugin for foo
+       * Author: Matt
+       */
+      """
+    And a wp-content/plugins/foo/readme.txt file:
+      """
+      === Foo ===
+      Tested: 5.5
+      Contributors: matt
+      Donate link: https://example.com/
+      Tags: tag1, tag2
+      Requires at least: 4.7
+      Stable tag: 4.3
+      Requires PHP: 7.0
+      License: GPLv2 or later
+      License URI: https://www.gnu.org/licenses/gpl-2.0.html
+      """
+    And I run `wp plugin activate foo`
+
+    When I run `wp plugin list --fields=name,status,update,version,update_version,auto_update`
+    Then STDOUT should be a table containing rows:
+      | name       | status   | update  | version  | update_version | auto_update |
+      | foo        | active   | none    |          |                | off         |
+
+    When I run `wp plugin list --fields=name,tested_up_to`
+    Then STDOUT should be a table containing rows:
+      | name            | tested_up_to     |
+      | foo             | 5.5              |
+
+    When I run `wp plugin list --name=foo --field=tested_up_to`
+    Then STDOUT should be:
+      """
+      5.5
+      """
+
+  @require-wp-4.0
+  Scenario: Show plugin update as unavailable if it doesn't meet WordPress requirements
+    Given a WP install
+    And a wp-content/plugins/example/example.php file:
+      """
+      <?php
+        /**
+        * Plugin Name: Example Plugin
+        * Version: 1.0.0
+        * Requires at least: 3.7
+        * Tested up to: 6.7
+      """
+    And that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
+
+      {
+        "plugins": [],
+        "translations": [],
+        "no_update": {
+          "example/example.php": {
+            "id": "w.org/plugins/example",
+            "slug": "example",
+            "plugin": "example/example.php",
+            "new_version": "2.0.0",
+
+            "requires": "100",
+            "requires_php": "7.2",
+            "requires_plugins": [],
+            "compatibility": []
+          }
+        }
+      }
+      """
+
+    When I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 100        | 7.2            |
+
+    When I try `wp plugin update example`
+    Then STDERR should contain:
+      """
+      Warning: example: This update requires WordPress version 100
+      """
+
+  @require-wp-4.0
+  Scenario: Show plugin update as unavailable if it doesn't meet PHP requirements
+    Given a WP install
+    And a wp-content/plugins/example/example.php file:
+      """
+      <?php
+        /**
+        * Plugin Name: Example Plugin
+        * Version: 1.0.0
+        * Requires at least: 3.7
+        * Tested up to: 6.7
+      """
+    And that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
+
+      {
+        "plugins": {
+          "example/example.php": {
+            "id": "w.org/plugins/example",
+            "slug": "example",
+            "plugin": "example/example.php",
+            "new_version": "2.0.0",
+            "requires": "3.7",
+            "tested": "6.6",
+            "requires_php": "100",
+            "requires_plugins": [],
+            "compatibility": []
+        }
+      },
+        "translations": [],
+        "no_update": []
+      }
+      """
+
+    When I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 3.7        | 100            |
+
+    When I try `wp plugin update example`
+    Then STDERR should contain:
+      """
+      Warning: example: This update requires PHP version 100
+      """

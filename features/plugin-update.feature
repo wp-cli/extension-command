@@ -95,7 +95,8 @@ Feature: Update WordPress plugins
       0.5.2
       """
 
-  @require-wp-4.0
+  # Akismet currently requires WordPress 5.8
+  @require-wp-5.8
   Scenario: Update a plugin to its latest minor release
     Given a WP install
     And I run `wp plugin install --force akismet --version=2.5.4`
@@ -196,7 +197,8 @@ Feature: Update WordPress plugins
       Error: Can't find the requested plugin's version 2.5.4 in the WordPress.org plugin repository (HTTP code 404).
       """
 
-  @require-wp-4.7
+  # Akismet currently requires WordPress 5.8
+  @require-wp-5.8
   Scenario: Plugin updates that error should not report a success
     Given a WP install
     And I run `wp plugin install --force akismet --version=4.0`
@@ -207,7 +209,7 @@ Feature: Update WordPress plugins
       """
       Error:
       """
-    Then STDOUT should not contain:
+    And STDOUT should not contain:
       """
       Success:
       """
@@ -218,11 +220,13 @@ Feature: Update WordPress plugins
       """
       Error:
       """
-    Then STDOUT should contain:
+    And STDOUT should contain:
       """
       Success:
       """
 
+  # Akismet currently requires WordPress 5.8, so there's a warning because of it.
+  @require-wp-5.8
   Scenario: Excluding a missing plugin should not throw an error
     Given a WP install
     And I run `wp plugin update --all --exclude=missing-plugin`

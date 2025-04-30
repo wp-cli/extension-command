@@ -22,6 +22,20 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected $chained_command = false;
 
+	/**
+	 * The GitHub Releases public api endpoint.
+	 *
+	 * @var string
+	 */
+	private $github_releases_api_endpoint = 'https://api.github.com/repos/%s/releases';
+
+	/**
+	 * The GitHub latest release url format.
+	 *
+	 * @var string
+	 */
+	private $github_latest_release_url = '/^https:\/\/github\.com\/(.*)\/releases\/latest\/?$/';
+
 	// Invalid version message.
 	const INVALID_VERSION_MESSAGE = 'version higher than expected';
 
@@ -89,7 +103,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$padding = $this->get_padding( $items );
 
 		foreach ( $items as $file => $details ) {
-			if ( $details['update'] ) {
+			if ( 'available' === $details['update'] ) {
 				$line = ' %yU%n';
 			} else {
 				$line = '  ';
@@ -136,8 +150,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$this->map['long'][ $status ]
 			);
 		}
-
-		if ( in_array( true, wp_list_pluck( $items, 'update' ), true ) ) {
+		if ( in_array( 'available', wp_list_pluck( $items, 'update' ), true ) ) {
 			$legend_line[] = '%yU = Update Available%n';
 		}
 
@@ -145,7 +158,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	public function install( $args, $assoc_args ) {
-
 		$successes = 0;
 		$errors    = 0;
 		foreach ( $args as $slug ) {
@@ -159,6 +171,25 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 			$is_remote = false !== strpos( $slug, '://' );
 
+			if ( $is_remote ) {
+				$github_repo = $this->get_github_repo_from_releases_url( $slug );
+
+				if ( $github_repo ) {
+					$version = $this->get_the_latest_github_version( $github_repo );
+
+					if ( is_wp_error( $version ) ) {
+						WP_CLI::error( $version->get_error_message() );
+					}
+
+					/**
+					 * Sets the $slug that will trigger the installation based on a zip file.
+					 */
+					$slug = $version['url'];
+
+					WP_CLI::log( 'Latest release resolved to ' . $version['name'] );
+				}
+			}
+
 			// Check if a URL to a remote or local zip has been specified.
 			if ( $is_remote || ( pathinfo( $slug, PATHINFO_EXTENSION ) === 'zip' && is_file( $slug ) ) ) {
 				// Install from local or remote zip file.
@@ -170,7 +201,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						// Don't attempt to rename ZIPs uploaded to the releases page or coming from a raw source.
 						&& ! preg_match( '#github\.com/[^/]+/[^/]+/(?:releases/download|raw)/#', $slug ) ) {
 
-					$filter = function ( $source, $remote_source, $upgrader ) use ( $slug ) {
+					$filter = function ( $source ) use ( $slug ) {
 
 						$slug_dir = Utils\basename( $this->parse_url_host_component( $slug, PHP_URL_PATH ), '.zip' );
 
@@ -193,7 +224,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 						return new WP_Error( 'wpcli_install_github', "Couldn't move Github-based project to appropriate directory." );
 					};
-					add_filter( 'upgrader_source_selection', $filter, 10, 3 );
+					add_filter( 'upgrader_source_selection', $filter, 10 );
 				}
 
 				// Check if the URL the URL is cachable and whitelist it then.
@@ -346,17 +377,24 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$errors = count( $args ) - count( $items );
 		}
 
-		$items_to_update = wp_list_filter( $items, [ 'update' => true ] );
+		$items_to_update = array_filter(
+			$items,
+			function ( $item ) {
+				return isset( $item['update'] ) && 'none' !== $item['update'];
+			}
+		);
 
 		$minor = (bool) Utils\get_flag_value( $assoc_args, 'minor', false );
 		$patch = (bool) Utils\get_flag_value( $assoc_args, 'patch', false );
 
-		if ( 'plugin' === $this->item_type
-			&& ( $minor || $patch ) ) {
+		if (
+			in_array( $this->item_type, [ 'plugin', 'theme' ], true ) &&
+			( $minor || $patch )
+		) {
 			$type     = $minor ? 'minor' : 'patch';
 			$insecure = (bool) Utils\get_flag_value( $assoc_args, 'insecure', false );
 
-			$items_to_update = self::get_minor_or_patch_updates( $items_to_update, $type, $insecure, true );
+			$items_to_update = self::get_minor_or_patch_updates( $items_to_update, $type, $insecure, true, $this->item_type );
 		}
 
 		$exclude = Utils\get_flag_value( $assoc_args, 'exclude' );
@@ -371,11 +409,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					}
 					unset( $items_to_update[ $plugin->file ] );
 				} elseif ( 'theme' === $this->item_type ) {
-					$theme_root = get_theme_root() . '/' . $item;
-					if ( ! is_dir( $theme_root ) ) {
-						continue;
+					$theme = wp_get_theme( $item );
+					if ( $theme->exists() ) {
+						unset( $items_to_update[ $theme->get_stylesheet() ] );
 					}
-					unset( $items_to_update[ $theme_root ] );
 				}
 			}
 		}
@@ -384,6 +421,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		foreach ( $items_to_update as $item_key => $item_info ) {
 			if ( static::INVALID_VERSION_MESSAGE === $item_info['update'] ) {
 				WP_CLI::warning( "{$item_info['name']}: " . static::INVALID_VERSION_MESSAGE . '.' );
+				++$skipped;
+				unset( $items_to_update[ $item_key ] );
+			}
+			if ( 'unavailable' === $item_info['update'] ) {
+				WP_CLI::warning( "{$item_info['name']}: {$item_info['update_unavailable_reason']}" );
 				++$skipped;
 				unset( $items_to_update[ $item_key ] );
 			}
@@ -432,8 +474,13 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$transient_filter = function ( $transient ) use ( $items_to_update ) {
 				foreach ( $items_to_update as $name => $item_data ) {
 					if ( isset( $transient->response[ $name ] ) ) {
-						$transient->response[ $name ]->new_version = $item_data['update_version'];
-						$transient->response[ $name ]->package     = $item_data['update_package'];
+						if ( is_object( $transient->response[ $name ] ) ) {
+							$transient->response[ $name ]->new_version = $item_data['update_version'];
+							$transient->response[ $name ]->package     = $item_data['update_package'];
+						} else {
+							$transient->response[ $name ]['new_version'] = $item_data['update_version'];
+							$transient->response[ $name ]['package']     = $item_data['update_package'];
+						}
 					}
 				}
 				return $transient;
@@ -499,10 +546,20 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// Force WordPress to check for updates if `--skip-update-check` is not passed.
 		if ( false === (bool) Utils\get_flag_value( $assoc_args, 'skip-update-check', false ) ) {
+			delete_site_transient( $this->upgrade_transient );
 			call_user_func( $this->upgrade_refresh );
 		}
 
 		$all_items = $this->get_all_items();
+
+		if ( false !== (bool) Utils\get_flag_value( $assoc_args, 'recently-active', false ) ) {
+			$all_items = array_filter(
+				$all_items,
+				function ( $value ) {
+					return isset( $value['recently_active'] ) && true === $value['recently_active'];
+				}
+			);
+		}
 
 		if ( ! is_array( $all_items ) ) {
 			WP_CLI::error( "No {$this->item_type}s found." );
@@ -520,10 +577,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 			foreach ( $item as $field => &$value ) {
 				if ( 'update' === $field ) {
-					if ( true === $value ) {
-						$value = 'available';
-					} elseif ( false === $value ) {
-						$value = 'none';
+					// If an update is unavailable, make sure to also show these fields which will explain why
+					if ( 'unavailable' === $value ) {
+						if ( ! in_array( 'requires', $this->obj_fields, true ) ) {
+							array_push( $this->obj_fields, 'requires' );
+						}
+						if ( ! in_array( 'requires_php', $this->obj_fields, true ) ) {
+							array_push( $this->obj_fields, 'requires_php' );
+						}
 					}
 				} elseif ( 'auto_update' === $field ) {
 					if ( true === $value ) {
@@ -614,19 +675,27 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	/**
-	 * Get the minor or patch version for plugins with available updates
+	 * Get the minor or patch version for plugins and themes with available updates
 	 *
-	 * @param array  $items    Plugins with updates.
+	 * @param array  $items    Items with updates.
 	 * @param string $type     Either 'minor' or 'patch'.
 	 * @param bool   $insecure Whether to retry without certificate validation on TLS handshake failure.
 	 * @param bool   $require_stable Whether to require stable version when comparing versions.
+	 * @param string $item_type Item type, either 'plugin' or 'theme'.
 	 * @return array
 	 */
-	private function get_minor_or_patch_updates( $items, $type, $insecure, $require_stable ) {
+	private function get_minor_or_patch_updates( $items, $type, $insecure, $require_stable, $item_type ) {
 		$wp_org_api = new WpOrgApi( [ 'insecure' => $insecure ] );
 		foreach ( $items as $i => $item ) {
 			try {
-				$data = $wp_org_api->get_plugin_info( $item['name'] );
+				$data = call_user_func(
+					[ $wp_org_api, "get_{$item_type}_info" ],
+					$item['name'],
+					// The default.
+					'en_US',
+					// We are only interested in the versions field.
+					[ 'versions' => true ]
+				);
 			} catch ( Exception $exception ) {
 				unset( $items[ $i ] );
 				continue;
@@ -790,5 +859,90 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		} elseif ( preg_match( '#github\.com/[^/]+/([^/]+)/archive/(version/|)([^/]+)\.zip#', $url, $matches ) ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $url, $item_type, $matches[1], $matches[3] );
 		}
+	}
+
+	/**
+	 * Get the latest package version based on a given repo slug.
+	 *
+	 * @param string $repo_slug
+	 *
+	 * @return array{ name: string, url: string }|\WP_Error
+	 */
+	protected function get_the_latest_github_version( $repo_slug ) {
+		$api_url = sprintf( $this->github_releases_api_endpoint, $repo_slug );
+		$token   = getenv( 'GITHUB_TOKEN' );
+
+		$request_arguments = $token ? [ 'headers' => 'Authorization: Bearer ' . getenv( 'GITHUB_TOKEN' ) ] : [];
+
+		$response = \wp_remote_get( $api_url, $request_arguments );
+
+		if ( \is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$body         = \wp_remote_retrieve_body( $response );
+		$decoded_body = json_decode( $body );
+
+		// WP_Http::FORBIDDEN doesn't exist in WordPress 3.7
+		if ( 403 === wp_remote_retrieve_response_code( $response ) ) {
+			return new \WP_Error(
+				403,
+				$this->build_rate_limiting_error_message( $decoded_body )
+			);
+		}
+
+		if ( null === $decoded_body ) {
+			return new \WP_Error( 500, 'Empty response received from GitHub.com API' );
+		}
+
+		if ( ! isset( $decoded_body[0] ) ) {
+			return new \WP_Error( '400', 'The given Github repository does not have any releases' );
+		}
+
+		$latest_release = $decoded_body[0];
+
+		return [
+			'name' => $latest_release->name,
+			'url'  => $this->get_asset_url_from_release( $latest_release ),
+		];
+	}
+
+	/**
+	 * Get the asset URL from the release array. When the asset is not present, we fallback to the zipball_url (source code) property.
+	 */
+	private function get_asset_url_from_release( $release ) {
+		if ( isset( $release->assets[0]->browser_download_url ) ) {
+			return $release->assets[0]->browser_download_url;
+		}
+
+		if ( isset( $release->zipball_url ) ) {
+			return $release->zipball_url;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get the GitHub repo from the URL.
+	 *
+	 * @param string $url
+	 *
+	 * @return string|null
+	 */
+	protected function get_github_repo_from_releases_url( $url ) {
+		preg_match( $this->github_latest_release_url, $url, $matches );
+
+		return isset( $matches[1] ) ? $matches[1] : null;
+	}
+
+	/**
+	 * Build the error message we display in WP-CLI for the API Rate limiting error response.
+	 *
+	 * @param $decoded_body
+	 *
+	 * @return string
+	 */
+	private function build_rate_limiting_error_message( $decoded_body ) {
+		return $decoded_body->message . PHP_EOL . $decoded_body->documentation_url . PHP_EOL . 'In order to pass the token to WP-CLI, you need to use the GITHUB_TOKEN environment variable.';
 	}
 }

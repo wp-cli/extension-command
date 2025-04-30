@@ -29,14 +29,14 @@ Feature: Delete WordPress plugins
       """
 
   Scenario: Attempting to delete a plugin that doesn't exist
-    When I try `wp plugin delete edit-flow`
+    When I try `wp plugin delete debug-bar`
     Then STDOUT should be:
       """
       Success: Plugin already deleted.
       """
     And STDERR should be:
       """
-      Warning: The 'edit-flow' plugin could not be found.
+      Warning: The 'debug-bar' plugin could not be found.
       """
     And the return code should be 0
 
@@ -71,7 +71,7 @@ Feature: Delete WordPress plugins
       """
       Error: No plugins deleted.
       """
-    Then STDOUT should not contain:
+    And STDOUT should not contain:
       """
       Success:
       """
@@ -82,7 +82,7 @@ Feature: Delete WordPress plugins
       """
       Error:
       """
-    Then STDOUT should contain:
+    And STDOUT should contain:
       """
       Success:
       """

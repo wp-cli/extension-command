@@ -20,6 +20,7 @@ use WP_CLI\Utils;
  *     Theme installed successfully.
  *     Activating 'twentysixteen'...
  *     Success: Switched to 'Twenty Sixteen' theme.
+ *     Success: Installed 1 of 1 themes.
  *
  *     # Get details of an installed theme
  *     $ wp theme get twentysixteen --fields=name,title,version
@@ -394,6 +395,11 @@ class Theme_Command extends CommandWithUpgrade {
 	}
 
 	protected function install_from_repo( $slug, $assoc_args ) {
+		global $wp_version;
+		// Extract the major WordPress version (e.g., "6.3") from the full version string
+		list($wp_core_version) = explode( '-', $wp_version );
+		$wp_core_version       = implode( '.', array_slice( explode( '.', $wp_core_version ), 0, 2 ) );
+
 		$api = themes_api( 'theme_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
@@ -402,6 +408,20 @@ class Theme_Command extends CommandWithUpgrade {
 
 		if ( isset( $assoc_args['version'] ) ) {
 			self::alter_api_response( $api, $assoc_args['version'] );
+		} elseif ( ! Utils\get_flag_value( $assoc_args, 'ignore-requirements', false ) ) {
+			$requires_php = isset( $api->requires_php ) ? $api->requires_php : null;
+			$requires_wp  = isset( $api->requires ) ? $api->requires : null;
+
+			$compatible_php = empty( $requires_php ) || version_compare( PHP_VERSION, $requires_php, '>=' );
+			$compatible_wp  = empty( $requires_wp ) || version_compare( $wp_core_version, $requires_wp, '>=' );
+
+			if ( ! $compatible_wp ) {
+				return new WP_Error( 'requirements_not_met', "This theme does not work with your version of WordPress. Minimum WordPress requirement is $requires_wp" );
+			}
+
+			if ( ! $compatible_php ) {
+				return new WP_Error( 'requirements_not_met', "This theme does not work with your version of PHP. Minimum PHP required is $requires_php" );
+			}
 		}
 
 		if ( ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
@@ -439,7 +459,7 @@ class Theme_Command extends CommandWithUpgrade {
 	protected function filter_item_list( $items, $args ) {
 		$theme_files = array();
 		foreach ( $args as $arg ) {
-			$theme_files[] = $this->fetcher->get_check( $arg )->get_stylesheet_directory();
+			$theme_files[] = $this->fetcher->get_check( $arg )->get_stylesheet();
 		}
 
 		return Utils\pick_fields( $items, $theme_files );
@@ -461,6 +481,10 @@ class Theme_Command extends CommandWithUpgrade {
 	 * : If set, the command will overwrite any installed version of the theme, without prompting
 	 * for confirmation.
 	 *
+	 * [--ignore-requirements]
+	 * : If set, the command will install the theme while ignoring any WordPress or PHP version requirements
+	 * specified by the theme authors.
+	 *
 	 * [--activate]
 	 * : If set, the theme will be activated immediately after install.
 	 *
@@ -478,6 +502,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 *     Theme installed successfully.
 	 *     Activating 'twentysixteen'...
 	 *     Success: Switched to 'Twenty Sixteen' theme.
+	 *     Success: Installed 1 of 1 themes.
 	 *
 	 *     # Install from a local zip file
 	 *     $ wp theme install ../my-theme.zip
@@ -486,6 +511,10 @@ class Theme_Command extends CommandWithUpgrade {
 	 *     $ wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
 	 */
 	public function install( $args, $assoc_args ) {
+		if ( count( $args ) > 1 && Utils\get_flag_value( $assoc_args, 'activate', false ) ) {
+			WP_CLI::warning( sprintf( 'Only this single theme will be activated: %s', end( $args ) ) );
+			reset( $args );
+		}
 
 		$theme_root = get_theme_root();
 		if ( $theme_root && ! is_dir( $theme_root ) ) {
@@ -588,6 +617,12 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 * [--exclude=<theme-names>]
 	 * : Comma separated list of theme names that should be excluded from updating.
+	 *
+	 * [--minor]
+	 * : Only perform updates for minor releases (e.g. from 1.3 to 1.4 instead of 2.0)
+	 *
+	 * [--patch]
+	 * : Only perform updates for patch releases (e.g. from 1.3 to 1.3.3 instead of 1.4)
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -854,6 +889,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * * update
 	 * * version
 	 * * update_version
+	 * * auto_update
 	 *
 	 * These fields are optionally available:
 	 *
@@ -861,15 +897,14 @@ class Theme_Command extends CommandWithUpgrade {
 	 * * update_id
 	 * * title
 	 * * description
-	 * * auto_update
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # List themes
+	 *     # List inactive themes.
 	 *     $ wp theme list --status=inactive --format=csv
-	 *     name,status,update,version,update_version
-	 *     twentyfourteen,inactive,none,1.7,
-	 *     twentysixteen,inactive,available,1.1,
+	 *     name,status,update,version,update_version,auto_update
+	 *     twentyfourteen,inactive,none,3.8,,off
+	 *     twentysixteen,inactive,available,3.0,3.1,off
 	 *
 	 * @subcommand list
 	 */

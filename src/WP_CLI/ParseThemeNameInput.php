@@ -45,6 +45,11 @@ trait ParseThemeNameInput {
 	 * @return array
 	 */
 	private function get_all_themes() {
+		global $wp_version;
+		// Extract the major WordPress version (e.g., "6.3") from the full version string
+		list($wp_core_version) = explode( '-', $wp_version );
+		$wp_core_version       = implode( '.', array_slice( explode( '.', $wp_core_version ), 0, 2 ) );
+
 		$items              = array();
 		$theme_version_info = array();
 
@@ -76,38 +81,78 @@ trait ParseThemeNameInput {
 		}
 
 		foreach ( wp_get_themes() as $key => $theme ) {
-			$file = $theme->get_stylesheet_directory();
+			$stylesheet  = $theme->get_stylesheet();
+			$update_info = ( isset( $all_update_info->response[ $stylesheet ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
 
-			$update_info = ( isset( $all_update_info->response[ $theme->get_stylesheet() ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
+			// Unlike plugin update responses, the wordpress.org API does not seem to check and filter themes that don't meet
+			// WordPress version requirements into a separate no_updates array
+			// Also unlike plugin update responses, the wordpress.org API seems to always include requires AND requires_php
+			$requires     = isset( $update_info ) && isset( $update_info['requires'] ) ? $update_info['requires'] : null;
+			$requires_php = isset( $update_info ) && isset( $update_info['requires_php'] ) ? $update_info['requires_php'] : null;
 
-			$items[ $file ] = [
-				'name'           => $key,
-				'status'         => $this->get_status( $theme ),
-				'update'         => (bool) $update_info,
-				'update_version' => isset( $update_info['new_version'] ) ? $update_info['new_version'] : null,
-				'update_package' => isset( $update_info['package'] ) ? $update_info['package'] : null,
-				'version'        => $theme->get( 'Version' ),
-				'update_id'      => $theme->get_stylesheet(),
-				'title'          => $theme->get( 'Name' ),
-				'description'    => wordwrap( $theme->get( 'Description' ) ),
-				'author'         => $theme->get( 'Author' ),
-				'auto_update'    => in_array( $theme->get_stylesheet(), $auto_updates, true ),
+			$compatible_php = empty( $requires_php ) || version_compare( PHP_VERSION, $requires_php, '>=' );
+			$compatible_wp  = empty( $requires ) || version_compare( $wp_version, $requires, '>=' );
+
+			if ( ! $compatible_php ) {
+				$update = 'unavailable';
+
+				$update_unavailable_reason = sprintf(
+					'This update requires PHP version %s, but the version installed is %s.',
+					$requires_php,
+					PHP_VERSION
+				);
+			} elseif ( ! $compatible_wp ) {
+				$update = 'unavailable';
+
+				$update_unavailable_reason = sprintf(
+					'This update requires WordPress version %s, but the version installed is %s.',
+					$requires,
+					$wp_version
+				);
+			} else {
+				$update = $update_info ? 'available' : 'none';
+			}
+
+			// For display consistency, get these values from the current plugin file if they aren't in this response
+			if ( null === $requires ) {
+				$requires = ! empty( $theme->get( 'RequiresWP' ) ) ? $theme->get( 'RequiresWP' ) : '';
+			}
+
+			if ( null === $requires_php ) {
+				$requires_php = ! empty( $theme->get( 'RequiresPHP' ) ) ? $theme->get( 'RequiresPHP' ) : '';
+			}
+
+			$items[ $stylesheet ] = [
+				'name'                      => $key,
+				'status'                    => $this->get_status( $theme ),
+				'update'                    => $update,
+				'update_version'            => isset( $update_info['new_version'] ) ? $update_info['new_version'] : null,
+				'update_package'            => isset( $update_info['package'] ) ? $update_info['package'] : null,
+				'version'                   => $theme->get( 'Version' ),
+				'update_id'                 => $stylesheet,
+				'title'                     => $theme->get( 'Name' ),
+				'description'               => wordwrap( $theme->get( 'Description' ) ),
+				'author'                    => $theme->get( 'Author' ),
+				'auto_update'               => in_array( $stylesheet, $auto_updates, true ),
+				'requires'                  => $requires,
+				'requires_php'              => $requires_php,
+				'update_unavailable_reason' => isset( $update_unavailable_reason ) ? $update_unavailable_reason : '',
 			];
 
 			// Compare version and update information in theme list.
 			if ( isset( $theme_version_info[ $key ] ) && false === $theme_version_info[ $key ] ) {
-				$items[ $file ]['update'] = 'version higher than expected';
+				$items[ $stylesheet ]['update'] = 'version higher than expected';
 			}
 
 			if ( is_multisite() ) {
 				if ( ! empty( $site_enabled[ $key ] ) && ! empty( $network_enabled[ $key ] ) ) {
-					$items[ $file ]['enabled'] = 'network,site';
+					$items[ $stylesheet ]['enabled'] = 'network,site';
 				} elseif ( ! empty( $network_enabled[ $key ] ) ) {
-					$items[ $file ]['enabled'] = 'network';
+					$items[ $stylesheet ]['enabled'] = 'network';
 				} elseif ( ! empty( $site_enabled[ $key ] ) ) {
-					$items[ $file ]['enabled'] = 'site';
+					$items[ $stylesheet ]['enabled'] = 'site';
 				} else {
-					$items[ $file ]['enabled'] = 'no';
+					$items[ $stylesheet ]['enabled'] = 'no';
 				}
 			}
 		}
@@ -139,7 +184,7 @@ trait ParseThemeNameInput {
 	/**
 	 * Get the status for a given theme.
 	 *
-	 * @param string $theme Theme to get the status for.
+	 * @param WP_Theme $theme Theme to get the status for.
 	 *
 	 * @return string Status of the theme.
 	 */
@@ -158,7 +203,7 @@ trait ParseThemeNameInput {
 	/**
 	 * Check whether a given theme is the active theme.
 	 *
-	 * @param string $theme Theme to check.
+	 * @param WP_Theme $theme Theme to check.
 	 *
 	 * @return bool Whether the provided theme is the active theme.
 	 */
@@ -169,7 +214,7 @@ trait ParseThemeNameInput {
 	/**
 	 * Check whether a given theme is the active theme parent.
 	 *
-	 * @param string $theme Theme to check.
+	 * @param WP_Theme $theme Theme to check.
 	 *
 	 * @return bool Whether the provided theme is the active theme.
 	 */

@@ -13,18 +13,18 @@ Feature: Activate WordPress plugins
     And the return code should be 0
 
   Scenario: Attempt to activate a plugin that's not installed
-    When I try `wp plugin activate edit-flow`
+    When I try `wp plugin activate debug-bar`
     Then STDERR should be:
       """
-      Warning: The 'edit-flow' plugin could not be found.
+      Warning: The 'debug-bar' plugin could not be found.
       Error: No plugins activated.
       """
     And the return code should be 1
 
-    When I try `wp plugin activate akismet hello edit-flow`
+    When I try `wp plugin activate akismet hello debug-bar`
     Then STDERR should be:
       """
-      Warning: The 'edit-flow' plugin could not be found.
+      Warning: The 'debug-bar' plugin could not be found.
       Error: Only activated 2 of 3 plugins.
       """
     And STDOUT should be:
@@ -35,21 +35,21 @@ Feature: Activate WordPress plugins
     And the return code should be 1
 
   Scenario: Activate all when one plugin is hidden by "all_plugins" filter
-    Given I run `wp plugin install user-switching`
+    Given I run `wp plugin install site-secrets`
     And a wp-content/mu-plugins/hide-us-plugin.php file:
       """
       <?php
       /**
-       * Plugin Name: Hide User Switching on Production
-       * Description: Hides the User Switching plugin on production sites
+       * Plugin Name: Hide Site Secrets on Production
+       * Description: Hides the Site Secrets plugin on production sites
        * Author: WP-CLI tests
        */
 
        add_filter( 'all_plugins', function( $all_plugins ) {
-          unset( $all_plugins['user-switching/user-switching.php'] );
+          unset( $all_plugins['site-secrets/site-secrets.php'] );
           return $all_plugins;
        } );
-       """
+      """
 
     When I run `wp plugin activate --all`
     Then STDOUT should contain:
@@ -59,7 +59,7 @@ Feature: Activate WordPress plugins
       """
     And STDOUT should not contain:
       """
-      Plugin 'user-switching' activated.
+      Plugin 'site-secrets' activated.
       """
 
   @require-php-7
@@ -83,7 +83,7 @@ Feature: Activate WordPress plugins
       Plugin 'example-plugin' activated.
       Success: Activated 1 of 1 plugins.
       """
-      And STDERR should be empty
+    And STDERR should be empty
 
   Scenario: Not giving a slug on activate should throw an error unless --all given
     When I try `wp plugin activate`
@@ -115,9 +115,9 @@ Feature: Activate WordPress plugins
        * Author: WP-CLI tests
        * Requires PHP: 99.99
        */
-       """
+      """
     And I run `wp plugin deactivate --all`
-    And I run `php -r 'echo PHP_VERSION;'`
+    And I run `wp cli info | grep "PHP version" | awk '{print $3}'`
     And save STDOUT as {PHP_VERSION}
 
     When I try `wp plugin activate high-requirements`
@@ -128,6 +128,10 @@ Feature: Activate WordPress plugins
     And STDOUT should not contain:
       """
       1 out of 1
+      """
+    And STDOUT should not contain:
+      """
+      Success:
       """
 
   Scenario: Adding --exclude with plugin activate --all should exclude the plugins specified via --exclude

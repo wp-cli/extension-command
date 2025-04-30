@@ -3,8 +3,11 @@ Feature: Manage WordPress themes and plugins
   Background:
     Given an empty cache
 
+  @require-wp-4.5
   Scenario Outline: Installing, upgrading and deleting a theme or plugin
     Given a WP install
+    # Akismet ships with WordPress but does not work with older versions we test
+    And I run `wp plugin delete akismet`
     And I run `wp <type> path`
     And save STDOUT as {CONTENT_DIR}
 
@@ -41,15 +44,15 @@ Feature: Manage WordPress themes and plugins
 
     When I run `wp <type> get <item> --field=title`
     Then STDOUT should contain:
-       """
-       <item_title>
-       """
+      """
+      <item_title>
+      """
 
     When I run `wp <type> get <item> --field=title --format=json`
     Then STDOUT should contain:
-       """
-       "<item_title>"
-       """
+      """
+      "<item_title>"
+      """
 
     When I run `wp <type> list --name=<item> --field=update_version`
     Then STDOUT should not be empty
@@ -138,7 +141,6 @@ Feature: Manage WordPress themes and plugins
       """
     And the <file_to_check> file should not exist
 
-
     # Install <item> from a local zip file
     When I run `wp <type> install {SUITE_CACHE_DIR}/<type>/<item>-<version>.zip`
     Then STDOUT should contain:
@@ -208,5 +210,5 @@ Feature: Manage WordPress themes and plugins
 
     Examples:
       | type   | type_name | item                    | item_title              | version | zip_file                                                               | file_to_check                                                     |
-      | theme  | Theme     | p2                      | P2                      | 1.0.1   | https://wordpress.org/themes/download/p2.1.0.1.zip                     | {CONTENT_DIR}/p2/style.css                                        |
+      | theme  | Theme     | moina                   | Moina                   | 1.1.2   | https://wordpress.org/themes/download/moina.1.1.2.zip                  | {CONTENT_DIR}/moina/style.css                                     |
       | plugin | Plugin    | category-checklist-tree | Category Checklist Tree | 1.2     | https://downloads.wordpress.org/plugin/category-checklist-tree.1.2.zip | {CONTENT_DIR}/category-checklist-tree/category-checklist-tree.php |

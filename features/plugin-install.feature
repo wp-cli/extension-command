@@ -28,7 +28,7 @@ Feature: Install WordPress plugins
       """
       Warning: Destination folder already exists
       """
-    Then STDERR should contain:
+    And STDERR should contain:
       """
       Error: No plugins installed.
       """
@@ -92,10 +92,10 @@ Feature: Install WordPress plugins
       define( 'WP_PROXY_PORT', '443' );
       """
 
-    When I try `wp --require=invalid-proxy-details.php plugin install edit-flow`
+    When I try `wp --require=invalid-proxy-details.php plugin install debug-bar`
     Then STDERR should contain:
       """
-      Warning: edit-flow: An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration.
+      Warning: debug-bar: An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration.
       """
     And STDERR should contain:
       """
@@ -104,7 +104,7 @@ Feature: Install WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
-    When I run `wp plugin install edit-flow`
+    When I run `wp plugin install debug-bar`
     Then STDOUT should contain:
       """
       Plugin installed successfully.
@@ -113,14 +113,14 @@ Feature: Install WordPress plugins
   Scenario: Return code is 1 when one or more plugin installations fail
     Given a WP install
 
-    When I try `wp plugin install user-switching user-switching-not-a-plugin`
+    When I try `wp plugin install site-secrets site-secrets-not-a-plugin`
     Then STDERR should contain:
       """
       Warning:
       """
     And STDERR should contain:
       """
-      user-switching-not-a-plugin
+      site-secrets-not-a-plugin
       """
     And STDERR should contain:
       """
@@ -128,7 +128,7 @@ Feature: Install WordPress plugins
       """
     And STDOUT should contain:
       """
-      Installing User Switching
+      Installing Site Secrets
       """
     And STDOUT should contain:
       """
@@ -136,25 +136,25 @@ Feature: Install WordPress plugins
       """
     And the return code should be 1
 
-    When I try `wp plugin install user-switching`
+    When I try `wp plugin install site-secrets`
     Then STDOUT should be:
       """
       Success: Plugin already installed.
       """
     And STDERR should be:
       """
-      Warning: user-switching: Plugin already installed.
+      Warning: site-secrets: Plugin already installed.
       """
     And the return code should be 0
 
-    When I try `wp plugin install user-switching-not-a-plugin`
+    When I try `wp plugin install site-secrets-not-a-plugin`
     Then STDERR should contain:
       """
       Warning:
       """
     And STDERR should contain:
       """
-      user-switching-not-a-plugin
+      site-secrets-not-a-plugin
       """
     And STDERR should contain:
       """
@@ -171,7 +171,7 @@ Feature: Install WordPress plugins
     When I run `rm wp-content/plugins/akismet/akismet.php`
     Then the return code should be 0
 
-    When I try `wp plugin install akismet`
+    When I try `wp plugin install akismet --ignore-requirements`
     Then STDERR should contain:
       """
       Warning: Destination folder already exists. "{WORKING_DIR}/wp-content/plugins/akismet/"
@@ -222,18 +222,51 @@ Feature: Install WordPress plugins
   Scenario: Verify installed plugin activation
     Given a WP install
 
-    When I run `wp plugin install user-switching`
+    When I run `wp plugin install site-secrets`
     Then STDOUT should not be empty
 
-    When I try `wp plugin install user-switching --activate`
+    When I try `wp plugin install site-secrets --activate`
     Then STDERR should contain:
-    """
-    Warning: user-switching: Plugin already installed.
-    """
+      """
+      Warning: site-secrets: Plugin already installed.
+      """
 
     And STDOUT should contain:
-    """
-    Activating 'user-switching'...
-    Plugin 'user-switching' activated.
-    Success: Plugin already installed.
-    """
+      """
+      Activating 'site-secrets'...
+      Plugin 'site-secrets' activated.
+      Success: Plugin already installed.
+      """
+
+  @require-php-7
+  Scenario: Can't install plugin that requires a newer version of WordPress
+    Given a WP install
+
+    When I run `wp core download --version=6.4 --force`
+    And I run `rm -r wp-content/themes/*`
+
+    And I try `wp plugin install wp-super-cache`
+    Then STDERR should contain:
+      """
+      Warning: wp-super-cache: This plugin does not work with your version of WordPress
+      """
+
+    And STDERR should contain:
+      """
+      Error: No plugins installed.
+      """
+
+  @less-than-php-7.4 @require-wp-6.6
+  Scenario: Can't install plugin that requires a newer version of PHP
+    Given a WP install
+
+    And I try `wp plugin install contact-form-7`
+    Then STDERR should contain:
+      """
+      Warning: contact-form-7: This plugin does not work with your version of PHP
+      """
+
+    And STDERR should contain:
+      """
+      Error: No plugins installed.
+      """
