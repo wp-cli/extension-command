@@ -234,5 +234,5 @@ Feature: Manage WordPress themes and plugins
     Examples:
       | item                   | version | zip_file                                                                                          |
       | one-time-login         | 0.4.0   | https://github.com/danielbachhuber/one-time-login/releases/latest                                 |
-      | preferred-languages    | 2.4.0   | https://github.com/swissspidy/preferred-languages/releases/download/2.4.0/preferred-languages.zip |
+      | preferred-languages    | 1.8.0   | https://github.com/swissspidy/preferred-languages/releases/download/1.8.0/preferred-languages.zip |
       | generic-example-plugin | 0.1.1   | https://github.com/wp-cli-test/generic-example-plugin/archive/v0.1.1.zip                          |
