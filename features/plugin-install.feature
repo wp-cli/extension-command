@@ -1,5 +1,8 @@
 Feature: Install WordPress plugins
 
+  Background:
+    Given an empty cache
+
   Scenario: Branch names should be removed from Github projects
     Given a WP install
 

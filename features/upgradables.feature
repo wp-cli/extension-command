@@ -212,3 +212,35 @@ Feature: Manage WordPress themes and plugins
       | type   | type_name | item                    | item_title              | version | zip_file                                                               | file_to_check                                                     |
       | theme  | Theme     | moina                   | Moina                   | 1.1.2   | https://wordpress.org/themes/download/moina.1.1.2.zip                  | {CONTENT_DIR}/moina/style.css                                     |
       | plugin | Plugin    | category-checklist-tree | Category Checklist Tree | 1.2     | https://downloads.wordpress.org/plugin/category-checklist-tree.1.2.zip | {CONTENT_DIR}/category-checklist-tree/category-checklist-tree.php |
+
+  @require-wp-4.5
+  Scenario Outline: Caches certain GitHub URLs
+    Given a WP install
+    And I run `wp plugin delete --all`
+
+    When I run `wp plugin install <zip_file>`
+    Then STDOUT should contain:
+      """
+      Plugin installed successfully
+      """
+    And STDOUT should not contain:
+      """
+      Using cached file '{SUITE_CACHE_DIR}/plugin/<item>-<version>
+      """
+
+    When I run `wp plugin delete --all`
+    And I run `wp plugin install <zip_file>`
+    Then STDOUT should contain:
+      """
+      Plugin installed successfully
+      """
+    And STDOUT should contain:
+      """
+      Using cached file '{SUITE_CACHE_DIR}/plugin/<item>-<version>
+      """
+
+    Examples:
+      | item                   | version | zip_file                                                                                          |
+      | one-time-login         | 0.4.0   | https://github.com/danielbachhuber/one-time-login/releases/latest                                 |
+      | preferred-languages    | 1.8.0   | https://github.com/swissspidy/preferred-languages/releases/download/1.8.0/preferred-languages.zip |
+      | generic-example-plugin | 0.1.1   | https://github.com/wp-cli-test/generic-example-plugin/archive/v0.1.1.zip                          |
