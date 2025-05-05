@@ -223,10 +223,18 @@ Feature: Manage WordPress themes and plugins
       """
       Plugin installed successfully
       """
+    And STDOUT should not contain:
+      """
+      Using cached file '{SUITE_CACHE_DIR}/plugin/<item>-<version>
+      """
 
     When I run `wp plugin delete --all`
     And I run `wp plugin install <zip_file>`
     Then STDOUT should contain:
+      """
+      Plugin installed successfully
+      """
+    And STDOUT should contain:
       """
       Using cached file '{SUITE_CACHE_DIR}/plugin/<item>-<version>
       """
