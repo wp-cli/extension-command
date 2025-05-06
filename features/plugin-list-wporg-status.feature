@@ -3,8 +3,7 @@ Feature: Check the status of plugins on WordPress.org
   @require-wp-5.2
   Scenario: Install plugins and check the status on wp.org.
     Given a WP install
-
-    When I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And I run `wp plugin install wordpress-importer --version=0.5 --force`
     And I run `wp plugin install https://downloads.wordpress.org/plugin/no-longer-in-directory.1.0.62.zip`
     And a wp-content/plugins/never-wporg/never-wporg.php file:
       """
@@ -13,7 +12,7 @@ Feature: Check the status of plugins on WordPress.org
        * Plugin Name: This plugin was never in the WordPress.org plugin directory
        * Version:     2.0.2
        */
-       """
+      """
 
     When I run `wp plugin list --name=wordpress-importer --field=wporg_last_updated`
     Then STDOUT should not be empty

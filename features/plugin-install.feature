@@ -1,5 +1,8 @@
 Feature: Install WordPress plugins
 
+  Background:
+    Given an empty cache
+
   Scenario: Branch names should be removed from Github projects
     Given a WP install
 
@@ -28,7 +31,7 @@ Feature: Install WordPress plugins
       """
       Warning: Destination folder already exists
       """
-    Then STDERR should contain:
+    And STDERR should contain:
       """
       Error: No plugins installed.
       """
@@ -227,16 +230,16 @@ Feature: Install WordPress plugins
 
     When I try `wp plugin install site-secrets --activate`
     Then STDERR should contain:
-    """
-    Warning: site-secrets: Plugin already installed.
-    """
+      """
+      Warning: site-secrets: Plugin already installed.
+      """
 
     And STDOUT should contain:
-    """
-    Activating 'site-secrets'...
-    Plugin 'site-secrets' activated.
-    Success: Plugin already installed.
-    """
+      """
+      Activating 'site-secrets'...
+      Plugin 'site-secrets' activated.
+      Success: Plugin already installed.
+      """
 
   @require-php-7
   Scenario: Can't install plugin that requires a newer version of WordPress
@@ -247,14 +250,14 @@ Feature: Install WordPress plugins
 
     And I try `wp plugin install wp-super-cache`
     Then STDERR should contain:
-    """
-    Warning: wp-super-cache: This plugin does not work with your version of WordPress
-    """
+      """
+      Warning: wp-super-cache: This plugin does not work with your version of WordPress
+      """
 
     And STDERR should contain:
-    """
-    Error: No plugins installed.
-    """
+      """
+      Error: No plugins installed.
+      """
 
   @less-than-php-7.4 @require-wp-6.6
   Scenario: Can't install plugin that requires a newer version of PHP
@@ -262,11 +265,11 @@ Feature: Install WordPress plugins
 
     And I try `wp plugin install contact-form-7`
     Then STDERR should contain:
-    """
-    Warning: contact-form-7: This plugin does not work with your version of PHP
-    """
+      """
+      Warning: contact-form-7: This plugin does not work with your version of PHP
+      """
 
     And STDERR should contain:
-    """
-    Error: No plugins installed.
-    """
+      """
+      Error: No plugins installed.
+      """

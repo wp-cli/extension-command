@@ -49,7 +49,7 @@ Feature: Activate WordPress plugins
           unset( $all_plugins['site-secrets/site-secrets.php'] );
           return $all_plugins;
        } );
-       """
+      """
 
     When I run `wp plugin activate --all`
     Then STDOUT should contain:
@@ -83,7 +83,7 @@ Feature: Activate WordPress plugins
       Plugin 'example-plugin' activated.
       Success: Activated 1 of 1 plugins.
       """
-      And STDERR should be empty
+    And STDERR should be empty
 
   Scenario: Not giving a slug on activate should throw an error unless --all given
     When I try `wp plugin activate`
@@ -115,7 +115,7 @@ Feature: Activate WordPress plugins
        * Author: WP-CLI tests
        * Requires PHP: 99.99
        */
-       """
+      """
     And I run `wp plugin deactivate --all`
     And I run `wp cli info | grep "PHP version" | awk '{print $3}'`
     And save STDOUT as {PHP_VERSION}

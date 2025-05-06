@@ -60,8 +60,7 @@ Feature: Disable auto-updates for WordPress plugins
   @require-wp-5.5
   Scenario: Filter when disabling auto-updates for already enabled plugins
     When I run `wp plugin auto-updates disable hello`
-
-    When I run `wp plugin list --auto_update=on --format=count`
+    And I run `wp plugin list --auto_update=on --format=count`
     Then save STDOUT as {PLUGIN_COUNT}
 
     When I run `wp plugin auto-updates disable --all --enabled-only`

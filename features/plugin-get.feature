@@ -16,7 +16,7 @@ Feature: Get WordPress plugin
        * License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
        * Text Domain: sample-plugin
        */
-       """
+      """
 
     When I run `wp plugin get foo --fields=name,author,version,status`
     Then STDOUT should be a table containing rows:
@@ -44,7 +44,7 @@ Feature: Get WordPress plugin
        * Author: John Doe
        * Requires Plugins: jetpack, woocommerce
        */
-       """
+      """
 
     When I run `wp plugin get foo --field=requires_plugins`
     Then STDOUT should be:
@@ -65,7 +65,7 @@ Feature: Get WordPress plugin
        * Requires at least: 6.2
        * Requires PHP: 7.4
        */
-       """
+      """
 
     When I run `wp plugin get foo --fields=requires_wp,requires_php`
     Then STDOUT should be a table containing rows:
