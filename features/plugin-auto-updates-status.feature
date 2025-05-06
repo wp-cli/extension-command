@@ -118,6 +118,6 @@ Feature: Show the status of auto-updates for WordPress plugins
   @require-wp-5.5
   Scenario: Handle malformed option value
     When I run `wp option update auto_update_plugins ""`
-    When I try `wp plugin auto-updates status hello`
+    And I try `wp plugin auto-updates status hello`
     Then the return code should be 0
     And STDERR should be empty
