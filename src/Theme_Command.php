@@ -41,6 +41,8 @@ use WP_CLI\Utils;
  *          Author: the WordPress team
  *
  * @package wp-cli
+ *
+ * @phpstan-type ThemeInformation object{name: string, slug: non-empty-string, version: string, new_version: string, download_link: string, requires_php?: string, requires?: string}&\stdClass
  */
 class Theme_Command extends CommandWithUpgrade {
 
@@ -211,8 +213,11 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 *     $ wp theme activate twentysixteen
 	 *     Success: Switched to 'Twenty Sixteen' theme.
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
 	 */
-	public function activate( $args = array() ) {
+	public function activate( $args, $assoc_args = [] ) {
 		$theme = $this->fetcher->get_check( $args[0] );
 
 		$errors = $theme->errors();
@@ -232,7 +237,7 @@ class Theme_Command extends CommandWithUpgrade {
 			WP_CLI::error( "The '{$theme->get_stylesheet()}' theme cannot be activated without its parent, '{$theme->get_template()}'." );
 		}
 
-		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
+		switch_theme( $theme->get_stylesheet() );
 
 		if ( $this->is_active_theme( $theme ) ) {
 			WP_CLI::success( "Switched to '$name' theme." );
@@ -279,6 +284,9 @@ class Theme_Command extends CommandWithUpgrade {
 			WP_CLI::error( 'This is not a multisite installation.' );
 		}
 
+		/**
+		 * @var \WP_Theme $theme
+		 */
 		$theme = $this->fetcher->get_check( $args[0] );
 		$name  = $theme->get( 'Name' );
 
@@ -290,6 +298,11 @@ class Theme_Command extends CommandWithUpgrade {
 		if ( empty( $allowed_themes ) ) {
 			$allowed_themes = array();
 		}
+
+		/**
+		 * @var array<string, bool> $allowed_themes
+		 */
+
 		$allowed_themes[ $theme->get_stylesheet() ] = true;
 		call_user_func( "update{$_site}_option", 'allowedthemes', $allowed_themes );
 
@@ -344,6 +357,11 @@ class Theme_Command extends CommandWithUpgrade {
 
 		# Add the current theme to the allowed themes option or site option
 		$allowed_themes = call_user_func( "get{$_site}_option", 'allowedthemes' );
+
+		/**
+		 * @var array<string, bool> $allowed_themes
+		 */
+
 		if ( ! empty( $allowed_themes[ $theme->get_stylesheet() ] ) ) {
 			unset( $allowed_themes[ $theme->get_stylesheet() ] );
 		}
@@ -400,6 +418,9 @@ class Theme_Command extends CommandWithUpgrade {
 		list($wp_core_version) = explode( '-', $wp_version );
 		$wp_core_version       = implode( '.', array_slice( explode( '.', $wp_core_version ), 0, 2 ) );
 
+		/**
+		 * @var \WP_Error|ThemeInformation $api
+		 */
 		$api = themes_api( 'theme_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
@@ -692,7 +713,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * @alias upgrade
 	 */
 	public function update( $args, $assoc_args ) {
-		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+		$all = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {
@@ -797,7 +818,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 */
 	public function delete( $args, $assoc_args ) {
 
-		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+		$all = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all, 'delete' );
 		if ( ! $args ) {

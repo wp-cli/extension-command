@@ -15,8 +15,8 @@ class Plugin extends Base {
 	/**
 	 * Get a plugin object by name
 	 *
-	 * @param string $name
-	 * @return object|false
+	 * @param string $name Plugin name.
+	 * @return object{name: string, file: string}|false
 	 */
 	public function get( $name ) {
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling native WordPress hook.
