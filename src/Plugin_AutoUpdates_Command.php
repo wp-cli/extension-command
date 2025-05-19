@@ -72,10 +72,13 @@ class Plugin_AutoUpdates_Command {
 	 *     $ wp plugin auto-updates enable hello
 	 *     Plugin auto-updates for 'hello' enabled.
 	 *     Success: Enabled 1 of 1 plugin auto-updates.
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
 	 */
 	public function enable( $args, $assoc_args ) {
-		$all           = Utils\get_flag_value( $assoc_args, 'all', false );
-		$disabled_only = Utils\get_flag_value( $assoc_args, 'disabled-only', false );
+		$all           = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
+		$disabled_only = (bool) Utils\get_flag_value( $assoc_args, 'disabled-only', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {
@@ -151,7 +154,7 @@ class Plugin_AutoUpdates_Command {
 	 *     Success: Disabled 1 of 1 plugin auto-updates.
 	 */
 	public function disable( $args, $assoc_args ) {
-		$all          = Utils\get_flag_value( $assoc_args, 'all', false );
+		$all          = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
 		$enabled_only = Utils\get_flag_value( $assoc_args, 'enabled-only', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
@@ -259,7 +262,7 @@ class Plugin_AutoUpdates_Command {
 	 *     duplicate-post
 	 */
 	public function status( $args, $assoc_args ) {
-		$all           = Utils\get_flag_value( $assoc_args, 'all', false );
+		$all           = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
 		$enabled_only  = Utils\get_flag_value( $assoc_args, 'enabled-only', false );
 		$disabled_only = Utils\get_flag_value( $assoc_args, 'disabled-only', false );
 

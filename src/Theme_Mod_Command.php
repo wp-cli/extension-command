@@ -232,6 +232,9 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 *     # Set theme mod
 	 *     $ wp theme mod set background_color 000000
 	 *     Success: Theme mod background_color set to 000000.
+	 *
+	 * @param string[] $args
+	 * @param array $assoc_args
 	 */
 	public function set( $args = array(), $assoc_args = array() ) {
 		list( $mod, $value ) = $args;
