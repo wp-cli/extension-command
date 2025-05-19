@@ -2,6 +2,7 @@ parameters:
   level: 9
   paths:
     - src
+    - extension-command.php
   scanDirectories:
     - vendor/wp-cli/wp-cli/php
     - vendor/wp-cli/wp-cli-tests
