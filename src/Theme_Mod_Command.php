@@ -176,9 +176,9 @@ class Theme_Mod_Command extends WP_CLI_Command {
 				$this->mod_to_string( $key . $separator . $child_key, $child_value, $list, $separator );
 			}
 		} else {
-			// Explicitly handle false values to ensure they are displayed.
-			if ( false === $value ) {
-				$value = '[false]';
+			// Explicitly handle boolean values to ensure they are displayed correctly.
+			if ( is_bool( $value ) ) {
+				$value = $value ? '[true]' : '[false]';
 			}
 
 			$list[] = array(
