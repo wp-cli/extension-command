@@ -86,7 +86,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		}
 
 		// This array will hold the list of theme mods in a format suitable for the WP CLI Formatter.
-		$list = array();
+		$mod_list = array();
 
 		// If specific mods are requested, filter out any that aren't requested.
 		$mods = ! empty( $args ) ? array_intersect_key( get_theme_mods(), array_flip( $args ) ) : get_theme_mods();
@@ -99,8 +99,8 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		$separator = '!!!';
 		array_walk(
 			$mods,
-			function( $value, $key ) use ( &$list, $separator ) {
-				$this->mod_to_string( $key, $value, $list, $separator );
+			function ( $value, $key ) use ( &$mod_list, $separator ) {
+				$this->mod_to_string( $key, $value, $mod_list, $separator );
 			}
 		);
 
@@ -108,8 +108,8 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		switch ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) ) {
 			// For tables we use a double space to indent child items.
 			case 'table':
-				$list = array_map(
-					function( $item ) {
+				$mod_list = array_map(
+					function ( $item ) {
 						$parts   = explode( '!!!', $item['key'] );
 						$new_key = array_pop( $parts );
 						if ( ! empty( $parts ) ) {
@@ -120,7 +120,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 							'value' => $item['value'],
 						];
 					},
-					$list
+					$mod_list
 				);
 				break;
 
@@ -128,23 +128,26 @@ class Theme_Mod_Command extends WP_CLI_Command {
 			case 'csv':
 			case 'yaml':
 			case 'json':
-				$list = array_filter( array_map(
-					function( $item ) {
-						return [
-							'key'   => str_replace( '!!!', '.', $item['key'] ),
-							'value' => $item['value'],
-						];
-					},
-					$list
-				), function( $item ) {
-					return ! empty( $item['value'] );
-				} );
+				$mod_list = array_filter(
+					array_map(
+						function ( $item ) {
+							return [
+								'key'   => str_replace( '!!!', '.', $item['key'] ),
+								'value' => $item['value'],
+							];
+						},
+						$mod_list
+					),
+					function ( $item ) {
+						return ! empty( $item['value'] );
+					}
+				);
 				break;
 		}
 
 		// Output the list using the WP CLI Formatter.
 		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields, 'thememods' );
-		$formatter->display_items( $list );
+		$formatter->display_items( $mod_list );
 	}
 
 	/**
@@ -152,17 +155,17 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 *
 	 * @param string $key       The mod key
 	 * @param mixed  $value     The value of the mod.
-	 * @param array  $list      The list so far, passed by reference.
+	 * @param array  $mod_list  The list so far, passed by reference.
 	 * @param string $separator A string to separate keys to denote their place in the tree.
 	 */
-	private function mod_to_string( $key, $value, &$list, $separator ) {
+	private function mod_to_string( $key, $value, &$mod_list, $separator ) {
 		if ( is_array( $value ) || is_object( $value ) ) {
 			// Convert objects to arrays for easier handling.
 			$value = (array) $value;
 
 			// Explicitly handle empty arrays to ensure they are displayed.
 			if ( empty( $value ) ) {
-				$list[] = array(
+				$mod_list[] = array(
 					'key'   => $key,
 					'value' => '[empty array]',
 				);
@@ -170,13 +173,13 @@ class Theme_Mod_Command extends WP_CLI_Command {
 			}
 
 			// Arrays get their own entry in the list to allow for sensible table output.
-			$list[] = array(
+			$mod_list[] = array(
 				'key'   => $key,
 				'value' => '',
 			);
 
 			foreach ( $value as $child_key => $child_value ) {
-				$this->mod_to_string( $key . $separator . $child_key, $child_value, $list, $separator );
+				$this->mod_to_string( $key . $separator . $child_key, $child_value, $mod_list, $separator );
 			}
 		} else {
 			// Explicitly handle boolean values to ensure they are displayed correctly.
@@ -184,7 +187,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 				$value = $value ? '[true]' : '[false]';
 			}
 
-			$list[] = array(
+			$mod_list[] = array(
 				'key'   => $key,
 				'value' => $value,
 			);
