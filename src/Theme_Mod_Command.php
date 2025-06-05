@@ -156,9 +156,12 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 * @param string $separator A string to separate keys to denote their place in the tree.
 	 */
 	private function mod_to_string( $key, $value, &$list, $separator ) {
-		if ( is_array( $value ) ){
+		if ( is_array( $value ) || is_object( $value ) ) {
+			// Convert objects to arrays for easier handling.
+			$value = (array) $value;
+
+			// Explicitly handle empty arrays to ensure they are displayed.
 			if ( empty( $value ) ) {
-				// Explicitly handle empty arrays to ensure they are displayed.
 				$list[] = array(
 					'key'   => $key,
 					'value' => '[empty array]',
