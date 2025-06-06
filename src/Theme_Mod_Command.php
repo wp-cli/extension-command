@@ -90,10 +90,6 @@ class Theme_Mod_Command extends WP_CLI_Command {
 
 		// If specific mods are requested, filter out any that aren't requested.
 		$mods = ! empty( $args ) ? array_intersect_key( get_theme_mods(), array_flip( $args ) ) : get_theme_mods();
-		if ( ! is_array( $mods ) ) {
-			// If no mods are set (perhaps new theme), make sure array_intersect_key still works.
-			$mods = array();
-		}
 
 		// Generate the list of items ready for output. We use an initial separator that we can replace later depending on format.
 		$separator = '!!!';
