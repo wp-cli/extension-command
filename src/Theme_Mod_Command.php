@@ -92,7 +92,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		$mods = ! empty( $args ) ? array_intersect_key( get_theme_mods(), array_flip( $args ) ) : get_theme_mods();
 
 		// Generate the list of items ready for output. We use an initial separator that we can replace later depending on format.
-		$separator = '!!!';
+		$separator = '\t';
 		array_walk(
 			$mods,
 			function ( $value, $key ) use ( &$mod_list, $separator ) {
