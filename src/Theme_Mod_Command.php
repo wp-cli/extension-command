@@ -107,8 +107,8 @@ class Theme_Mod_Command extends WP_CLI_Command {
 			// For tables we use a double space to indent child items.
 			case 'table':
 				$mod_list = array_map(
-					static function ( $item ) {
-						$parts   = explode( '!!!', $item['key'] );
+					static function ( $item ) use ( $separator ) {
+						$parts   = explode( $separator, $item['key'] );
 						$new_key = array_pop( $parts );
 						if ( ! empty( $parts ) ) {
 							$new_key = str_repeat( '  ', count( $parts ) ) . $new_key;
@@ -128,9 +128,9 @@ class Theme_Mod_Command extends WP_CLI_Command {
 			case 'json':
 				$mod_list = array_filter(
 					array_map(
-						static function ( $item ) {
+						static function ( $item ) use ( $separator ) {
 							return [
-								'key'   => str_replace( '!!!', '.', $item['key'] ),
+								'key'   => str_replace( $separator, '.', $item['key'] ),
 								'value' => $item['value'],
 							];
 						},
