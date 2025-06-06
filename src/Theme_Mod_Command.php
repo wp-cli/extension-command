@@ -1,5 +1,7 @@
 <?php
 
+use \WP_CLI\Utils;
+
 /**
  * Sets, gets, and removes theme mods.
  *
@@ -77,11 +79,11 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 */
 	public function get( $args = array(), $assoc_args = array() ) {
 
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
+		if ( ! Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
 			WP_CLI::error( 'You must specify at least one mod or use --all.' );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			$args = array();
 		}
 
@@ -101,7 +103,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		);
 
 		// Take our Formatter-friendly list and adjust it according to the requested format.
-		switch ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) ) {
+		switch ( Utils\get_flag_value( $assoc_args, 'format' ) ) {
 			// For tables we use a double space to indent child items.
 			case 'table':
 				$mod_list = array_map(
@@ -257,11 +259,11 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 */
 	public function remove( $args = array(), $assoc_args = array() ) {
 
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
+		if ( ! Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
 			WP_CLI::error( 'You must specify at least one mod or use --all.' );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			remove_theme_mods();
 			WP_CLI::success( 'Theme mods removed.' );
 			return;
