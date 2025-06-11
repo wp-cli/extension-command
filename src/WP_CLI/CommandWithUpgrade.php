@@ -203,7 +203,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 				$filter = false;
 				// If a GitHub URL, do some guessing as to the correct plugin/theme directory.
-				if ( $is_remote && 'github.com' === \WP_CLI\Utils\parse_url( $slug, PHP_URL_HOST )
+				if ( $is_remote && 'github.com' === Utils\parse_url( $slug, PHP_URL_HOST )
 						// Don't attempt to rename ZIPs uploaded to the releases page or coming from a raw source.
 						&& ! preg_match( '#github\.com/[^/]+/[^/]+/(?:releases/download|raw)/#', $slug ) ) {
 
@@ -211,7 +211,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						/**
 						 * @var string $path
 						 */
-						$path     = \WP_CLI\Utils\parse_url( $slug, PHP_URL_PATH );
+						$path     = Utils\parse_url( $slug, PHP_URL_PATH );
 						$slug_dir = Utils\basename( $path, '.zip' );
 
 						// Don't use the zip name if archive attached to release, as name likely to contain version tag/branch.
