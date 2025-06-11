@@ -74,8 +74,11 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 *     | background_color | dd3333 |
 	 *     | header_textcolor |        |
 	 *     +------------------+--------+
+	 *
+	 * @param string[] $args Positional arguments.
+	 * @param array{field?: string, all?: bool, format: string} $assoc_args Associative arguments.
 	 */
-	public function get( $args = array(), $assoc_args = array() ) {
+	public function get( $args, $assoc_args ) {
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
 			WP_CLI::error( 'You must specify at least one mod or use --all.' );
@@ -162,10 +165,13 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 *     +------------------+---------+
 	 *
 	 * @subcommand list
+	 *
+	 * @param string[]                              $args       Positional arguments. Unused.
+	 * @param array{field?: string, format: string} $assoc_args Associative arguments.
 	 */
-	public function list_( $args = array(), $assoc_args = array() ) {
+	public function list_( $args, $assoc_args ) {
 
-		$assoc_args['all'] = 1;
+		$assoc_args['all'] = true;
 
 		$this->get( $args, $assoc_args );
 	}
@@ -194,8 +200,11 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 *     # Remove multiple theme mods.
 	 *     $ wp theme mod remove background_color header_textcolor
 	 *     Success: 2 mods removed.
+	 *
+	 * @param string[]          $args       Positional arguments.
+	 * @param array{all?: bool} $assoc_args Associative arguments.
 	 */
-	public function remove( $args = array(), $assoc_args = array() ) {
+	public function remove( $args, $assoc_args, ) {
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
 			WP_CLI::error( 'You must specify at least one mod or use --all.' );
@@ -233,10 +242,10 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 *     $ wp theme mod set background_color 000000
 	 *     Success: Theme mod background_color set to 000000.
 	 *
-	 * @param string[] $args
-	 * @param array $assoc_args
+	 * @param array{0: string, 1: string} $args Positional arguments.
+	 * @param array $assoc_args Associative arguments. Unused.
 	 */
-	public function set( $args = array(), $assoc_args = array() ) {
+	public function set( $args, $assoc_args ) {
 		list( $mod, $value ) = $args;
 
 		set_theme_mod( $mod, $value );
