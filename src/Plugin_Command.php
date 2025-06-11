@@ -1,5 +1,6 @@
 <?php
 
+use WP_CLI\CommandWithUpgrade;
 use WP_CLI\ParsePluginNameInput;
 use WP_CLI\Utils;
 use WP_CLI\WpOrgApi;
@@ -43,9 +44,9 @@ use function WP_CLI\Utils\normalize_path;
  * @package wp-cli
  *
  * @phpstan-type PluginInformation object{name: string, slug: non-empty-string, version: string, new_version: string, download_link: string, requires_php?: string, requires?: string, package: string}&\stdClass
+ * @extends CommandWithUpgrade<string,>
  */
-class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
-
+class Plugin_Command extends CommandWithUpgrade {
 	use ParsePluginNameInput;
 
 	protected $item_type         = 'plugin';
@@ -72,6 +73,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * Plugin fetcher instance.
 	 *
 	 * @var \WP_CLI\Fetchers\Plugin
+	 *
+	 * @phpstan-ignore property.phpDocType (To be fixed with in https://github.com/wp-cli/wp-cli/pull/6096)
 	 */
 	protected $fetcher;
 
@@ -354,9 +357,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @param array $args
 	 * @param array $assoc_args
 	 */
-	public function activate( $args, $assoc_args = array() ) {
-		$network_wide = (bool) Utils\get_flag_value( $assoc_args, 'network', false );
-		$all          = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
+	public function activate( $args, $assoc_args = [] ) {
+		$network_wide = Utils\get_flag_value( $assoc_args, 'network', false );
+		$all          = Utils\get_flag_value( $assoc_args, 'all', false );
 		$all_exclude  = Utils\get_flag_value( $assoc_args, 'exclude', '' );
 
 		/**
@@ -453,9 +456,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Plugin 'ninja-forms' deactivated.
 	 *     Success: Deactivated 2 of 2 plugins.
 	 */
-	public function deactivate( $args, $assoc_args = array() ) {
-		$network_wide        = (bool) Utils\get_flag_value( $assoc_args, 'network' );
-		$disable_all         = (bool) Utils\get_flag_value( $assoc_args, 'all' );
+	public function deactivate( $args, $assoc_args = [] ) {
+		$network_wide        = Utils\get_flag_value( $assoc_args, 'network' );
+		$disable_all         = Utils\get_flag_value( $assoc_args, 'all' );
 		$disable_all_exclude = Utils\get_flag_value( $assoc_args, 'exclude', '' );
 
 		/**
@@ -550,7 +553,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Plugin 'akismet' activated.
 	 *     Success: Toggled 1 of 1 plugins.
 	 */
-	public function toggle( $args, $assoc_args = array() ) {
+	public function toggle( $args, $assoc_args ) {
 		$network_wide = Utils\get_flag_value( $assoc_args, 'network' );
 
 		$successes = 0;
@@ -752,7 +755,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @alias upgrade
 	 */
 	public function update( $args, $assoc_args ) {
-		$all = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {
@@ -792,10 +795,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		foreach ( $this->get_all_plugins() as $file => $details ) {
 			$all_update_info = $this->get_update_info();
-			$update_info     = ( isset( $all_update_info->response[ $file ] ) && null !== $all_update_info->response[ $file ] ) ? (array) $all_update_info->response[ $file ] : null;
-			$name            = Utils\get_plugin_name( $file );
-			$wporg_info      = $this->get_wporg_data( $name );
-			$plugin_data     = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
+			// @phpstan-ignore notIdentical.alwaysTrue
+			$update_info = ( isset( $all_update_info->response[ $file ] ) && null !== $all_update_info->response[ $file ] ) ? (array) $all_update_info->response[ $file ] : null;
+			$name        = Utils\get_plugin_name( $file );
+			$wporg_info  = $this->get_wporg_data( $name );
+			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
 
 			if ( ! isset( $duplicate_names[ $name ] ) ) {
 				$duplicate_names[ $name ] = array();
@@ -1207,8 +1211,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Uninstalled and deleted 'tinymce-templates' plugin.
 	 *     Success: Uninstalled 2 of 2 plugins.
 	 */
-	public function uninstall( $args, $assoc_args = array() ) {
-		$all         = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
+	public function uninstall( $args, $assoc_args = [] ) {
+		$all         = Utils\get_flag_value( $assoc_args, 'all', false );
 		$all_exclude = Utils\get_flag_value( $assoc_args, 'exclude', false );
 
 		/**
@@ -1340,7 +1344,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @subcommand is-installed
 	 */
-	public function is_installed( $args, $assoc_args = array() ) {
+	public function is_installed( $args, $assoc_args ) {
 		if ( $this->fetcher->get( $args[0] ) ) {
 			WP_CLI::halt( 0 );
 		} else {
@@ -1370,8 +1374,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @subcommand is-active
 	 */
-	public function is_active( $args, $assoc_args = array() ) {
-		$network_wide = (bool) Utils\get_flag_value( $assoc_args, 'network' );
+	public function is_active( $args, $assoc_args ) {
+		$network_wide = Utils\get_flag_value( $assoc_args, 'network' );
 
 		$plugin = $this->fetcher->get( $args[0] );
 
@@ -1414,8 +1418,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Deleted 'tinymce-templates' plugin.
 	 *     Success: Deleted 2 of 2 plugins.
 	 */
-	public function delete( $args, $assoc_args = array() ) {
-		$all         = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
+	public function delete( $args, $assoc_args ) {
+		$all         = Utils\get_flag_value( $assoc_args, 'all', false );
 		$all_exclude = Utils\get_flag_value( $assoc_args, 'exclude', false );
 
 		/**

@@ -77,8 +77,8 @@ class Plugin_AutoUpdates_Command {
 	 * @param array{all?: bool, 'disabled-only'?: bool} $assoc_args Associative arguments.
 	 */
 	public function enable( $args, $assoc_args ) {
-		$all           = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
-		$disabled_only = (bool) Utils\get_flag_value( $assoc_args, 'disabled-only', false );
+		$all           = Utils\get_flag_value( $assoc_args, 'all', false );
+		$disabled_only = Utils\get_flag_value( $assoc_args, 'disabled-only', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {
@@ -154,7 +154,7 @@ class Plugin_AutoUpdates_Command {
 	 *     Success: Disabled 1 of 1 plugin auto-updates.
 	 */
 	public function disable( $args, $assoc_args ) {
-		$all          = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
+		$all          = Utils\get_flag_value( $assoc_args, 'all', false );
 		$enabled_only = Utils\get_flag_value( $assoc_args, 'enabled-only', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
@@ -262,7 +262,7 @@ class Plugin_AutoUpdates_Command {
 	 *     duplicate-post
 	 */
 	public function status( $args, $assoc_args ) {
-		$all           = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
+		$all           = Utils\get_flag_value( $assoc_args, 'all', false );
 		$enabled_only  = Utils\get_flag_value( $assoc_args, 'enabled-only', false );
 		$disabled_only = Utils\get_flag_value( $assoc_args, 'disabled-only', false );
 

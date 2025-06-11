@@ -204,7 +204,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 * @param string[]          $args       Positional arguments.
 	 * @param array{all?: bool} $assoc_args Associative arguments.
 	 */
-	public function remove( $args, $assoc_args, ) {
+	public function remove( $args, $assoc_args ) {
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
 			WP_CLI::error( 'You must specify at least one mod or use --all.' );

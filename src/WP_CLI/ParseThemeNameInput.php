@@ -5,6 +5,9 @@ namespace WP_CLI;
 use WP_CLI;
 use Theme_AutoUpdates_Command;
 
+/**
+ * @template T of \WP_Theme
+ */
 trait ParseThemeNameInput {
 
 	/**
@@ -192,7 +195,7 @@ trait ParseThemeNameInput {
 	/**
 	 * Get the status for a given theme.
 	 *
-	 * @param \WP_Theme $theme Theme to get the status for.
+	 * @param T $theme Theme to get the status for.
 	 *
 	 * @return string Status of the theme.
 	 */
@@ -233,11 +236,11 @@ trait ParseThemeNameInput {
 	/**
 	 * Get the available update info.
 	 *
-	 * @return object{checked: array<string, string>, response: array<string, string>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} Available update info.
+	 * @return object{checked: array<string, string>, response: array<string, array<string, string|null>>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} Available update info.
 	 */
 	protected function get_update_info() {
 		/**
-		 * @var object{checked: array<string, string>, response: array<string, string>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} $result
+		 * @var object{checked: array<string, string>, response: array<string, array<string, string|null>>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} $result
 		 */
 		$result = get_site_transient( 'update_themes' );
 

@@ -19,6 +19,8 @@ class Theme extends Base {
 	 *
 	 * @param string $name
 	 * @return object|false
+	 *
+	 * @phpstan-ignore method.childParameterType (To be fixed with in https://github.com/wp-cli/wp-cli/pull/6096)
 	 */
 	public function get( $name ) {
 		// Workaround to equalize folder naming conventions across Win/Mac/Linux.

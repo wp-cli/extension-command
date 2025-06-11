@@ -28,6 +28,9 @@ use WP_CLI\Utils;
  */
 class Theme_AutoUpdates_Command {
 
+	/**
+	 * @use ParseThemeNameInput<\WP_Theme>
+	 */
 	use ParseThemeNameInput;
 
 	/**
@@ -74,7 +77,7 @@ class Theme_AutoUpdates_Command {
 	 *     Success: Enabled 1 of 1 theme auto-updates.
 	 */
 	public function enable( $args, $assoc_args ) {
-		$all           = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
+		$all           = Utils\get_flag_value( $assoc_args, 'all', false );
 		$disabled_only = Utils\get_flag_value( $assoc_args, 'disabled-only', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
@@ -151,8 +154,8 @@ class Theme_AutoUpdates_Command {
 	 *     Success: Disabled 1 of 1 theme auto-updates.
 	 */
 	public function disable( $args, $assoc_args ) {
-		$all          = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
-		$enabled_only = (bool) Utils\get_flag_value( $assoc_args, 'enabled-only', false );
+		$all          = Utils\get_flag_value( $assoc_args, 'all', false );
+		$enabled_only = Utils\get_flag_value( $assoc_args, 'enabled-only', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {
@@ -259,9 +262,9 @@ class Theme_AutoUpdates_Command {
 	 *     twentyseventeen
 	 */
 	public function status( $args, $assoc_args ) {
-		$all           = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
-		$enabled_only  = (bool) Utils\get_flag_value( $assoc_args, 'enabled-only', false );
-		$disabled_only = (bool) Utils\get_flag_value( $assoc_args, 'disabled-only', false );
+		$all           = Utils\get_flag_value( $assoc_args, 'all', false );
+		$enabled_only  = Utils\get_flag_value( $assoc_args, 'enabled-only', false );
+		$disabled_only = Utils\get_flag_value( $assoc_args, 'disabled-only', false );
 
 		if ( $enabled_only && $disabled_only ) {
 			WP_CLI::error(

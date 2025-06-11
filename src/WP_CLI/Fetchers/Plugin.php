@@ -17,6 +17,8 @@ class Plugin extends Base {
 	 *
 	 * @param string $name Plugin name.
 	 * @return object{name: string, file: string}|false
+	 *
+	 * @phpstan-ignore method.childParameterType (To be fixed with in https://github.com/wp-cli/wp-cli/pull/6096)
 	 */
 	public function get( $name ) {
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling native WordPress hook.

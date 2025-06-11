@@ -14,6 +14,8 @@ use WP_Error;
 /**
  * @phpstan-import-type ThemeInformation from \Theme_Command
  * @phpstan-import-type PluginInformation from \Plugin_Command
+ *
+ * @template T
  */
 abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
@@ -78,12 +80,25 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	abstract protected function get_all_items();
 
+	/**
+	 * Get the status for a given extension.
+	 *
+	 * @param T $file Extension to get the status for.
+	 *
+	 * @return string Status of the extension.
+	 */
 	abstract protected function get_status( $file );
 
 	abstract protected function status_single( $args );
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
 
+	/**
+	 * Activates an extension.
+	 *
+	 * @param string[] $args       Positional arguments.
+	 * @param array    $assoc_args Associative arguments.
+	 */
 	abstract public function activate( $args, $assoc_args = [] );
 
 	public function status( $args ) {
@@ -357,8 +372,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	protected function get_upgrader( $assoc_args ) {
-		$force          = (bool) Utils\get_flag_value( $assoc_args, 'force', false );
-		$insecure       = (bool) Utils\get_flag_value( $assoc_args, 'insecure', false );
+		$force          = Utils\get_flag_value( $assoc_args, 'force', false );
+		$insecure       = Utils\get_flag_value( $assoc_args, 'insecure', false );
 		$upgrader_class = $this->get_upgrader_class( $force );
 		return Utils\get_upgrader( $upgrader_class, $insecure );
 	}
@@ -395,15 +410,15 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		);
 
-		$minor = (bool) Utils\get_flag_value( $assoc_args, 'minor', false );
-		$patch = (bool) Utils\get_flag_value( $assoc_args, 'patch', false );
+		$minor = Utils\get_flag_value( $assoc_args, 'minor', false );
+		$patch = Utils\get_flag_value( $assoc_args, 'patch', false );
 
 		if (
 			in_array( $this->item_type, [ 'plugin', 'theme' ], true ) &&
 			( $minor || $patch )
 		) {
 			$type     = $minor ? 'minor' : 'patch';
-			$insecure = (bool) Utils\get_flag_value( $assoc_args, 'insecure', false );
+			$insecure = Utils\get_flag_value( $assoc_args, 'insecure', false );
 
 			$items_to_update = self::get_minor_or_patch_updates( $items_to_update, $type, $insecure, true, $this->item_type );
 		}
@@ -566,14 +581,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected function _list( $_, $assoc_args ) {
 
 		// Force WordPress to check for updates if `--skip-update-check` is not passed.
-		if ( false === (bool) Utils\get_flag_value( $assoc_args, 'skip-update-check', false ) ) {
+		if ( false === Utils\get_flag_value( $assoc_args, 'skip-update-check', false ) ) {
 			delete_site_transient( $this->upgrade_transient );
 			call_user_func( $this->upgrade_refresh );
 		}
 
 		$all_items = $this->get_all_items();
 
-		if ( false !== (bool) Utils\get_flag_value( $assoc_args, 'recently-active', false ) ) {
+		if ( false !== Utils\get_flag_value( $assoc_args, 'recently-active', false ) ) {
 			$all_items = array_filter(
 				$all_items,
 				function ( $value ) {
@@ -656,11 +671,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	/**
 	 * Get the available update info
 	 *
-	 * @return object{checked: array<string, string>, response: array<string, string>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} $update_list
+	 * @return object{checked: array<string, string>, response: array<string, array<string, string|null>>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} $update_list
 	 */
 	protected function get_update_info() {
 		/**
-		 * @var object{checked: array<string, string>, response: array<string, string>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} $update_list
+		 * @var object{checked: array<string, string>, response: array<string, array<string, string|null>>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} $update_list
 		 */
 		$update_list = get_site_transient( $this->upgrade_transient );
 

@@ -43,9 +43,13 @@ use WP_CLI\Utils;
  * @package wp-cli
  *
  * @phpstan-type ThemeInformation object{name: string, slug: non-empty-string, version: string, new_version: string, download_link: string, requires_php?: string, requires?: string}&\stdClass
+ * @extends CommandWithUpgrade<\WP_Theme>
  */
 class Theme_Command extends CommandWithUpgrade {
 
+	/**
+	 * @use ParseThemeNameInput<\WP_Theme>
+	 */
 	use ParseThemeNameInput;
 
 	protected $item_type         = 'theme';
@@ -214,8 +218,8 @@ class Theme_Command extends CommandWithUpgrade {
 	 *     $ wp theme activate twentysixteen
 	 *     Success: Switched to 'Twenty Sixteen' theme.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @param string[] $args       Positional arguments.
+	 * @param array    $assoc_args Associative arguments. Unused.
 	 */
 	public function activate( $args, $assoc_args = [] ) {
 		$theme = $this->fetcher->get_check( $args[0] );
@@ -713,7 +717,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * @alias upgrade
 	 */
 	public function update( $args, $assoc_args ) {
-		$all = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {
@@ -753,7 +757,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 * @subcommand is-installed
 	 */
-	public function is_installed( $args, $assoc_args = array() ) {
+	public function is_installed( $args, $assoc_args ) {
 		$theme = wp_get_theme( $args[0] );
 
 		if ( $theme->exists() ) {
@@ -782,7 +786,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 * @subcommand is-active
 	 */
-	public function is_active( $args, $assoc_args = array() ) {
+	public function is_active( $args, $assoc_args ) {
 		$theme = wp_get_theme( $args[0] );
 
 		if ( ! $theme->exists() ) {
@@ -818,7 +822,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 */
 	public function delete( $args, $assoc_args ) {
 
-		$all = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
 		$args = $this->check_optional_args_and_all( $args, $all, 'delete' );
 		if ( ! $args ) {
