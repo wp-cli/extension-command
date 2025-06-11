@@ -1276,7 +1276,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 						/**
 						 * @var callable $callback
 						 */
-						$callback = array( $wp_filesystem, 'delete' );
+						$callback = [ $wp_filesystem, 'delete' ];
 						array_map( $callback, $json_translation_files );
 					}
 				}
