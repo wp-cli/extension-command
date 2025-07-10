@@ -69,15 +69,6 @@ class Plugin_Command extends CommandWithUpgrade {
 		'auto_update',
 	);
 
-	/**
-	 * Plugin fetcher instance.
-	 *
-	 * @var \WP_CLI\Fetchers\Plugin
-	 *
-	 * @phpstan-ignore property.phpDocType (To be fixed with in https://github.com/wp-cli/wp-cli/pull/6096)
-	 */
-	protected $fetcher;
-
 	public function __construct() {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		require_once ABSPATH . 'wp-admin/includes/plugin-install.php';

@@ -67,6 +67,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$this->fetcher = new Fetchers\Plugin();
 	}
 
+	/**
+	 * @return class-string<\WP_Upgrader>
+	 */
 	abstract protected function get_upgrader_class( $force );
 
 	abstract protected function get_item_list();

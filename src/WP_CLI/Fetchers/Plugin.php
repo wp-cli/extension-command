@@ -4,6 +4,8 @@ namespace WP_CLI\Fetchers;
 
 /**
  * Fetch a WordPress plugin based on one of its attributes.
+ *
+ * @extends Base<object{name: string, file: string}>
  */
 class Plugin extends Base {
 
@@ -15,12 +17,12 @@ class Plugin extends Base {
 	/**
 	 * Get a plugin object by name
 	 *
-	 * @param string $name Plugin name.
+	 * @param string|int $name Plugin name.
 	 * @return object{name: string, file: string}|false
-	 *
-	 * @phpstan-ignore method.childParameterType (To be fixed with in https://github.com/wp-cli/wp-cli/pull/6096)
 	 */
 	public function get( $name ) {
+		$name = (string) $name;
+
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling native WordPress hook.
 		foreach ( apply_filters( 'all_plugins', get_plugins() ) as $file => $_ ) {
 			if ( "$name.php" === $file ||
