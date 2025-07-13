@@ -979,7 +979,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * for confirmation.
 	 *
 	 * [--ignore-requirements]
-	 * :If set, the command will install the plugin while ignoring any WordPress or PHP version requirements
+	 * : If set, the command will install the plugin while ignoring any WordPress or PHP version requirements
 	 * specified by the plugin authors.
 	 *
 	 * [--activate]
