@@ -6,6 +6,8 @@ use WP_CLI\Utils;
 
 /**
  * Fetch a WordPress theme based on one of its attributes.
+ *
+ * @extends Base<\WP_Theme>
  */
 class Theme extends Base {
 
@@ -17,8 +19,8 @@ class Theme extends Base {
 	/**
 	 * Get a theme object by name
 	 *
-	 * @param string $name
-	 * @return object|false
+	 * @param string|int $name
+	 * @return \WP_Theme|false
 	 */
 	public function get( $name ) {
 		// Workaround to equalize folder naming conventions across Win/Mac/Linux.
@@ -26,7 +28,7 @@ class Theme extends Base {
 		$existing_themes      = wp_get_themes( array( 'errors' => null ) );
 		$existing_stylesheets = array_keys( $existing_themes );
 		if ( ! in_array( $name, $existing_stylesheets, true ) ) {
-			$inexact_match = $this->find_inexact_match( $name, $existing_themes );
+			$inexact_match = $this->find_inexact_match( (string) $name, $existing_themes );
 			if ( false !== $inexact_match ) {
 				$this->msg .= sprintf( " Did you mean '%s'?", $inexact_match );
 			}
