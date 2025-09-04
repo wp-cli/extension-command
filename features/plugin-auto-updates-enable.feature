@@ -2,7 +2,7 @@ Feature: Enable auto-updates for WordPress plugins
 
   Background:
     Given a WP install
-    And I run `wp plugin install duplicate-post --ignore-requirements`
+    And I run `wp plugin install duplicate-post https://github.com/wp-cli/sample-plugin/archive/refs/heads/master.zip --ignore-requirements`
 
   @require-wp-5.5
   Scenario: Show an error if required params are missing
@@ -15,7 +15,7 @@ Feature: Enable auto-updates for WordPress plugins
 
   @require-wp-5.5
   Scenario: Enable auto-updates for a single plugin
-    When I run `wp plugin auto-updates enable hello`
+    When I run `wp plugin auto-updates enable sample-plugin`
     Then STDOUT should be:
       """
       Success: Enabled 1 of 1 plugin auto-updates.
@@ -24,7 +24,7 @@ Feature: Enable auto-updates for WordPress plugins
 
   @require-wp-5.5
   Scenario: Enable auto-updates for multiple plugins
-    When I run `wp plugin auto-updates enable hello duplicate-post`
+    When I run `wp plugin auto-updates enable sample-plugin duplicate-post`
     Then STDOUT should be:
       """
       Success: Enabled 2 of 2 plugin auto-updates.
@@ -45,11 +45,11 @@ Feature: Enable auto-updates for WordPress plugins
 
   @require-wp-5.5
   Scenario: Enable auto-updates for already enabled plugins
-    When I run `wp plugin auto-updates enable hello`
+    When I run `wp plugin auto-updates enable sample-plugin`
     And I try `wp plugin auto-updates enable --all`
     Then STDERR should contain:
       """
-      Warning: Auto-updates already enabled for plugin hello.
+      Warning: Auto-updates already enabled for plugin sample-plugin.
       """
     And STDERR should contain:
       """
@@ -58,7 +58,7 @@ Feature: Enable auto-updates for WordPress plugins
 
   @require-wp-5.5
   Scenario: Filter when enabling auto-updates for already enabled plugins
-    When I run `wp plugin auto-updates enable hello`
+    When I run `wp plugin auto-updates enable sample-plugin`
     And I run `wp plugin list --status=inactive --auto_update=off --format=count`
     Then save STDOUT as {PLUGIN_COUNT}
 
@@ -71,8 +71,8 @@ Feature: Enable auto-updates for WordPress plugins
 
   @require-wp-5.5
   Scenario: Filter when enabling auto-updates for already enabled selection of plugins
-    When I run `wp plugin auto-updates enable hello`
-    And I run `wp plugin auto-updates enable hello duplicate-post --disabled-only`
+    When I run `wp plugin auto-updates enable sample-plugin`
+    And I run `wp plugin auto-updates enable sample-plugin duplicate-post --disabled-only`
     Then STDOUT should be:
       """
       Success: Enabled 1 of 1 plugin auto-updates.
@@ -81,8 +81,8 @@ Feature: Enable auto-updates for WordPress plugins
 
   @require-wp-5.5
   Scenario: Filtering everything away produces an error
-    When I run `wp plugin auto-updates enable hello`
-    And I try `wp plugin auto-updates enable hello --disabled-only`
+    When I run `wp plugin auto-updates enable sample-plugin`
+    And I try `wp plugin auto-updates enable sample-plugin --disabled-only`
     Then STDERR should be:
       """
       Error: No plugins provided to enable auto-updates for.

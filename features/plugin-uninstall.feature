@@ -2,6 +2,7 @@ Feature: Uninstall a WordPress plugin
 
   Background:
     Given a WP install
+    And I run `wp plugin install https://github.com/wp-cli/sample-plugin/archive/refs/heads/master.zip`
 
   Scenario: Uninstall an installed plugin should uninstall, delete files
     When I run `wp plugin uninstall akismet`
@@ -26,15 +27,15 @@ Feature: Uninstall a WordPress plugin
     And the wp-content/plugins/akismet directory should exist
 
   Scenario: Uninstall a plugin that is not in a folder and has custom name
-    When I run `wp plugin uninstall hello`
+    When I run `wp plugin uninstall sample-plugin`
     Then STDOUT should be:
       """
-      Uninstalled and deleted 'hello' plugin.
+      Uninstalled and deleted 'sample-plugin' plugin.
       Success: Uninstalled 1 of 1 plugins.
       """
     And the return code should be 0
     And STDERR should be empty
-    And the wp-content/plugins/hello.php file should not exist
+    And the wp-content/plugins/sample-plugin.php file should not exist
 
   Scenario: Missing required inputs
     When I try `wp plugin uninstall`
@@ -87,7 +88,7 @@ Feature: Uninstall a WordPress plugin
     Then STDOUT should be:
       """
       Uninstalled and deleted 'akismet' plugin.
-      Uninstalled and deleted 'hello' plugin.
+      Uninstalled and deleted 'sample-plugin' plugin.
       Success: Uninstalled 2 of 2 plugins.
       """
     And the return code should be 0
@@ -111,7 +112,7 @@ Feature: Uninstall a WordPress plugin
     Then STDERR should be:
       """
       Warning: The 'akismet' plugin is active.
-      Warning: The 'hello' plugin is active.
+      Warning: The 'sample-plugin' plugin is active.
       Error: No plugins uninstalled.
       """
     And the return code should be 1
@@ -125,7 +126,7 @@ Feature: Uninstall a WordPress plugin
     And STDERR should be empty
 
   Scenario: Excluding a plugin from uninstallation when using --all switch
-    When I try `wp plugin uninstall --all --exclude=akismet,hello`
+    When I try `wp plugin uninstall --all --exclude=akismet,sample-plugin`
     Then STDOUT should be:
       """
       Success: No plugins uninstalled.

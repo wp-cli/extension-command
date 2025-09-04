@@ -2,6 +2,7 @@ Feature: Delete WordPress plugins
 
   Background:
     Given a WP install
+    And I run `wp plugin install https://github.com/wp-cli/sample-plugin/archive/refs/heads/master.zip`
 
   Scenario: Delete an installed plugin
     When I run `wp plugin delete akismet`
@@ -17,7 +18,7 @@ Feature: Delete WordPress plugins
     Then STDOUT should be:
       """
       Deleted 'akismet' plugin.
-      Deleted 'hello' plugin.
+      Deleted 'sample-plugin' plugin.
       Success: Deleted 2 of 2 plugins.
       """
     And the return code should be 0
@@ -41,7 +42,7 @@ Feature: Delete WordPress plugins
     And the return code should be 0
 
   Scenario: Excluding a plugin from deletion when using --all switch
-    When I try `wp plugin delete --all --exclude=akismet,hello`
+    When I try `wp plugin delete --all --exclude=akismet,sample-plugin`
     Then STDOUT should be:
       """
       Success: No plugins deleted.
