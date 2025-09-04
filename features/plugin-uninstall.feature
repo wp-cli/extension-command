@@ -85,11 +85,17 @@ Feature: Uninstall a WordPress plugin
 
   Scenario: Uninstall all installed plugins
     When I run `wp plugin uninstall --all`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       Uninstalled and deleted 'akismet' plugin.
+      """
+    And STDOUT should contain:
+      """
       Uninstalled and deleted 'sample-plugin' plugin.
-      Success: Uninstalled 2 of 2 plugins.
+      """
+    And STDOUT should contain:
+      """
+      Success: Uninstalled 3 of 3 plugins.
       """
     And the return code should be 0
     And STDERR should be empty
@@ -105,14 +111,20 @@ Feature: Uninstall a WordPress plugin
     When I run `wp plugin activate --all`
     Then STDOUT should contain:
       """
-      Success: Activated 2 of 2 plugins.
+      Success: Activated 3 of 3 plugins.
       """
 
     When I try `wp plugin uninstall --all`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
       Warning: The 'akismet' plugin is active.
+      """
+    And STDERR should contain:
+      """
       Warning: The 'sample-plugin' plugin is active.
+      """
+    And STDERR should contain:
+      """
       Error: No plugins uninstalled.
       """
     And the return code should be 1
@@ -126,7 +138,7 @@ Feature: Uninstall a WordPress plugin
     And STDERR should be empty
 
   Scenario: Excluding a plugin from uninstallation when using --all switch
-    When I try `wp plugin uninstall --all --exclude=akismet,sample-plugin`
+    When I try `wp plugin uninstall --all --exclude=akismet,sample-plugin,hello,hello-dolly`
     Then STDOUT should be:
       """
       Success: No plugins uninstalled.

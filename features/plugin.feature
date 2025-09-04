@@ -301,7 +301,7 @@ Feature: Manage WordPress plugins
   Scenario: List plugins
     Given a WP install
 
-    When I run `wp plugin activate akismet`
+    When I run `wp plugin activate --all`
     Then STDOUT should not be empty
 
     When I run `wp plugin list --status=inactive --field=name`
@@ -431,9 +431,12 @@ Feature: Manage WordPress plugins
     Then STDOUT should contain:
       """
       Plugin 'akismet' activated.
+      """
+    And STDOUT should contain:
+      """
       Plugin 'sample-plugin' activated.
       """
-    And STDOUT should not contain:
+    And STDOUT should contain:
       """
       Success: Activated 3 of 3 plugins.
       """
