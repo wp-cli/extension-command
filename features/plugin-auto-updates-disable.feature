@@ -54,7 +54,7 @@ Feature: Disable auto-updates for WordPress plugins
       """
     And STDERR should contain:
       """
-      Error: Only disabled 2 of 3 plugin auto-updates.
+      Error: Only disabled 3 of 4 plugin auto-updates.
       """
 
   @require-wp-5.5

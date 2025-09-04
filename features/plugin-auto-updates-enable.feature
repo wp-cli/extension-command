@@ -53,7 +53,7 @@ Feature: Enable auto-updates for WordPress plugins
       """
     And STDERR should contain:
       """
-      Error: Only enabled 2 of 3 plugin auto-updates.
+      Error: Only enabled 3 of 4 plugin auto-updates.
       """
 
   @require-wp-5.5

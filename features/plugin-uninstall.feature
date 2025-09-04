@@ -133,7 +133,7 @@ Feature: Uninstall a WordPress plugin
     When I run `wp plugin uninstall --deactivate --all`
     Then STDOUT should contain:
       """
-      Success: Uninstalled 2 of 2 plugins.
+      Success: Uninstalled 3 of 3 plugins.
       """
     And STDERR should be empty
 

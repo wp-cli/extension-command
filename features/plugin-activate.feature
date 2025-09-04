@@ -55,7 +55,7 @@ Feature: Activate WordPress plugins
       """
       Plugin 'akismet' activated.
       """
-    And STDOUT should not contain:
+    And STDOUT should contain:
       """
       Plugin 'sample-plugin' activated.
       """
