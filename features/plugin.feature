@@ -461,9 +461,12 @@ Feature: Manage WordPress plugins
     Then STDOUT should contain:
       """
       Plugin 'akismet' deactivated.
+      """
+    And STDOUT should contain:
+      """
       Plugin 'sample-plugin' deactivated.
       """
-    And STDOUT should not contain:
+    And STDOUT should contain:
       """
       Success: Deactivated 3 of 3 plugins.
       """
@@ -477,6 +480,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list --field=status`
     Then STDOUT should be:
       """
+      inactive
       inactive
       inactive
       must-use
