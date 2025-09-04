@@ -452,6 +452,7 @@ Feature: Manage WordPress plugins
       """
       active
       active
+      active
       must-use
       must-use
       """

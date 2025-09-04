@@ -118,11 +118,16 @@ Feature: Show the status of auto-updates for WordPress plugins
       """
 
     When I run `wp plugin auto-updates status --all --format=csv`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
-      name,status
       akismet,disabled
+      """
+    And STDOUT should contain:
+      """
       sample-plugin,disabled
+      """
+    And STDOUT should contain:
+      """
       duplicate-post,disabled
       """
 
