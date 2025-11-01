@@ -1513,11 +1513,6 @@ class Plugin_Command extends CommandWithUpgrade {
 		$plugin = $this->fetcher->get_check( $args[0] );
 		$file   = $plugin->file;
 
-		// Check if plugin is installed
-		if ( ! file_exists( WP_PLUGIN_DIR . '/' . $file ) ) {
-			WP_CLI::error( "Plugin '{$args[0]}' is not installed." );
-		}
-
 		// Get dependencies from plugin header
 		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
 		$dependencies = [];
