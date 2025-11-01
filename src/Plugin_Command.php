@@ -1174,7 +1174,7 @@ class Plugin_Command extends CommandWithUpgrade {
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
-			WP_CLI::debug( "Could not fetch information for plugin '$slug': " . $api->get_error_message() );
+			WP_CLI::warning( "Could not fetch information for plugin '$slug': " . $api->get_error_message() );
 			return [];
 		}
 
@@ -1528,6 +1528,9 @@ class Plugin_Command extends CommandWithUpgrade {
 		}
 
 		WP_CLI::log( sprintf( "Installing %d %s for '%s'...", count( $dependencies ), Utils\pluralize( 'dependency', count( $dependencies ) ), $args[0] ) );
+
+		// Remove with-dependencies flag to avoid recursive dependency resolution
+		unset( $assoc_args['with-dependencies'] );
 
 		// Install dependencies
 		$this->chained_command = true;
