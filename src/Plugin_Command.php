@@ -1165,12 +1165,40 @@ class Plugin_Command extends CommandWithUpgrade {
 	}
 
 	/**
-	 * Gets the dependencies for a plugin from WordPress.org API.
+	 * Gets the dependencies for a plugin.
+	 *
+	 * Uses WP_Plugin_Dependencies class if available (WordPress 6.5+),
+	 * otherwise falls back to WordPress.org API.
 	 *
 	 * @param string $slug Plugin slug.
 	 * @return array Array of dependency slugs.
 	 */
 	private function get_plugin_dependencies( $slug ) {
+		// Try to use WP_Plugin_Dependencies class if available (WordPress 6.5+)
+		if ( class_exists( 'WP_Plugin_Dependencies' ) ) {
+			// Find the plugin file for this slug
+			$plugins = get_plugins();
+			foreach ( $plugins as $plugin_file => $plugin_data ) {
+				$plugin_slug = dirname( $plugin_file );
+				if ( '.' === $plugin_slug ) {
+					$plugin_slug = basename( $plugin_file, '.php' );
+				}
+				
+				if ( $plugin_slug === $slug ) {
+					// Initialize WP_Plugin_Dependencies if needed
+					if ( method_exists( 'WP_Plugin_Dependencies', 'initialize' ) ) {
+						WP_Plugin_Dependencies::initialize();
+					}
+					
+					// Get dependencies for this plugin file
+					if ( method_exists( 'WP_Plugin_Dependencies', 'get_dependencies' ) ) {
+						return WP_Plugin_Dependencies::get_dependencies( $plugin_file );
+					}
+				}
+			}
+		}
+
+		// Fallback to WordPress.org API for plugins not yet installed
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
@@ -1513,13 +1541,27 @@ class Plugin_Command extends CommandWithUpgrade {
 		$plugin = $this->fetcher->get_check( $args[0] );
 		$file   = $plugin->file;
 
-		// Get dependencies from plugin header
-		$plugin_data  = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
+		// Get dependencies using WP_Plugin_Dependencies if available (WordPress 6.5+)
 		$dependencies = [];
-
-		if ( ! empty( $plugin_data['RequiresPlugins'] ) ) {
-			// Parse the comma-separated list
-			$dependencies = array_map( 'trim', explode( ',', $plugin_data['RequiresPlugins'] ) );
+		
+		if ( class_exists( 'WP_Plugin_Dependencies' ) ) {
+			// Initialize WP_Plugin_Dependencies
+			if ( method_exists( 'WP_Plugin_Dependencies', 'initialize' ) ) {
+				WP_Plugin_Dependencies::initialize();
+			}
+			
+			// Get dependencies for this plugin
+			if ( method_exists( 'WP_Plugin_Dependencies', 'get_dependencies' ) ) {
+				$dependencies = WP_Plugin_Dependencies::get_dependencies( $file );
+			}
+		} else {
+			// Fallback: Get dependencies from plugin header manually
+			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
+			
+			if ( ! empty( $plugin_data['RequiresPlugins'] ) ) {
+				// Parse the comma-separated list
+				$dependencies = array_map( 'trim', explode( ',', $plugin_data['RequiresPlugins'] ) );
+			}
 		}
 
 		if ( empty( $dependencies ) ) {
