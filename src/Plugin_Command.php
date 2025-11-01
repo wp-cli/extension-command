@@ -1108,7 +1108,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * @param array $assoc_args Associative arguments.
 	 */
 	private function install_with_dependencies( $args, $assoc_args ) {
-		$all_to_install = [];
+		$all_to_install    = [];
 		$installed_tracker = [];
 
 		// Remove with-dependencies from assoc_args to avoid infinite recursion
@@ -1514,7 +1514,7 @@ class Plugin_Command extends CommandWithUpgrade {
 		$file   = $plugin->file;
 
 		// Get dependencies from plugin header
-		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
+		$plugin_data  = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
 		$dependencies = [];
 
 		if ( ! empty( $plugin_data['RequiresPlugins'] ) ) {
