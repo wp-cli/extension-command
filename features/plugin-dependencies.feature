@@ -3,35 +3,52 @@ Feature: Plugin dependencies support
   Background:
     Given an empty cache
 
+  @less-than-wp-6.5
+  Scenario: Install plugin with dependencies using --with-dependencies flag
+    Given a WP install
+
+    When I try `wp plugin install --with-dependencies bp-classic`
+    Then STDERR should contain:
+      """
+      Installing plugins with dependencies requires WordPress 6.5 or greater.
+      """
+
   @require-wp-6.5
   Scenario: Install plugin with dependencies using --with-dependencies flag
     Given a WP install
 
-    When I run `wp plugin install akismet`
+    When I run `wp plugin install --with-dependencies bp-classic`
     Then STDOUT should contain:
       """
-      Plugin installed successfully.
+      Installing BuddyPress
+      """
+    And STDOUT should contain:
+      """
+      Installing BP Classic
+      """
+    And STDOUT should contain:
+      """
+      Success: Installed 2 of 2 plugins.
       """
 
-    # Create a test plugin with dependencies
-    And a wp-content/plugins/test-plugin/test-plugin.php file:
+    When I run `wp plugin list --fields=name,status --format=csv`
+    Then STDOUT should contain:
       """
-      <?php
-      /**
-       * Plugin Name: Test Plugin
-       * Requires Plugins: akismet
-       */
+      buddypress,inactive
+      """
+    And STDOUT should contain:
+      """
+      bp-classic,inactive
       """
 
-    When I run `wp plugin delete akismet --quiet`
-    Then STDOUT should be empty
+  @less-than-wp-6.5
+  Scenario: Install dependencies of an installed plugin
+    Given a WP install
 
-    # Note: Testing with actual WP.org plugins that have dependencies would be better
-    # but we'll test with a local plugin that declares dependencies
-    When I run `wp plugin get test-plugin --field=requires_plugins`
-    Then STDOUT should be:
+    When I try `wp plugin install-dependencies akismet`
+    Then STDERR should contain:
       """
-      akismet
+      Installing plugin dependencies requires WordPress 6.5 or greater.
       """
 
   @require-wp-6.5
@@ -44,7 +61,7 @@ Feature: Plugin dependencies support
       <?php
       /**
        * Plugin Name: Test Plugin
-       * Requires Plugins: akismet, hello
+       * Requires Plugins: duplicate-post, debug-bar
        */
       """
 
@@ -80,31 +97,76 @@ Feature: Plugin dependencies support
       <?php
       /**
        * Plugin Name: Test Plugin
-       * Requires Plugins: hello
+       * Requires Plugins: akismet, buddypress
        */
       """
 
-    When I run `wp plugin install-dependencies test-plugin --activate`
+    When I try `wp plugin install-dependencies test-plugin --activate`
+    Then STDOUT should contain:
+      """
+      Installing 2 dependencies for 'test-plugin'
+      """
+    And STDOUT should contain:
+      """
+      Plugin 'buddypress' activated
+      """
+    And STDOUT should contain:
+      """
+      Success: Installed 1 of 2 plugins.
+      """
+    And STDERR should contain:
+      """
+      Warning: akismet: Plugin already installed.
+      """
+
+    When I run `wp plugin list --fields=name,status --format=csv`
+    Then STDOUT should contain:
+      """
+      buddypress,active
+      """
+    And STDOUT should contain:
+      """
+      akismet,active
+      """
+    # Only the dependencies are activated, not the plugin itself.
+    And STDOUT should contain:
+      """
+      test-plugin,inactive
+      """
+
+  @require-wp-6.5
+  Scenario: Force install dependencies
+    Given a WP install
+
+    # Create a test plugin with dependencies
+    And a wp-content/plugins/test-plugin/test-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Test Plugin
+       * Requires Plugins: akismet
+       */
+      """
+
+    When I run `wp plugin install-dependencies test-plugin --force`
     Then STDOUT should contain:
       """
       Installing 1 dependency for 'test-plugin'
       """
     And STDOUT should contain:
       """
-      Success:
+      Installing Akismet
       """
-
-    When I run `wp plugin list --name=hello --field=status`
-    Then STDOUT should be:
+    And STDOUT should contain:
       """
-      active
+      Success: Installed 1 of 1 plugins.
       """
+    And STDERR should be empty
 
   @require-wp-6.5
   Scenario: Install plugin with no dependencies
     Given a WP install
 
-    # Create a test plugin without dependencies
     And a wp-content/plugins/test-plugin/test-plugin.php file:
       """
       <?php
@@ -126,6 +188,6 @@ Feature: Plugin dependencies support
     When I try `wp plugin install-dependencies non-existent-plugin`
     Then STDERR should contain:
       """
-      Error:
+      Error: The 'non-existent-plugin' plugin could not be found.
       """
     And the return code should be 1

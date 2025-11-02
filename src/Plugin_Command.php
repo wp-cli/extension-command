@@ -1095,6 +1095,9 @@ class Plugin_Command extends CommandWithUpgrade {
 
 		// If --with-dependencies is set, we need to handle dependencies
 		if ( Utils\get_flag_value( $assoc_args, 'with-dependencies', false ) ) {
+			if ( WP_CLI\Utils\wp_version_compare( '6.5', '<' ) ) {
+				WP_CLI::error( 'Installing plugins with dependencies requires WordPress 6.5 or greater.' );
+			}
 			$this->install_with_dependencies( $args, $assoc_args );
 		} else {
 			parent::install( $args, $assoc_args );
@@ -1167,27 +1170,21 @@ class Plugin_Command extends CommandWithUpgrade {
 	/**
 	 * Gets the dependencies for a plugin.
 	 *
-	 * Uses WP_Plugin_Dependencies class if available (WordPress 6.5+),
-	 * otherwise falls back to WordPress.org API.
-	 *
 	 * @param string $slug Plugin slug.
 	 * @return array Array of dependency slugs.
 	 */
 	private function get_plugin_dependencies( $slug ) {
-		// Try to use WP_Plugin_Dependencies class if available (WordPress 6.5+)
-		if ( class_exists( 'WP_Plugin_Dependencies' ) ) {
-			// Find the plugin file for this slug
-			$plugins = get_plugins();
-			foreach ( $plugins as $plugin_file => $plugin_data ) {
-				$plugin_slug = dirname( $plugin_file );
-				if ( '.' === $plugin_slug ) {
-					$plugin_slug = basename( $plugin_file, '.php' );
-				}
+		// Find the plugin file for this slug
+		$plugins = get_plugins();
+		foreach ( $plugins as $plugin_file => $plugin_data ) {
+			$plugin_slug = dirname( $plugin_file );
+			if ( '.' === $plugin_slug ) {
+				$plugin_slug = basename( $plugin_file, '.php' );
+			}
 
-				if ( $plugin_slug === $slug ) {
-					WP_Plugin_Dependencies::initialize();
-					return WP_Plugin_Dependencies::get_dependencies( $plugin_file );
-				}
+			if ( $plugin_slug === $slug ) {
+				WP_Plugin_Dependencies::initialize();
+				return WP_Plugin_Dependencies::get_dependencies( $plugin_file );
 			}
 		}
 
@@ -1518,6 +1515,10 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * [--activate-network]
 	 * : If set, dependencies will be network activated immediately after install.
 	 *
+	 * [--force]
+	 * : If set, the command will overwrite any installed version of the plugin, without prompting
+	 * for confirmation.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Install all dependencies of an installed plugin
@@ -1531,25 +1532,17 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * @subcommand install-dependencies
 	 */
 	public function install_dependencies( $args, $assoc_args ) {
+		if ( WP_CLI\Utils\wp_version_compare( '6.5', '<' ) ) {
+			WP_CLI::error( 'Installing plugin dependencies requires WordPress 6.5 or greater.' );
+		}
+
 		$plugin = $this->fetcher->get_check( $args[0] );
 		$file   = $plugin->file;
 
-		// Get dependencies using WP_Plugin_Dependencies if available (WordPress 6.5+)
 		$dependencies = [];
 
-		if ( class_exists( 'WP_Plugin_Dependencies' ) ) {
-			WP_Plugin_Dependencies::initialize();
-			// Initialize WP_Plugin_Dependencies
-			$dependencies = WP_Plugin_Dependencies::get_dependencies( $file );
-		} else {
-			// Fallback: Get dependencies from plugin header manually
-			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
-
-			if ( ! empty( $plugin_data['RequiresPlugins'] ) ) {
-				// Parse the comma-separated list
-				$dependencies = array_map( 'trim', explode( ',', $plugin_data['RequiresPlugins'] ) );
-			}
-		}
+		WP_Plugin_Dependencies::initialize();
+		$dependencies = WP_Plugin_Dependencies::get_dependencies( $file );
 
 		if ( empty( $dependencies ) ) {
 			WP_CLI::success( "Plugin '{$args[0]}' has no dependencies." );
