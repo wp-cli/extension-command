@@ -1183,17 +1183,10 @@ class Plugin_Command extends CommandWithUpgrade {
 				if ( '.' === $plugin_slug ) {
 					$plugin_slug = basename( $plugin_file, '.php' );
 				}
-				
+
 				if ( $plugin_slug === $slug ) {
-					// Initialize WP_Plugin_Dependencies if needed
-					if ( method_exists( 'WP_Plugin_Dependencies', 'initialize' ) ) {
-						WP_Plugin_Dependencies::initialize();
-					}
-					
-					// Get dependencies for this plugin file
-					if ( method_exists( 'WP_Plugin_Dependencies', 'get_dependencies' ) ) {
-						return WP_Plugin_Dependencies::get_dependencies( $plugin_file );
-					}
+					WP_Plugin_Dependencies::initialize();
+					return WP_Plugin_Dependencies::get_dependencies( $plugin_file );
 				}
 			}
 		}
@@ -1543,21 +1536,15 @@ class Plugin_Command extends CommandWithUpgrade {
 
 		// Get dependencies using WP_Plugin_Dependencies if available (WordPress 6.5+)
 		$dependencies = [];
-		
+
 		if ( class_exists( 'WP_Plugin_Dependencies' ) ) {
+			WP_Plugin_Dependencies::initialize();
 			// Initialize WP_Plugin_Dependencies
-			if ( method_exists( 'WP_Plugin_Dependencies', 'initialize' ) ) {
-				WP_Plugin_Dependencies::initialize();
-			}
-			
-			// Get dependencies for this plugin
-			if ( method_exists( 'WP_Plugin_Dependencies', 'get_dependencies' ) ) {
-				$dependencies = WP_Plugin_Dependencies::get_dependencies( $file );
-			}
+			$dependencies = WP_Plugin_Dependencies::get_dependencies( $file );
 		} else {
 			// Fallback: Get dependencies from plugin header manually
 			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
-			
+
 			if ( ! empty( $plugin_data['RequiresPlugins'] ) ) {
 				// Parse the comma-separated list
 				$dependencies = array_map( 'trim', explode( ',', $plugin_data['RequiresPlugins'] ) );
