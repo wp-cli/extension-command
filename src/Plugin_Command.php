@@ -401,7 +401,6 @@ class Plugin_Command extends CommandWithUpgrade {
 				$message = wp_strip_all_tags( $message );
 				$message = str_replace( 'Error: ', '', $message );
 				WP_CLI::warning( "Failed to activate plugin. {$message}" );
-				
 				// If the error is due to unexpected output, display it for debugging
 				if ( 'unexpected_output' === $result->get_error_code() ) {
 					/**
