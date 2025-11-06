@@ -170,6 +170,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *     **icons**: Plugin's Icon Image Link
 	 *     **active_installs**: Plugin's Number of Active Installs
 	 *     **contributors**: Plugin's List of Contributors
+	 *     **url**: Plugin's URL on wordpress.org
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
