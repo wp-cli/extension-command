@@ -17,7 +17,7 @@ trait UpgraderWithValidation {
 	 *
 	 * This method overrides WP_Upgrader::download_package() to add validation
 	 * of the downloaded file before it's used for installation. If validation
-	 * fails, the file is deleted and re-downloaded.
+	 * fails, the corrupted file is deleted and an error is returned.
 	 *
 	 * @param string $package              The URI of the package.
 	 * @param bool   $check_signatures     Whether to validate file signatures. Default false.
@@ -41,7 +41,7 @@ trait UpgraderWithValidation {
 			return $download;
 		}
 
-		// Validation failed - log the issue and attempt recovery.
+		// Validation failed - log the issue and clean up.
 		WP_CLI::debug(
 			sprintf(
 				'Package validation failed: %s',
@@ -50,78 +50,21 @@ trait UpgraderWithValidation {
 			'extension-command'
 		);
 
-		// Delete the corrupted file.
-		PackageValidator::delete_corrupted_file( $download );
-		WP_CLI::debug(
-			'Deleted corrupted package file, attempting fresh download...',
-			'extension-command'
-		);
-
-		// Try to download again by clearing any cache.
-		// We need to bypass the cache, which we can do by using a modified package URL.
-		// However, WP_Upgrader doesn't provide a direct way to do this.
-		// Instead, we'll use a filter to modify the download behavior.
-		$retry_download = $this->download_package_retry( $package, $check_signatures, $hook_extra );
-
-		// If retry succeeded, validate it again.
-		if ( ! is_wp_error( $retry_download ) ) {
-			$retry_validation = PackageValidator::validate( $retry_download );
-
-			if ( true === $retry_validation ) {
-				WP_CLI::debug( 'Fresh download succeeded and validated.', 'extension-command' );
-				return $retry_download;
-			}
-
-			// Even the retry is corrupted - delete it and give up.
-			PackageValidator::delete_corrupted_file( $retry_download );
-			WP_CLI::debug( 'Retry download also failed validation.', 'extension-command' );
+		// Delete the corrupted file to prevent it from being reused.
+		if ( PackageValidator::delete_corrupted_file( $download ) ) {
+			WP_CLI::debug(
+				'Deleted corrupted package file from cache.',
+				'extension-command'
+			);
 		}
 
-		// Both attempts failed - return an error.
+		// Return a detailed error message.
 		return new \WP_Error(
 			'package_validation_failed',
-			'Downloaded package failed validation. The file may be corrupted or the download URL may be returning an error instead of a valid zip file. Please check your network connection and try again.'
+			sprintf(
+				'Downloaded package failed validation (%s). The corrupted file has been removed from cache. Please try the command again.',
+				$validation->get_error_message()
+			)
 		);
-	}
-
-	/**
-	 * Retries downloading a package, bypassing cache.
-	 *
-	 * This is called when the initial download (which may have come from cache)
-	 * failed validation.
-	 *
-	 * @param string $package         The URI of the package.
-	 * @param bool   $check_signatures Whether to validate file signatures.
-	 * @param array  $hook_extra      Extra arguments to pass to hooked filters.
-	 * @return string|\WP_Error The full path to the downloaded package file, or a WP_Error object.
-	 */
-	private function download_package_retry( $package, $check_signatures, $hook_extra ) {
-		// Add a filter to disable caching for this download.
-		$disable_cache = function( $args, $url ) {
-			// Disable caching by setting a short timeout and unique filename.
-			$args['reject_cache'] = true;
-			return $args;
-		};
-
-		// WP HTTP API doesn't have reject_cache, so we'll use a different approach.
-		// We'll hook into pre_http_request to force a fresh download.
-		$force_fresh_download = function( $preempt, $args, $url ) use ( $package ) {
-			// Only apply to our specific package URL.
-			if ( $url !== $package ) {
-				return $preempt;
-			}
-			// Return false to proceed with the request (not using preempt).
-			// The cache is managed by WP-CLI's cache manager, not WP's HTTP API.
-			return false;
-		};
-
-		add_filter( 'pre_http_request', $force_fresh_download, 10, 3 );
-
-		// Attempt the download again.
-		$result = parent::download_package( $package, $check_signatures, $hook_extra );
-
-		remove_filter( 'pre_http_request', $force_fresh_download, 10 );
-
-		return $result;
 	}
 }
