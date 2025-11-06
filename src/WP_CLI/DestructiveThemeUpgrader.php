@@ -6,6 +6,7 @@ namespace WP_CLI;
  * A theme upgrader class that clears the destination directory.
  */
 class DestructiveThemeUpgrader extends \Theme_Upgrader {
+	use UpgraderWithValidation;
 
 	public function install_package( $args = array() ) {
 		parent::upgrade_strings(); // Needed for the 'remove_old' string.
