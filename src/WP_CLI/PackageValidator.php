@@ -75,8 +75,10 @@ class PackageValidator {
 
 		if ( null === $is_available ) {
 			// Check if unzip is in PATH by trying to get its version.
-			$result = WP_CLI::launch(
-				'unzip -v',
+			// Suppress output to avoid cluttering the console.
+			$null_device = '\\' === DIRECTORY_SEPARATOR ? 'NUL' : '/dev/null';
+			$result      = WP_CLI::launch(
+				sprintf( 'unzip -v > %s 2>&1', $null_device ),
 				false,
 				true
 			);
@@ -93,8 +95,16 @@ class PackageValidator {
 	 * @return true|\WP_Error True if valid, WP_Error if validation fails.
 	 */
 	private static function validate_with_unzip( $file_path ) {
+		// Suppress output - use platform-appropriate null device.
+		$null_device = '\\' === DIRECTORY_SEPARATOR ? 'NUL' : '/dev/null';
+		$command     = sprintf(
+			'unzip -t %s > %s 2>&1',
+			escapeshellarg( $file_path ),
+			$null_device
+		);
+
 		$result = WP_CLI::launch(
-			sprintf( 'unzip -t %s', escapeshellarg( $file_path ) ),
+			$command,
 			false,
 			true
 		);
@@ -102,9 +112,7 @@ class PackageValidator {
 		if ( 0 !== $result->return_code ) {
 			return new \WP_Error(
 				'package_corrupted',
-				sprintf(
-					'Package file failed zip integrity check. This usually indicates a corrupted or incomplete download.'
-				)
+				'Package file failed zip integrity check. This usually indicates a corrupted or incomplete download.'
 			);
 		}
 
