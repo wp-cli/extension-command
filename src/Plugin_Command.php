@@ -405,7 +405,7 @@ class Plugin_Command extends CommandWithUpgrade {
 				if ( 'unexpected_output' === $result->get_error_code() ) {
 					/**
 					 * @var string $output
-					 */ 
+					 */
 					$output = $result->get_error_data();
 					if ( ! empty( $output ) ) {
 						WP_CLI::debug( "Unexpected output: {$output}", 'plugin' );
