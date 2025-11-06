@@ -78,7 +78,7 @@ class PackageValidator {
 			// Suppress output to avoid cluttering the console.
 			$null_device = '\\' === DIRECTORY_SEPARATOR ? 'NUL' : '/dev/null';
 			$result      = WP_CLI::launch(
-				sprintf( 'unzip -v > %s 2>&1', $null_device ),
+				'unzip -v > ' . escapeshellarg( $null_device ) . ' 2>&1',
 				false,
 				true
 			);
@@ -97,11 +97,7 @@ class PackageValidator {
 	private static function validate_with_unzip( $file_path ) {
 		// Suppress output - use platform-appropriate null device.
 		$null_device = '\\' === DIRECTORY_SEPARATOR ? 'NUL' : '/dev/null';
-		$command     = sprintf(
-			'unzip -t %s > %s 2>&1',
-			escapeshellarg( $file_path ),
-			$null_device
-		);
+		$command     = 'unzip -t ' . escapeshellarg( $file_path ) . ' > ' . escapeshellarg( $null_device ) . ' 2>&1';
 
 		$result = WP_CLI::launch(
 			$command,
@@ -130,6 +126,16 @@ class PackageValidator {
 			return true;
 		}
 
-		return @unlink( $file_path );
+		$result = unlink( $file_path );
+
+		// Log if deletion failed, but don't throw an error.
+		if ( ! $result ) {
+			WP_CLI::debug(
+				sprintf( 'Failed to delete corrupted file: %s', $file_path ),
+				'extension-command'
+			);
+		}
+
+		return $result;
 	}
 }

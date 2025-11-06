@@ -59,7 +59,12 @@
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound">
 		<exclude-pattern>*/src/WP_CLI/Fetchers/(Plugin|Theme)\.php$</exclude-pattern>
 		<exclude-pattern>*/src/WP_CLI/CommandWithUpgrade\.php$</exclude-pattern>
-		<exclude-pattern>*/src/WP_CLI/(CommandWith|DestructivePlugin|DestructiveTheme|ValidatingPlugin|ValidatingTheme|PackageValidator|UpgraderWithValidation).*\.php$</exclude-pattern>
+		<exclude-pattern>*/src/WP_CLI/DestructivePluginUpgrader\.php$</exclude-pattern>
+		<exclude-pattern>*/src/WP_CLI/DestructiveThemeUpgrader\.php$</exclude-pattern>
+		<exclude-pattern>*/src/WP_CLI/ValidatingPluginUpgrader\.php$</exclude-pattern>
+		<exclude-pattern>*/src/WP_CLI/ValidatingThemeUpgrader\.php$</exclude-pattern>
+		<exclude-pattern>*/src/WP_CLI/PackageValidator\.php$</exclude-pattern>
+		<exclude-pattern>*/src/WP_CLI/UpgraderWithValidation\.php$</exclude-pattern>
 		<exclude-pattern>*/src/WP_CLI/Parse(Plugin|Theme)NameInput\.php$</exclude-pattern>
 	</rule>
 
