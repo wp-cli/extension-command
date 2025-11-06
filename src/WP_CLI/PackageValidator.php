@@ -77,8 +77,8 @@ class PackageValidator {
 			// Check if unzip is in PATH by trying to get its version.
 			// Suppress output to avoid cluttering the console.
 			// Note: Redirection to null device is safe as the device path is a hardcoded constant.
-			$null_device = '\\' === DIRECTORY_SEPARATOR ? 'NUL' : '/dev/null';
-			$result      = WP_CLI::launch(
+			$null_device  = '\\' === DIRECTORY_SEPARATOR ? 'NUL' : '/dev/null';
+			$result       = WP_CLI::launch(
 				'unzip -v > ' . escapeshellarg( $null_device ) . ' 2>&1',
 				false,
 				true
