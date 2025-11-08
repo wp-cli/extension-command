@@ -168,7 +168,7 @@ class Theme_Command extends CommandWithUpgrade {
 		}
 
 		$items = $this->get_item_list();
-		
+
 		// Filter to only themes with available updates
 		$items_with_updates = array_filter(
 			$items,
