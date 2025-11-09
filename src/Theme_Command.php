@@ -151,6 +151,8 @@ class Theme_Command extends CommandWithUpgrade {
 	 *     # List themes with available updates in JSON format
 	 *     $ wp theme check-update --format=json
 	 *     [{"name":"twentytwelve","status":"inactive","version":"2.0","update_version":"2.1"}]
+	 *
+	 * @subcommand check-update
 	 */
 	public function check_update( $args, $assoc_args ) {
 		// Force WordPress to check for updates.

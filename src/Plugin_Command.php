@@ -158,6 +158,8 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *     # List plugins with available updates in JSON format
 	 *     $ wp plugin check-update --format=json
 	 *     [{"name":"akismet","status":"active","version":"4.1.0","update_version":"4.1.1"}]
+	 *
+	 * @subcommand check-update
 	 */
 	public function check_update( $args, $assoc_args ) {
 		// Force WordPress to check for updates.
