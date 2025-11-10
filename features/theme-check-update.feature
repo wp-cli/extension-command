@@ -3,7 +3,7 @@ Feature: Check for theme updates
   Scenario: Check for theme updates with no updates available
     Given a WP install
 
-    When I run `wp theme install twentytwelve`
+    When I run `wp theme install twentytwelve --force`
     Then STDOUT should not be empty
 
     When I run `wp theme check-update --all`
@@ -35,7 +35,7 @@ Feature: Check for theme updates
     When I run `wp theme install twentyfourteen --version=1.0 --force`
     Then STDOUT should not be empty
 
-    When I run `wp theme install twentytwelve`
+    When I run `wp theme install twentytwelve --force`
     Then STDOUT should not be empty
 
     When I run `wp theme check-update twentyfourteen --format=csv`
