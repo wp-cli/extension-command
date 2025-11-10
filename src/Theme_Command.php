@@ -170,20 +170,10 @@ class Theme_Command extends CommandWithUpgrade {
 		// Filter to only themes with available updates
 		$items_with_updates = array_filter(
 			$items,
-			function ( $item ) {
-				return 'available' === $item['update'];
+			function ( $item ) use ( $args ) {
+				return in_array( $item['name'], $args, true ) && 'available' === $item['update'];
 			}
 		);
-
-		// If specific themes requested, filter to those
-		if ( ! empty( $args ) ) {
-			$items_with_updates = array_filter(
-				$items_with_updates,
-				function ( $item ) use ( $args ) {
-					return in_array( $item['name'], $args, true );
-				}
-			);
-		}
 
 		if ( empty( $items_with_updates ) ) {
 			WP_CLI::success( 'All themes are up to date.' );
