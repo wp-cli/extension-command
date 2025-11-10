@@ -155,19 +155,15 @@ class Theme_Command extends CommandWithUpgrade {
 	 * @subcommand check-update
 	 */
 	public function check_update( $args, $assoc_args ) {
-		// Force WordPress to check for updates.
-		call_user_func( $this->upgrade_refresh );
-
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
-		if ( $all ) {
-			$args = array_map(
-				function ( $theme ) {
-					return $theme->get_stylesheet();
-				},
-				$this->get_all_themes()
-			);
+		$args = $this->check_optional_args_and_all( $args, $all );
+		if ( ! $args ) {
+			return;
 		}
+
+		// Force WordPress to check for updates.
+		call_user_func( $this->upgrade_refresh );
 
 		$items = $this->get_item_list();
 

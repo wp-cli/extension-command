@@ -162,6 +162,13 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * @subcommand check-update
 	 */
 	public function check_update( $args, $assoc_args ) {
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		$args = $this->check_optional_args_and_all( $args, $all );
+		if ( ! $args ) {
+			return;
+		}
+
 		// Force WordPress to check for updates.
 		call_user_func( $this->upgrade_refresh );
 

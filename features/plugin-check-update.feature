@@ -7,29 +7,28 @@ Feature: Check for plugin updates
     When I run `wp plugin install wordpress-importer --activate`
     Then STDOUT should not be empty
 
-    When I run `wp plugin check-update`
+    When I run `wp plugin check-update --all`
     Then STDOUT should contain:
       """
       Success: All plugins are up to date.
       """
-    And the return code should be 0
 
-  @require-wp-5.2
-  Scenario: Check for plugin updates with updates available
+    When I run `wp plugin check-update wordpress-importer`
+    Then STDOUT should contain:
+      """
+      Success: All plugins are up to date.
+      """
+
+  Scenario: Check for plugin updates should throw an error unless --all given
     Given a WP install
 
-    When I run `wp plugin install wordpress-importer --version=0.5 --activate`
-    Then STDOUT should not be empty
-
-    When I run `wp plugin check-update`
-    Then STDOUT should be a table containing rows:
-      | name               | status | version |
-      | wordpress-importer | active | 0.5     |
-    And STDOUT should contain:
+    When I try `wp plugin check-update`
+    Then the return code should be 1
+    And STDERR should be:
       """
-      update_version
+      Error: Please specify one or more plugins, or use --all.
       """
-    And the return code should be 0
+    And STDOUT should be empty
 
   @require-wp-5.2
   Scenario: Check for specific plugin updates
@@ -38,18 +37,11 @@ Feature: Check for plugin updates
     When I run `wp plugin install wordpress-importer --version=0.5`
     Then STDOUT should not be empty
 
-    When I run `wp plugin install akismet`
-    Then STDOUT should not be empty
-
-    When I run `wp plugin check-update wordpress-importer`
-    Then STDOUT should be a table containing rows:
-      | name               | status   | version |
-      | wordpress-importer | inactive | 0.5     |
-    And STDOUT should contain:
+    When I run `wp plugin check-update wordpress-importer --format=csv`
+    Then STDOUT should contain:
       """
-      update_version
+      wordpress-importer,inactive,0.5,
       """
-    And the return code should be 0
 
   @require-wp-5.2
   Scenario: Check for all plugin updates with --all flag
@@ -58,15 +50,11 @@ Feature: Check for plugin updates
     When I run `wp plugin install wordpress-importer --version=0.5 --activate`
     Then STDOUT should not be empty
 
-    When I run `wp plugin check-update --all`
-    Then STDOUT should be a table containing rows:
-      | name               | status | version |
-      | wordpress-importer | active | 0.5     |
-    And STDOUT should contain:
+    When I run `wp plugin check-update --all --format=csv`
+    Then STDOUT should contain:
       """
-      update_version
+      wordpress-importer,active,0.5,
       """
-    And the return code should be 0
 
   @require-wp-5.2
   Scenario: Check for plugin updates in different output formats
@@ -75,14 +63,13 @@ Feature: Check for plugin updates
     When I run `wp plugin install wordpress-importer --version=0.5`
     Then STDOUT should not be empty
 
-    When I run `wp plugin check-update --format=json`
+    When I run `wp plugin check-update wordpress-importer --format=json`
     Then STDOUT should be JSON containing:
       """
       [{"name":"wordpress-importer","status":"inactive","version":"0.5"}]
       """
-    And the return code should be 0
 
-    When I run `wp plugin check-update --format=csv`
+    When I run `wp plugin check-update wordpress-importer --format=csv`
     Then STDOUT should contain:
       """
       name,status,version,update_version
@@ -91,7 +78,6 @@ Feature: Check for plugin updates
       """
       wordpress-importer,inactive,0.5
       """
-    And the return code should be 0
 
   @require-wp-5.2
   Scenario: Check for plugin updates with custom fields
@@ -100,22 +86,7 @@ Feature: Check for plugin updates
     When I run `wp plugin install wordpress-importer --version=0.5`
     Then STDOUT should not be empty
 
-    When I run `wp plugin check-update --fields=name,version`
+    When I run `wp plugin check-update wordpress-importer --fields=name,version`
     Then STDOUT should be a table containing rows:
       | name               | version |
       | wordpress-importer | 0.5     |
-    And the return code should be 0
-
-  @require-wp-5.2
-  Scenario: Check for plugin updates when no specific plugin has updates
-    Given a WP install
-
-    When I run `wp plugin install wordpress-importer`
-    Then STDOUT should not be empty
-
-    When I run `wp plugin check-update wordpress-importer`
-    Then STDOUT should contain:
-      """
-      Success: All plugins are up to date.
-      """
-    And the return code should be 0
