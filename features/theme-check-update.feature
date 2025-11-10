@@ -32,7 +32,7 @@ Feature: Check for theme updates
   Scenario: Check for specific theme updates
     Given a WP install
 
-    When I run `wp theme install twentyfourteen --version=1.0`
+    When I run `wp theme install twentyfourteen --version=1.0 --force`
     Then STDOUT should not be empty
 
     When I run `wp theme install twentytwelve`
@@ -47,7 +47,7 @@ Feature: Check for theme updates
   Scenario: Check for all theme updates with --all flag
     Given a WP install
 
-    When I run `wp theme install twentyfourteen --version=1.0`
+    When I run `wp theme install twentyfourteen --version=1.0 --force`
     Then STDOUT should not be empty
 
     When I run `wp theme check-update --all --format=csv`
@@ -59,7 +59,7 @@ Feature: Check for theme updates
   Scenario: Check for theme updates in different output formats
     Given a WP install
 
-    When I run `wp theme install twentyfourteen --version=1.0`
+    When I run `wp theme install twentyfourteen --version=1.0 --force`
     Then STDOUT should not be empty
 
     When I run `wp theme check-update twentyfourteen --format=json`
@@ -81,7 +81,7 @@ Feature: Check for theme updates
   Scenario: Check for theme updates with custom fields
     Given a WP install
 
-    When I run `wp theme install twentyfourteen --version=1.0`
+    When I run `wp theme install twentyfourteen --version=1.0 --force`
     Then STDOUT should not be empty
 
     When I run `wp theme check-update twentyfourteen --fields=name,version`
