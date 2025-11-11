@@ -588,6 +588,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 *     +---------+----------------+
 	 */
 	public function get( $args, $assoc_args ) {
+		/**
+		 * @var \WP_Theme $theme
+		 */
 		$theme = $this->fetcher->get_check( $args[0] );
 
 		$errors = $theme->errors();
@@ -613,10 +616,10 @@ class Theme_Command extends CommandWithUpgrade {
 			'tags',
 			'theme_root',
 			'theme_root_uri',
-			'type',
 		];
 		$theme_obj  = new stdClass();
 		foreach ( $theme_vars as $var ) {
+			// @phpstan-ignore-next-line
 			$theme_obj->$var = $theme->$var;
 		}
 
