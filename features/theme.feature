@@ -105,8 +105,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name            | status   | update    | version | update_version   | auto_update |
-      | twentytwelve    | active   | available | 1.5     | {UPDATE_VERSION} | off         |
+      | name            | status   | update    | version | update_version   | auto_update | type    |
+      | twentytwelve    | active   | available | 1.5     | {UPDATE_VERSION} | off         | classic |
 
     When I try `wp theme update`
     Then STDERR should be:
@@ -757,7 +757,8 @@ Feature: Manage WordPress themes
   Scenario: Check theme type field for classic themes
     Given a WP install
 
-    When I run `wp theme list --fields=name,type --name=twentytwelve`
+    When I run `wp theme install twentytwelve --force`
+    And I run `wp theme list --fields=name,type --name=twentytwelve`
     Then STDOUT should be a table containing rows:
       | name         | type    |
       | twentytwelve | classic |
