@@ -63,6 +63,7 @@ class Theme_Command extends CommandWithUpgrade {
 		'version',
 		'update_version',
 		'auto_update',
+		'type',
 	];
 
 	public function __construct() {
@@ -612,6 +613,7 @@ class Theme_Command extends CommandWithUpgrade {
 			'tags',
 			'theme_root',
 			'theme_root_uri',
+			'type',
 		];
 		$theme_obj  = new stdClass();
 		foreach ( $theme_vars as $var ) {
@@ -620,6 +622,12 @@ class Theme_Command extends CommandWithUpgrade {
 
 		$theme_obj->status      = $this->get_status( $theme );
 		$theme_obj->description = wordwrap( $theme_obj->description );
+
+		// Determine theme type (block or classic). is_block_theme() was added in WP 5.9.
+		$theme_obj->type = 'classic';
+		if ( method_exists( $theme, 'is_block_theme' ) && $theme->is_block_theme() ) {
+			$theme_obj->type = 'block';
+		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = $theme_vars;

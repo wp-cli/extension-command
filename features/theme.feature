@@ -738,3 +738,45 @@ Feature: Manage WordPress themes
       """
       Warning: example: This update requires PHP version 100
       """
+
+  @require-wp-5.9
+  Scenario: Check theme type field for block themes
+    Given a WP install
+
+    When I run `wp theme install twentytwentyfour`
+    Then STDOUT should contain:
+      """
+      Theme installed successfully.
+      """
+
+    When I run `wp theme list --fields=name,type`
+    Then STDOUT should be a table containing rows:
+      | name              | type    |
+      | twentytwentyfour  | block   |
+
+    When I run `wp theme get twentytwentyfour --field=type`
+    Then STDOUT should be:
+      """
+      block
+      """
+
+  Scenario: Check theme type field for classic themes
+    Given a WP install
+
+    When I run `wp theme install twentytwelve`
+    Then STDOUT should contain:
+      """
+      Theme installed successfully.
+      """
+
+    When I run `wp theme list --fields=name,type --name=twentytwelve`
+    Then STDOUT should be a table containing rows:
+      | name         | type    |
+      | twentytwelve | classic |
+
+    When I run `wp theme get twentytwelve --field=type`
+    Then STDOUT should be:
+      """
+      classic
+      """
+
