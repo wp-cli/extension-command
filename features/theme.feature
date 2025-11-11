@@ -87,8 +87,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name            | status   | update    | version | update_version   | auto_update |
-      | twentytwelve    | inactive | available | 1.4     | {UPDATE_VERSION} | off         |
+      | name            | status   | update    | version | update_version   | auto_update | type    |
+      | twentytwelve    | inactive | available | 1.4     | {UPDATE_VERSION} | off         | classic |
 
     When I run `wp theme activate twentytwelve`
     Then STDOUT should not be empty
@@ -687,8 +687,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
-      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 100        | 5.6            |
+      | name            | status   | update       | version  | update_version   | auto_update | type    |requires | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | classic | 100     | 5.6            |
 
     When I try `wp theme update example`
     Then STDERR should contain:
@@ -730,8 +730,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
-      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 3.7        | 100            |
+      | name            | status   | update       | version  | update_version   | auto_update | type    |requires | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | classic | 3.7     | 100            |
 
     When I try `wp theme update example`
     Then STDERR should contain:
@@ -742,12 +742,6 @@ Feature: Manage WordPress themes
   @require-wp-5.9
   Scenario: Check theme type field for block themes
     Given a WP install
-
-    When I run `wp theme install twentytwentyfour`
-    Then STDOUT should contain:
-      """
-      Theme installed successfully.
-      """
 
     When I run `wp theme list --fields=name,type`
     Then STDOUT should be a table containing rows:
@@ -763,12 +757,6 @@ Feature: Manage WordPress themes
   Scenario: Check theme type field for classic themes
     Given a WP install
 
-    When I run `wp theme install twentytwelve`
-    Then STDOUT should contain:
-      """
-      Theme installed successfully.
-      """
-
     When I run `wp theme list --fields=name,type --name=twentytwelve`
     Then STDOUT should be a table containing rows:
       | name         | type    |
@@ -779,4 +767,3 @@ Feature: Manage WordPress themes
       """
       classic
       """
-
