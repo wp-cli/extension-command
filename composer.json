@@ -54,6 +54,7 @@
             "plugin path",
             "plugin search",
             "plugin status",
+            "plugin check-update",
             "plugin toggle",
             "plugin uninstall",
             "plugin update",
@@ -73,6 +74,7 @@
             "theme path",
             "theme search",
             "theme status",
+            "theme check-update",
             "theme update",
             "theme mod list"
         ]
