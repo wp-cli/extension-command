@@ -154,3 +154,26 @@ Feature: Activate WordPress plugins
       Success:
       """
     And the return code should be 0
+
+  Scenario: Activating a plugin that generates unexpected output shows the output in debug mode
+    Given a wp-content/plugins/output-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Output Plugin
+       * Description: This plugin generates unexpected output during activation
+       * Author: WP-CLI tests
+       */
+      echo "Unexpected output from plugin activation";
+      """
+
+    When I try `wp plugin activate output-plugin --debug`
+    Then STDERR should contain:
+      """
+      Warning: Failed to activate plugin. The plugin generated unexpected output.
+      """
+    And STDERR should contain:
+      """
+      Debug (plugin): Unexpected output: Unexpected output from plugin activation
+      """
+    And the return code should be 1
