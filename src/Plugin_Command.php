@@ -1417,7 +1417,7 @@ class Plugin_Command extends CommandWithUpgrade {
 				// Use validate_plugin to confirm the file is missing
 				$validation = validate_plugin( $found_in_active );
 				if ( is_wp_error( $validation ) ) {
-					WP_CLI::warning( "Plugin '{$input_name}' is in the active_plugins option but the plugin file does not exist." );
+					WP_CLI::warning( "Plugin '{$input_name}' is marked as active but the plugin file does not exist." );
 				}
 			}
 
