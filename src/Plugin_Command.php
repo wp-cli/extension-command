@@ -1348,6 +1348,9 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *
 	 * Returns exit code 0 when active, 1 when not active.
 	 *
+	 * If the plugin does not exist but is still in the active_plugins option,
+	 * a warning will be emitted.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <plugin>
