@@ -1371,6 +1371,49 @@ class Plugin_Command extends CommandWithUpgrade {
 		$plugin = $this->fetcher->get( $args[0] );
 
 		if ( ! $plugin ) {
+			// Plugin not found via fetcher, but it might still be in active_plugins option
+			// Check if it's in the active_plugins list
+			$input_name     = $args[0];
+			$active_plugins = $network_wide ? get_site_option( 'active_sitewide_plugins', [] ) : get_option( 'active_plugins', [] );
+
+			// Ensure we have an array to work with
+			if ( ! is_array( $active_plugins ) ) {
+				$active_plugins = [];
+			}
+
+			// For network-wide plugins, the array is keyed differently
+			if ( $network_wide ) {
+				$active_plugin_files = array_keys( $active_plugins );
+			} else {
+				$active_plugin_files = $active_plugins;
+			}
+
+			// Try to find a matching plugin file in active_plugins
+			$found_in_active = false;
+			foreach ( $active_plugin_files as $plugin_file ) {
+				// Ensure plugin_file is a string
+				if ( ! is_string( $plugin_file ) ) {
+					continue;
+				}
+
+				// Check if the input matches the plugin file in various ways
+				if ( "$input_name.php" === $plugin_file ||
+					$plugin_file === $input_name ||
+					( dirname( $plugin_file ) === $input_name && '.' !== $input_name ) ) {
+					$found_in_active = $plugin_file;
+					break;
+				}
+			}
+
+			if ( is_string( $found_in_active ) && $found_in_active ) {
+				// Plugin is in active_plugins but file doesn't exist
+				// Use validate_plugin to confirm the file is missing
+				$validation = validate_plugin( $found_in_active );
+				if ( is_wp_error( $validation ) ) {
+					WP_CLI::warning( "Plugin '{$input_name}' is in the active_plugins option but the plugin file does not exist." );
+				}
+			}
+
 			WP_CLI::halt( 1 );
 		}
 
