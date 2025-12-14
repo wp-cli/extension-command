@@ -1405,9 +1405,11 @@ class Plugin_Command extends CommandWithUpgrade {
 
 				// Check if the input matches the plugin file in various ways
 				// This mirrors the logic in WP_CLI\Fetchers\Plugin::get()
-				if ( "$input_name.php" === $plugin_file ||
-					$plugin_file === $input_name ||
-					( dirname( $plugin_file ) === $input_name && '.' !== $input_name ) ) {
+				if (
+					( ! empty( $input_name ) && "$input_name.php" === $plugin_file ) ||
+					( ! empty( $input_name ) && $plugin_file === $input_name ) ||
+					( ! empty( $input_name ) && dirname( $plugin_file ) === $input_name && '.' !== $input_name )
+				) {
 					$found_in_active = $plugin_file;
 					break;
 				}
