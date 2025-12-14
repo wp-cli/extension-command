@@ -14,6 +14,12 @@ Feature: Check if a WordPress plugin is active
     Then the return code should be 0
 
   Scenario: Check if an inactive plugin is not active
+    When I run `wp plugin activate akismet`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
     When I run `wp plugin deactivate akismet`
     Then STDOUT should contain:
       """
