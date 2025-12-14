@@ -1392,7 +1392,7 @@ class Plugin_Command extends CommandWithUpgrade {
 			}
 
 			// Try to find a matching plugin file in active_plugins
-			$found_in_active = false;
+			$found_in_active = '';
 			foreach ( $active_plugin_files as $plugin_file ) {
 				// Ensure plugin_file is a string
 				if ( ! is_string( $plugin_file ) ) {
@@ -1408,7 +1408,7 @@ class Plugin_Command extends CommandWithUpgrade {
 				}
 			}
 
-			if ( is_string( $found_in_active ) && $found_in_active ) {
+			if ( $found_in_active ) {
 				// Plugin is in active_plugins but file doesn't exist
 				// Use validate_plugin to confirm the file is missing
 				$validation = validate_plugin( $found_in_active );
