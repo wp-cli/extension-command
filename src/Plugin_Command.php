@@ -1376,7 +1376,9 @@ class Plugin_Command extends CommandWithUpgrade {
 		if ( ! $plugin ) {
 			// Plugin not found via fetcher, but it might still be in active_plugins option
 			// Check if it's in the active_plugins list
-			$input_name     = $args[0];
+			$input_name = $args[0];
+			// For network plugins: active_sitewide_plugins is an array where keys are plugin files and values are timestamps
+			// For regular plugins: active_plugins is an array of plugin file paths
 			$active_plugins = $network_wide ? get_site_option( 'active_sitewide_plugins', [] ) : get_option( 'active_plugins', [] );
 
 			// Ensure we have an array to work with
@@ -1384,14 +1386,15 @@ class Plugin_Command extends CommandWithUpgrade {
 				$active_plugins = [];
 			}
 
-			// For network-wide plugins, the array is keyed differently
+			// For network-wide plugins, extract the plugin files from the keys
 			if ( $network_wide ) {
 				$active_plugin_files = array_keys( $active_plugins );
 			} else {
 				$active_plugin_files = $active_plugins;
 			}
 
-			// Try to find a matching plugin file in active_plugins
+			// Try to find a matching plugin file in active_plugins using the same logic as the fetcher
+			// This matches: exact file name, "name.php", or directory name
 			$found_in_active = '';
 			foreach ( $active_plugin_files as $plugin_file ) {
 				// Ensure plugin_file is a string
@@ -1400,6 +1403,7 @@ class Plugin_Command extends CommandWithUpgrade {
 				}
 
 				// Check if the input matches the plugin file in various ways
+				// This mirrors the logic in WP_CLI\Fetchers\Plugin::get()
 				if ( "$input_name.php" === $plugin_file ||
 					$plugin_file === $input_name ||
 					( dirname( $plugin_file ) === $input_name && '.' !== $input_name ) ) {
