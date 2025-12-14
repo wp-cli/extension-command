@@ -54,6 +54,33 @@ Feature: Check if a WordPress plugin is active
     When I try `wp plugin is-active akismet`
     Then STDERR should contain:
       """
-      Warning: Plugin 'akismet' is in the active_plugins option but the plugin file does not exist.
+      Warning: Plugin 'akismet' is marked as active but the plugin file does not exist.
+      """
+    And the return code should be 1
+
+  Scenario: Warn when network-activated plugin is in active_sitewide_plugins but file does not exist
+    Given a WP multisite install
+
+    When I run `wp plugin activate akismet --network`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `wp plugin is-active akismet --network`
+    Then the return code should be 0
+
+    # Remove the plugin directory
+    When I run `wp plugin path akismet --dir`
+    Then save STDOUT as {PLUGIN_PATH}
+
+    When I run `rm -rf {PLUGIN_PATH}`
+    Then the return code should be 0
+
+    # Now the plugin file is gone but still in active_sitewide_plugins
+    When I try `wp plugin is-active akismet --network`
+    Then STDERR should contain:
+      """
+      Warning: Plugin 'akismet' is marked as active but the plugin file does not exist.
       """
     And the return code should be 1
