@@ -1523,11 +1523,11 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *
 	 *     # Install all dependencies of an installed plugin
 	 *     $ wp plugin install-dependencies my-plugin
-	 *     Installing dependency: required-plugin-1 (1.2.3)
+	 *     Installing Required Plugin 1 (1.2.3)
 	 *     Plugin installed successfully.
-	 *     Installing dependency: required-plugin-2 (2.0.0)
+	 *     Installing Required Plugin 2 (2.0.0)
 	 *     Plugin installed successfully.
-	 *     Success: Installed 2 dependencies.
+	 *     Success: Installed 2 of 2 plugins.
 	 *
 	 * @subcommand install-dependencies
 	 */
