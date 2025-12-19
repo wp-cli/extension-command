@@ -940,8 +940,8 @@ class Theme_Command extends CommandWithUpgrade {
 	 *     # List inactive themes.
 	 *     $ wp theme list --status=inactive --format=csv
 	 *     name,status,update,version,update_version,auto_update,type
-	 *     twentyfourteen,inactive,none,3.8,,off
-	 *     twentysixteen,inactive,available,3.0,3.1,off
+	 *     twentyfourteen,inactive,none,3.8,,off,classic
+	 *     twentysixteen,inactive,available,3.0,3.1,off,classic
 	 *
 	 * @subcommand list
 	 */
