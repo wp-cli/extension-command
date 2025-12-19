@@ -1539,8 +1539,6 @@ class Plugin_Command extends CommandWithUpgrade {
 		$plugin = $this->fetcher->get_check( $args[0] );
 		$file   = $plugin->file;
 
-		$dependencies = [];
-
 		WP_Plugin_Dependencies::initialize();
 		$dependencies = WP_Plugin_Dependencies::get_dependencies( $file );
 
