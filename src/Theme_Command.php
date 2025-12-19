@@ -616,6 +616,7 @@ class Theme_Command extends CommandWithUpgrade {
 			'tags',
 			'theme_root',
 			'theme_root_uri',
+			'type',
 		];
 		$theme_obj  = new stdClass();
 		foreach ( $theme_vars as $var ) {

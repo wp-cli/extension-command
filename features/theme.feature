@@ -722,8 +722,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name            | status   | update       | version  | update_version   | auto_update | type    |requires | requires_php   |
-      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | classic | 100     | 5.6            |
+      | name            | status   | update       | version  | update_version   | auto_update | type    | requires | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | classic | 100      | 5.6            |
 
     When I try `wp theme update example`
     Then STDERR should contain:
