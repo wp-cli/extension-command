@@ -1079,11 +1079,11 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *
 	 *     # Install a plugin with all its dependencies
 	 *     $ wp plugin install my-plugin --with-dependencies
-	 *     Installing dependency: required-plugin-1 (1.2.3)
+	 *     Installing Required Plugin 1 (1.2.3)
 	 *     Plugin installed successfully.
-	 *     Installing dependency: required-plugin-2 (2.0.0)
+	 *     Installing Required Plugin 2 (2.0.0)
 	 *     Plugin installed successfully.
-	 *     Installing my-plugin (3.5.0)
+	 *     Installing My Plugin (3.5.0)
 	 *     Plugin installed successfully.
 	 *     Success: Installed 3 of 3 plugins.
 	 */

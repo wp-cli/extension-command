@@ -75,13 +75,13 @@ Feature: Plugin dependencies support
       Success:
       """
 
-    When I run `wp plugin list --name=akismet --field=status`
+    When I run `wp plugin list --name=duplicate-post --field=status`
     Then STDOUT should be:
       """
       inactive
       """
 
-    When I run `wp plugin list --name=hello --field=status`
+    When I run `wp plugin list --name=debug-bar --field=status`
     Then STDOUT should be:
       """
       inactive
