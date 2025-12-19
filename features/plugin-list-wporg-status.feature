@@ -69,6 +69,27 @@ Feature: Check the status of plugins on WordPress.org
         </rss>
       """
 
+    And that HTTP requests to https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request%5Blocale%5D=en_US&request%5Bslug%5D=never-wporg will respond with:
+      """
+      HTTP/1.1 404
+      Content-Type: application/json
+
+      {
+        "error": "not_found"
+      }
+      """
+    And that HTTP requests to https://plugins.trac.wordpress.org/log/never-wporg?limit=1&mode=stop_on_copy&format=rss will respond with:
+      """
+      HTTP/1.1 404
+      Content-Type: application/rss+xml;charset=utf-8
+
+      <?xml version="1.0"?>
+        <rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+          <channel>
+          </channel>
+        </rss>
+      """
+
     When I run `wp plugin list --fields=name,wporg_status`
     Then STDOUT should be a table containing rows:
       | name                   | wporg_status    |

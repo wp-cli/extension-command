@@ -89,7 +89,7 @@ trait ParseThemeNameInput {
 			$auto_updates = [];
 		}
 
-		foreach ( wp_get_themes() as $key => $theme ) {
+		foreach ( wp_get_themes( [ 'errors' => null ] ) as $key => $theme ) {
 			$stylesheet  = $theme->get_stylesheet();
 			$update_info = ( isset( $all_update_info->response[ $stylesheet ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
 
