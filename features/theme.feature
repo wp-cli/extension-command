@@ -435,6 +435,41 @@ Feature: Manage WordPress themes
       | moina-blog    | active   |
       | moina         | parent   |
 
+  @require-wp-5.7
+  Scenario: List broken themes (child theme without parent)
+    Given a WP install
+    And I run `wp theme install moina`
+    And I run `wp theme install moina-blog`
+    
+    When I run `wp theme list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name          | status   |
+      | moina-blog    | inactive |
+      | moina         | inactive |
+    
+    When I run `wp theme delete moina`
+    Then STDOUT should contain:
+      """
+      Deleted 'moina' theme.
+      """
+    
+    When I run `wp theme list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name          | status   |
+      | moina-blog    | inactive |
+    
+    When I try `wp theme activate moina-blog`
+    Then STDERR should contain:
+      """
+      Error: The parent theme is missing. Please install the "moina" parent theme.
+      """
+    
+    When I try `wp theme install moina-blog`
+    Then STDERR should contain:
+      """
+      Warning: moina-blog: Theme already installed.
+      """
+
   Scenario: When updating a theme --format should be the same when using --dry-run
     Given a WP install
     And I run `wp theme delete --all --force`
