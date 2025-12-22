@@ -28,6 +28,9 @@ use WP_CLI\Utils;
  */
 class Theme_AutoUpdates_Command {
 
+	/**
+	 * @use ParseThemeNameInput<\WP_Theme>
+	 */
 	use ParseThemeNameInput;
 
 	/**

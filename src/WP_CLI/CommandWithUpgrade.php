@@ -11,6 +11,12 @@ use WP_CLI\Loggers;
 use WP_CLI\Utils;
 use WP_Error;
 
+/**
+ * @phpstan-import-type ThemeInformation from \Theme_Command
+ * @phpstan-import-type PluginInformation from \Plugin_Command
+ *
+ * @template T
+ */
 abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected $fetcher;
@@ -61,24 +67,42 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$this->fetcher = new Fetchers\Plugin();
 	}
 
+	/**
+	 * @return class-string<\WP_Upgrader>
+	 */
 	abstract protected function get_upgrader_class( $force );
 
 	abstract protected function get_item_list();
 
 	/**
-	 * @param array List of update candidates
-	 * @param array List of item names
+	 * @param array $items List of update candidates
+	 * @param array $args  List of item names
 	 * @return array List of update candidates
 	 */
 	abstract protected function filter_item_list( $items, $args );
 
 	abstract protected function get_all_items();
 
+	/**
+	 * Get the status for a given extension.
+	 *
+	 * @param T $file Extension to get the status for.
+	 *
+	 * @return string Status of the extension.
+	 */
 	abstract protected function get_status( $file );
 
 	abstract protected function status_single( $args );
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
+
+	/**
+	 * Activates an extension.
+	 *
+	 * @param string[] $args       Positional arguments.
+	 * @param array    $assoc_args Associative arguments.
+	 */
+	abstract public function activate( $args, $assoc_args = [] );
 
 	public function status( $args ) {
 		// Force WordPress to check for updates.
@@ -197,13 +221,16 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 				$filter = false;
 				// If a GitHub URL, do some guessing as to the correct plugin/theme directory.
-				if ( $is_remote && 'github.com' === $this->parse_url_host_component( $slug, PHP_URL_HOST )
+				if ( $is_remote && 'github.com' === Utils\parse_url( $slug, PHP_URL_HOST )
 						// Don't attempt to rename ZIPs uploaded to the releases page or coming from a raw source.
 						&& ! preg_match( '#github\.com/[^/]+/[^/]+/(?:releases/download|raw)/#', $slug ) ) {
 
 					$filter = function ( $source ) use ( $slug ) {
-
-						$slug_dir = Utils\basename( $this->parse_url_host_component( $slug, PHP_URL_PATH ), '.zip' );
+						/**
+						 * @var string $path
+						 */
+						$path     = Utils\parse_url( $slug, PHP_URL_PATH );
+						$slug_dir = Utils\basename( $path, '.zip' );
 
 						// Don't use the zip name if archive attached to release, as name likely to contain version tag/branch.
 						if ( preg_match( '#github\.com/[^/]+/([^/]+)/archive/#', $slug, $matches ) ) {
@@ -215,7 +242,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						if ( $source_dir === $slug_dir ) {
 							return $source;
 						}
-						$new_path = substr_replace( $source, $slug_dir, strrpos( $source, $source_dir ), strlen( $source_dir ) );
+						$new_path = substr_replace( $source, $slug_dir, (int) strrpos( $source, $source_dir ), strlen( $source_dir ) );
 
 						if ( $GLOBALS['wp_filesystem']->move( $source, $new_path ) ) {
 							WP_CLI::log( sprintf( "Renamed Github-based project from '%s' to '%s'.", $source_dir, $slug_dir ) );
@@ -294,8 +321,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	/**
 	 * Prepare an API response for downloading a particular version of an item.
 	 *
-	 * @param object $response wordpress.org API response
-	 * @param string $version The desired version of the package
+	 * @param object $response Wordpress.org API response.
+	 * @param string $version  The desired version of the package.
+	 *
+	 * @phpstan-param PluginInformation|ThemeInformation $response
 	 */
 	protected static function alter_api_response( $response, $version ) {
 		if ( $response->version === $version ) {
@@ -346,8 +375,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	protected function get_upgrader( $assoc_args ) {
-		$force          = (bool) Utils\get_flag_value( $assoc_args, 'force', false );
-		$insecure       = (bool) Utils\get_flag_value( $assoc_args, 'insecure', false );
+		$force          = Utils\get_flag_value( $assoc_args, 'force', false );
+		$insecure       = Utils\get_flag_value( $assoc_args, 'insecure', false );
 		$upgrader_class = $this->get_upgrader_class( $force );
 		return Utils\get_upgrader( $upgrader_class, $insecure );
 	}
@@ -384,19 +413,22 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		);
 
-		$minor = (bool) Utils\get_flag_value( $assoc_args, 'minor', false );
-		$patch = (bool) Utils\get_flag_value( $assoc_args, 'patch', false );
+		$minor = Utils\get_flag_value( $assoc_args, 'minor', false );
+		$patch = Utils\get_flag_value( $assoc_args, 'patch', false );
 
 		if (
 			in_array( $this->item_type, [ 'plugin', 'theme' ], true ) &&
 			( $minor || $patch )
 		) {
 			$type     = $minor ? 'minor' : 'patch';
-			$insecure = (bool) Utils\get_flag_value( $assoc_args, 'insecure', false );
+			$insecure = Utils\get_flag_value( $assoc_args, 'insecure', false );
 
 			$items_to_update = self::get_minor_or_patch_updates( $items_to_update, $type, $insecure, true, $this->item_type );
 		}
 
+		/**
+		 * @var string|null $exclude
+		 */
 		$exclude = Utils\get_flag_value( $assoc_args, 'exclude' );
 		if ( isset( $exclude ) ) {
 			$exclude_items = explode( ',', trim( $assoc_args['exclude'], ',' ) );
@@ -475,6 +507,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				foreach ( $items_to_update as $name => $item_data ) {
 					if ( isset( $transient->response[ $name ] ) ) {
 						if ( is_object( $transient->response[ $name ] ) ) {
+							/**
+							 * @var object{response: array<string, ThemeInformation|PluginInformation>} $transient
+							 */
 							$transient->response[ $name ]->new_version = $item_data['update_version'];
 							$transient->response[ $name ]->package     = $item_data['update_package'];
 						} else {
@@ -489,6 +524,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
 			remove_filter( 'site_transient_' . $this->upgrade_transient, $transient_filter, 999 );
 		}
+
+		/**
+		 * @var array $items_to_update
+		 */
 
 		// Let the user know the results.
 		$num_to_update = count( $items_to_update );
@@ -545,14 +584,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected function _list( $_, $assoc_args ) {
 
 		// Force WordPress to check for updates if `--skip-update-check` is not passed.
-		if ( false === (bool) Utils\get_flag_value( $assoc_args, 'skip-update-check', false ) ) {
+		if ( false === Utils\get_flag_value( $assoc_args, 'skip-update-check', false ) ) {
 			delete_site_transient( $this->upgrade_transient );
 			call_user_func( $this->upgrade_refresh );
 		}
 
 		$all_items = $this->get_all_items();
 
-		if ( false !== (bool) Utils\get_flag_value( $assoc_args, 'recently-active', false ) ) {
+		if ( false !== Utils\get_flag_value( $assoc_args, 'recently-active', false ) ) {
 			$all_items = array_filter(
 				$all_items,
 				function ( $value ) {
@@ -624,6 +663,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * @return bool
 	 */
 	protected function has_update( $slug ) {
+		/**
+		 * @var object{checked: array<string, string>, response: array<string, string>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} $update_list
+		 */
 		$update_list = get_site_transient( $this->upgrade_transient );
 
 		return isset( $update_list->response[ $slug ] );
@@ -632,10 +674,15 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	/**
 	 * Get the available update info
 	 *
-	 * @return mixed
+	 * @return object{checked: array<string, string>, response: array<string, array<string, string|null>>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} $update_list
 	 */
 	protected function get_update_info() {
-		return get_site_transient( $this->upgrade_transient );
+		/**
+		 * @var object{checked: array<string, string>, response: array<string, array<string, string|null>>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} $update_list
+		 */
+		$update_list = get_site_transient( $this->upgrade_transient );
+
+		return $update_list;
 	}
 
 	private $map = [
@@ -688,8 +735,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$wp_org_api = new WpOrgApi( [ 'insecure' => $insecure ] );
 		foreach ( $items as $i => $item ) {
 			try {
-				$data = call_user_func(
-					[ $wp_org_api, "get_{$item_type}_info" ],
+				/**
+				 * @var callable $callback
+				 */
+				$callback = [ $wp_org_api, "get_{$item_type}_info" ];
+				$data     = call_user_func(
+					$callback,
 					$item['name'],
 					// The default.
 					'en_US',
@@ -780,8 +831,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( 'plugin' === $this->item_type ) {
 			$api = plugins_api( 'query_plugins', $api_args );
 		} else {
+			// fields[screenshot_count] could be an int, not a bool.
+			// @phpstan-ignore argument.type
 			$api = themes_api( 'query_themes', $api_args );
 		}
+
+		/**
+		 * @var \WP_Error|object{info: object{page: int, pages: int, results: int}} $api
+		 */
 
 		if ( is_wp_error( $api ) ) {
 			WP_CLI::error( $api->get_error_message() . __( ' Try again' ) );
@@ -796,14 +853,20 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$items = $api->$plural;
 
 		// Add `url` for plugin or theme on wordpress.org.
+		// In older WP versions these used to be objects.
 		foreach ( $items as $index => $item_object ) {
-			if ( $item_object instanceof \stdClass ) {
+			if ( is_array( $item_object ) ) {
+				$items[ $index ]['url'] = "https://wordpress.org/{$plural}/{$item_object['slug']}/";
+			} elseif ( $item_object instanceof \stdClass ) {
 				$item_object->url = "https://wordpress.org/{$plural}/{$item_object->slug}/";
 			}
 		}
 
 		if ( 'table' === $format ) {
-			$count = Utils\get_flag_value( $api->info, 'results', 'unknown' );
+			/**
+			 * @var string $count
+			 */
+			$count = Utils\get_flag_value( (array) $api->info, 'results', 'unknown' );
 			WP_CLI::success( sprintf( 'Showing %s of %s %s.', count( $items ), $count, $plural ) );
 		}
 
@@ -830,18 +893,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 		// Else assume it's in `wp_update_themes()` or `wp_update_plugins()` and just ignore it.
 		return true;
-	}
-
-	/**
-	 * Retrieves PHP_URL_HOST component from URL.
-	 *
-	 * @param int $component The component to retrieve.
-	 *
-	 * @return string
-	 */
-	private function parse_url_host_component( $url, $component ) {
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- parse_url will only be used in absence of wp_parse_url.
-		return function_exists( 'wp_parse_url' ) ? wp_parse_url( $url, $component ) : parse_url( $url, $component );
 	}
 
 	/**
@@ -895,6 +946,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 
 		if ( 404 === wp_remote_retrieve_response_code( $response ) ) {
+			/**
+			 * @var object{status: string, message: string} $decoded_body
+			 */
 			return new \WP_Error(
 				$decoded_body->status,
 				$decoded_body->message
@@ -904,6 +958,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( null === $decoded_body ) {
 			return new \WP_Error( 500, 'Empty response received from GitHub.com API' );
 		}
+
+		/**
+		 * @var array<int, object{name: string}> $decoded_body
+		 */
 
 		if ( ! isset( $decoded_body[0] ) ) {
 			return new \WP_Error( '400', 'The given Github repository does not have any releases' );

@@ -1,5 +1,6 @@
 <?php
 
+use WP_CLI\CommandWithUpgrade;
 use WP_CLI\ParsePluginNameInput;
 use WP_CLI\Utils;
 use WP_CLI\WpOrgApi;
@@ -41,9 +42,11 @@ use function WP_CLI\Utils\normalize_path;
  *     Success: Installed 1 of 1 plugins.
  *
  * @package wp-cli
+ *
+ * @phpstan-type PluginInformation object{name: string, slug: non-empty-string, version: string, new_version: string, download_link: string, requires_php?: string, requires?: string, package: string}&\stdClass
+ * @extends CommandWithUpgrade<string,>
  */
-class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
-
+class Plugin_Command extends CommandWithUpgrade {
 	use ParsePluginNameInput;
 
 	protected $item_type         = 'plugin';
@@ -65,13 +68,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		'update_version',
 		'auto_update',
 	);
-
-	/**
-	 * Plugin fetcher instance.
-	 *
-	 * @var \WP_CLI\Fetchers\Plugin
-	 */
-	protected $fetcher;
 
 	public function __construct() {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -209,6 +205,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function status_single( $args ) {
+		/**
+		 * @var object{name: string, file: string} $plugin
+		 */
 		$plugin = $this->fetcher->get_check( $args[0] );
 		$file   = $plugin->file;
 
@@ -345,11 +344,18 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Plugin 'bbpress' network activated.
 	 *     Plugin 'buddypress' network activated.
 	 *     Success: Activated 2 of 2 plugins.
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
 	 */
-	public function activate( $args, $assoc_args = array() ) {
+	public function activate( $args, $assoc_args = [] ) {
 		$network_wide = Utils\get_flag_value( $assoc_args, 'network', false );
 		$all          = Utils\get_flag_value( $assoc_args, 'all', false );
-		$all_exclude  = Utils\get_flag_value( $assoc_args, 'exclude' );
+		$all_exclude  = Utils\get_flag_value( $assoc_args, 'exclude', '' );
+
+		/**
+		 * @var string $all_exclude
+		 */
 
 		$args = $this->check_optional_args_and_all( $args, $all, 'activate', $all_exclude );
 		if ( ! $args ) {
@@ -358,7 +364,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$successes = 0;
 		$errors    = 0;
-		$plugins   = $this->fetcher->get_many( $args );
+
+		/**
+		 * @var array<object{name: string, file: string}> $plugins
+		 */
+		$plugins = $this->fetcher->get_many( $args );
 		if ( count( $plugins ) < count( $args ) ) {
 			$errors = count( $args ) - count( $plugins );
 		}
@@ -387,7 +397,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 			if ( is_wp_error( $result ) ) {
 				$message = $result->get_error_message();
-				$message = preg_replace( '/<a\s[^>]+>.*<\/a>/im', '', $message );
+				$message = (string) preg_replace( '/<a\s[^>]+>.*<\/a>/im', '', $message );
 				$message = wp_strip_all_tags( $message );
 				$message = str_replace( 'Error: ', '', $message );
 				WP_CLI::warning( "Failed to activate plugin. {$message}" );
@@ -437,10 +447,14 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Plugin 'ninja-forms' deactivated.
 	 *     Success: Deactivated 2 of 2 plugins.
 	 */
-	public function deactivate( $args, $assoc_args = array() ) {
+	public function deactivate( $args, $assoc_args = [] ) {
 		$network_wide        = Utils\get_flag_value( $assoc_args, 'network' );
 		$disable_all         = Utils\get_flag_value( $assoc_args, 'all' );
-		$disable_all_exclude = Utils\get_flag_value( $assoc_args, 'exclude' );
+		$disable_all_exclude = Utils\get_flag_value( $assoc_args, 'exclude', '' );
+
+		/**
+		 * @var string $disable_all_exclude
+		 */
 
 		$args = $this->check_optional_args_and_all( $args, $disable_all, 'deactivate', $disable_all_exclude );
 		if ( ! $args ) {
@@ -530,7 +544,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Plugin 'akismet' activated.
 	 *     Success: Toggled 1 of 1 plugins.
 	 */
-	public function toggle( $args, $assoc_args = array() ) {
+	public function toggle( $args, $assoc_args ) {
 		$network_wide = Utils\get_flag_value( $assoc_args, 'network' );
 
 		$successes = 0;
@@ -574,6 +588,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$path = untrailingslashit( WP_PLUGIN_DIR );
 
 		if ( ! empty( $args ) ) {
+			/**
+			 * @var object{name: string, file: string} $plugin
+			 */
 			$plugin = $this->fetcher->get_check( $args[0] );
 			$path  .= '/' . $plugin->file;
 
@@ -591,6 +608,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		list($wp_core_version) = explode( '-', $wp_version );
 		$wp_core_version       = implode( '.', array_slice( explode( '.', $wp_core_version ), 0, 2 ) );
 
+		/**
+		 * @var \WP_Error|PluginInformation $api
+		 */
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
@@ -755,6 +775,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$auto_updates = [];
 		}
 
+		/**
+		 * @var string[] $recently_active
+		 */
 		$recently_active = is_network_admin() ? get_site_option( 'recently_activated' ) : get_option( 'recently_activated' );
 
 		if ( false === $recently_active ) {
@@ -763,10 +786,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		foreach ( $this->get_all_plugins() as $file => $details ) {
 			$all_update_info = $this->get_update_info();
-			$update_info     = ( isset( $all_update_info->response[ $file ] ) && null !== $all_update_info->response[ $file ] ) ? (array) $all_update_info->response[ $file ] : null;
-			$name            = Utils\get_plugin_name( $file );
-			$wporg_info      = $this->get_wporg_data( $name );
-			$plugin_data     = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
+			// @phpstan-ignore notIdentical.alwaysTrue
+			$update_info = ( isset( $all_update_info->response[ $file ] ) && null !== $all_update_info->response[ $file ] ) ? (array) $all_update_info->response[ $file ] : null;
+			$name        = Utils\get_plugin_name( $file );
+			$wporg_info  = $this->get_wporg_data( $name );
+			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
 
 			if ( ! isset( $duplicate_names[ $name ] ) ) {
 				$duplicate_names[ $name ] = array();
@@ -875,7 +899,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 					if ( isset( $plugin_update_info->requires ) && version_compare( $wp_version, $requires, '>=' ) ) {
 						$reason = "This update requires WordPress version $plugin_update_info->requires, but the version installed is $wp_version.";
-					} elseif ( ! isset( $update_info['package'] ) ) {
+					} elseif ( ! isset( $plugin_update_info->package ) ) {
 						$reason = 'Update file not provided. Contact author for more details';
 					} else {
 						$reason = 'Update not available';
@@ -904,7 +928,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @param string $plugin_name The plugin slug.
 	 *
-	 * @return string The status of the plugin, includes the last update date.
+	 * @return array{status: string, last_updated: string|false, status?: string, last_updated?: string} The status of the plugin, includes the last update date.
 	 */
 	protected function get_wporg_data( $plugin_name ) {
 		$data = [
@@ -947,10 +971,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$r_body = wp_remote_retrieve_body( $request );
 		if ( strpos( $r_body, 'pubDate' ) !== false ) {
 			// Very raw check, not validating the format or anything else.
-			$xml          = simplexml_load_string( $r_body );
-			$xml_pub_date = $xml->xpath( '//pubDate' );
-			if ( $xml_pub_date ) {
-				$data['last_updated'] = wp_date( 'Y-m-d', (string) strtotime( $xml_pub_date[0] ) );
+			$xml = simplexml_load_string( $r_body );
+			if ( false !== $xml ) {
+				$xml_pub_date = $xml->xpath( '//pubDate' );
+				if ( $xml_pub_date ) {
+					$data['last_updated'] = wp_date( 'Y-m-d', strtotime( $xml_pub_date[0] ) ?: null );
+				}
 			}
 		}
 
@@ -979,7 +1005,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * for confirmation.
 	 *
 	 * [--ignore-requirements]
-	 * :If set, the command will install the plugin while ignoring any WordPress or PHP version requirements
+	 * : If set, the command will install the plugin while ignoring any WordPress or PHP version requirements
 	 * specified by the plugin authors.
 	 *
 	 * [--activate]
@@ -1115,6 +1141,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			'status',
 		);
 
+		/**
+		 * @var object{name: string, file: string} $plugin
+		 */
 		$plugin = $this->fetcher->get_check( $args[0] );
 		$file   = $plugin->file;
 
@@ -1173,10 +1202,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Uninstalled and deleted 'tinymce-templates' plugin.
 	 *     Success: Uninstalled 2 of 2 plugins.
 	 */
-	public function uninstall( $args, $assoc_args = array() ) {
-
+	public function uninstall( $args, $assoc_args = [] ) {
 		$all         = Utils\get_flag_value( $assoc_args, 'all', false );
 		$all_exclude = Utils\get_flag_value( $assoc_args, 'exclude', false );
+
+		/**
+		 * @var string $all_exclude
+		 */
 
 		// Check if plugin names or --all is passed.
 		$args = $this->check_optional_args_and_all( $args, $all, 'uninstall', $all_exclude );
@@ -1222,6 +1254,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			if ( '.' !== $plugin_slug && ! empty( $plugin_translations[ $plugin_slug ] ) ) {
 				$translations = $plugin_translations[ $plugin_slug ];
 
+				/**
+				 * @var \WP_Filesystem_Base $wp_filesystem
+				 */
 				global $wp_filesystem;
 				require_once ABSPATH . '/wp-admin/includes/file.php';
 				WP_Filesystem();
@@ -1233,7 +1268,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 					$json_translation_files = glob( WP_LANG_DIR . '/plugins/' . $plugin_slug . '-' . $translation . '-*.json' );
 					if ( $json_translation_files ) {
-						array_map( array( $wp_filesystem, 'delete' ), $json_translation_files );
+						/**
+						 * @var callable $callback
+						 */
+						$callback = [ $wp_filesystem, 'delete' ];
+						array_map( $callback, $json_translation_files );
 					}
 				}
 			}
@@ -1257,6 +1296,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		// Remove deleted plugins from the plugin updates list.
 		$current = get_site_transient( $this->upgrade_transient );
 		if ( $current ) {
+			/**
+			 * @var object{response: array<string, mixed>, checked: array<string, mixed>}&\stdClass $current
+			 */
+
 			// Don't remove the plugins that weren't deleted.
 			$deleted = array_diff( $deleted_plugin_files, $delete_errors );
 
@@ -1292,7 +1335,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @subcommand is-installed
 	 */
-	public function is_installed( $args, $assoc_args = array() ) {
+	public function is_installed( $args, $assoc_args ) {
 		if ( $this->fetcher->get( $args[0] ) ) {
 			WP_CLI::halt( 0 );
 		} else {
@@ -1322,7 +1365,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @subcommand is-active
 	 */
-	public function is_active( $args, $assoc_args = array() ) {
+	public function is_active( $args, $assoc_args ) {
 		$network_wide = Utils\get_flag_value( $assoc_args, 'network' );
 
 		$plugin = $this->fetcher->get( $args[0] );
@@ -1366,9 +1409,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Deleted 'tinymce-templates' plugin.
 	 *     Success: Deleted 2 of 2 plugins.
 	 */
-	public function delete( $args, $assoc_args = array() ) {
+	public function delete( $args, $assoc_args ) {
 		$all         = Utils\get_flag_value( $assoc_args, 'all', false );
 		$all_exclude = Utils\get_flag_value( $assoc_args, 'exclude', false );
+
+		/**
+		 * @var string $all_exclude
+		 */
 
 		// Check if plugin names or --all is passed.
 		$args = $this->check_optional_args_and_all( $args, $all, 'delete', $all_exclude );
@@ -1505,7 +1552,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @subcommand list
 	 */
 	public function list_( $_, $assoc_args ) {
+		/**
+		 * @var string $fields
+		 */
 		$fields = Utils\get_flag_value( $assoc_args, 'fields' );
+
 		if ( ! empty( $fields ) ) {
 			$fields                            = explode( ',', $fields );
 			$this->check_wporg['status']       = in_array( 'wporg_status', $fields, true );
@@ -1578,7 +1629,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Gets the details of a plugin.
 	 *
-	 * @param object
+	 * @param string $file Plugin file name.
 	 * @return array
 	 */
 	private function get_details( $file ) {
@@ -1591,8 +1642,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Performs deletion of plugin files
 	 *
-	 * @param $plugin - Plugin fetcher object (name, file)
-	 * @return bool - If plugin was deleted
+	 * @param $plugin Plugin fetcher object (name, file)
+	 * @return bool Whether plugin was deleted
 	 */
 	private function delete_plugin( $plugin ) {
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound

@@ -5,6 +5,9 @@ namespace WP_CLI;
 use WP_CLI;
 use Theme_AutoUpdates_Command;
 
+/**
+ * @template T of \WP_Theme
+ */
 trait ParseThemeNameInput {
 
 	/**
@@ -54,11 +57,17 @@ trait ParseThemeNameInput {
 		$theme_version_info = array();
 
 		if ( is_multisite() ) {
+			/**
+			 * @var array<string, array{enabled: string}>} $site_enabled
+			 */
 			$site_enabled = get_option( 'allowedthemes' );
 			if ( empty( $site_enabled ) ) {
 				$site_enabled = array();
 			}
 
+			/**
+			 * @var array<string, array{enabled: string}>} $network_enabled
+			 */
 			$network_enabled = get_site_option( 'allowedthemes' );
 			if ( empty( $network_enabled ) ) {
 				$network_enabled = array();
@@ -80,7 +89,7 @@ trait ParseThemeNameInput {
 			$auto_updates = [];
 		}
 
-		foreach ( wp_get_themes() as $key => $theme ) {
+		foreach ( wp_get_themes( [ 'errors' => null ] ) as $key => $theme ) {
 			$stylesheet  = $theme->get_stylesheet();
 			$update_info = ( isset( $all_update_info->response[ $stylesheet ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
 
@@ -169,7 +178,9 @@ trait ParseThemeNameInput {
 	 * @return bool|string
 	 */
 	protected function is_theme_version_valid( $slug, $version ) {
-		// Get Theme Info.
+		/**
+		 * @var \WP_Error|object{name: string, slug: string, version: string, download_link: string} $theme_info
+		 */
 		$theme_info = themes_api( 'theme_information', array( 'slug' => $slug ) );
 
 		// Return empty string for themes not on WP.org.
@@ -184,7 +195,7 @@ trait ParseThemeNameInput {
 	/**
 	 * Get the status for a given theme.
 	 *
-	 * @param WP_Theme $theme Theme to get the status for.
+	 * @param T $theme Theme to get the status for.
 	 *
 	 * @return string Status of the theme.
 	 */
@@ -203,7 +214,7 @@ trait ParseThemeNameInput {
 	/**
 	 * Check whether a given theme is the active theme.
 	 *
-	 * @param WP_Theme $theme Theme to check.
+	 * @param \WP_Theme $theme Theme to check.
 	 *
 	 * @return bool Whether the provided theme is the active theme.
 	 */
@@ -214,7 +225,7 @@ trait ParseThemeNameInput {
 	/**
 	 * Check whether a given theme is the active theme parent.
 	 *
-	 * @param WP_Theme $theme Theme to check.
+	 * @param \WP_Theme $theme Theme to check.
 	 *
 	 * @return bool Whether the provided theme is the active theme.
 	 */
@@ -225,9 +236,14 @@ trait ParseThemeNameInput {
 	/**
 	 * Get the available update info.
 	 *
-	 * @return mixed Available update info.
+	 * @return object{checked: array<string, string>, response: array<string, array<string, string|null>>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} Available update info.
 	 */
 	protected function get_update_info() {
-		return get_site_transient( 'update_themes' );
+		/**
+		 * @var object{checked: array<string, string>, response: array<string, array<string, string|null>>, no_update: array<string, object{new_version: string, package: string, requires: string}&\stdClass>} $result
+		 */
+		$result = get_site_transient( 'update_themes' );
+
+		return $result;
 	}
 }

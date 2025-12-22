@@ -72,6 +72,9 @@ class Plugin_AutoUpdates_Command {
 	 *     $ wp plugin auto-updates enable hello
 	 *     Plugin auto-updates for 'hello' enabled.
 	 *     Success: Enabled 1 of 1 plugin auto-updates.
+	 *
+	 * @param string[]                                  $args       Positional arguments.
+	 * @param array{all?: bool, 'disabled-only'?: bool} $assoc_args Associative arguments.
 	 */
 	public function enable( $args, $assoc_args ) {
 		$all           = Utils\get_flag_value( $assoc_args, 'all', false );

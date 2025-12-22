@@ -21,21 +21,20 @@ Feature: Activate WordPress plugins
       """
     And the return code should be 1
 
-    When I try `wp plugin activate akismet hello debug-bar`
+    When I try `wp plugin activate akismet debug-bar`
     Then STDERR should be:
       """
       Warning: The 'debug-bar' plugin could not be found.
-      Error: Only activated 2 of 3 plugins.
+      Error: Only activated 1 of 2 plugins.
       """
     And STDOUT should be:
       """
       Plugin 'akismet' activated.
-      Plugin 'hello' activated.
       """
     And the return code should be 1
 
   Scenario: Activate all when one plugin is hidden by "all_plugins" filter
-    Given I run `wp plugin install site-secrets`
+    Given I run `wp plugin install site-secrets https://github.com/wp-cli/sample-plugin/archive/refs/heads/master.zip`
     And a wp-content/mu-plugins/hide-us-plugin.php file:
       """
       <?php
@@ -55,7 +54,10 @@ Feature: Activate WordPress plugins
     Then STDOUT should contain:
       """
       Plugin 'akismet' activated.
-      Plugin 'hello' activated.
+      """
+    And STDOUT should contain:
+      """
+      Plugin 'sample-plugin' activated.
       """
     And STDOUT should not contain:
       """
@@ -135,7 +137,7 @@ Feature: Activate WordPress plugins
       """
 
   Scenario: Adding --exclude with plugin activate --all should exclude the plugins specified via --exclude
-    When I try `wp plugin activate --all --exclude=hello`
+    When I try `wp plugin activate --all --exclude=hello,hello-dolly`
     Then STDOUT should be:
       """
       Plugin 'akismet' activated.

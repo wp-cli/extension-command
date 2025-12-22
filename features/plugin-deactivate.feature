@@ -2,7 +2,8 @@ Feature: Deactivate WordPress plugins
 
   Background:
     Given a WP install
-    And I run `wp plugin activate akismet hello`
+    And I run `wp plugin install https://github.com/wp-cli/sample-plugin/archive/refs/heads/master.zip`
+    And I run `wp plugin activate akismet sample-plugin`
 
   Scenario: Deactivate a plugin that's already activated
     When I run `wp plugin deactivate akismet`
@@ -23,7 +24,7 @@ Feature: Deactivate WordPress plugins
     And STDOUT should be empty
     And the return code should be 1
 
-    When I try `wp plugin deactivate akismet hello debug-bar`
+    When I try `wp plugin deactivate akismet sample-plugin debug-bar`
     Then STDERR should be:
       """
       Warning: The 'debug-bar' plugin could not be found.
@@ -32,7 +33,7 @@ Feature: Deactivate WordPress plugins
     And STDOUT should be:
       """
       Plugin 'akismet' deactivated.
-      Plugin 'hello' deactivated.
+      Plugin 'sample-plugin' deactivated.
       """
     And the return code should be 1
 
@@ -78,16 +79,19 @@ Feature: Deactivate WordPress plugins
       """
 
   Scenario: Adding --exclude with plugin deactivate --all should exclude the plugins specified via --exclude
-    When I try `wp plugin deactivate --all --exclude=hello`
-    Then STDOUT should be:
+    When I try `wp plugin deactivate --all --exclude=sample-plugin`
+    Then STDOUT should contain:
       """
       Plugin 'akismet' deactivated.
-      Success: Deactivated 1 of 1 plugins.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deactivated 1 of 2 plugins.
       """
     And the return code should be 0
 
   Scenario: Adding --exclude with plugin deactivate should throw an error unless --all given
-    When I try `wp plugin deactivate --exclude=hello`
+    When I try `wp plugin deactivate --exclude=sample-plugin`
     Then the return code should be 1
     And STDERR should be:
       """
