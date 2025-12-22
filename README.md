@@ -1086,7 +1086,7 @@ Returns exit code 0 when active, 1 when not active.
 **OPTIONS**
 
 	<theme>
-		The plugin to check.
+		The theme to check.
 
 **EXAMPLES**
 
