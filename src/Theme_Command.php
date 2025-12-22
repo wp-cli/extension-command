@@ -775,7 +775,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * ## OPTIONS
 	 *
 	 * <theme>
-	 * : The plugin to check.
+	 * : The theme to check.
 	 *
 	 * ## EXAMPLES
 	 *
