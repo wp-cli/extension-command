@@ -273,3 +273,55 @@ Feature: Install WordPress plugins
       """
       Error: No plugins installed.
       """
+
+  Scenario: Install plugin using WordPress.org directory URL
+    Given a WP install
+
+    When I run `wp plugin install https://wordpress.org/plugins/hello-dolly/`
+    Then STDOUT should contain:
+      """
+      Detected WordPress.org plugins directory URL, using slug: hello-dolly
+      """
+    And STDOUT should contain:
+      """
+      Installing Hello Dolly
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=hello-dolly --field=status`
+    Then STDOUT should be:
+      """
+      inactive
+      """
+
+  Scenario: Install and activate plugin using WordPress.org directory URL
+    Given a WP install
+
+    When I run `wp plugin install https://wordpress.org/plugins/akismet/ --activate`
+    Then STDOUT should contain:
+      """
+      Detected WordPress.org plugins directory URL, using slug: akismet
+      """
+    And STDOUT should contain:
+      """
+      Installing Akismet Anti-spam
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And STDOUT should contain:
+      """
+      Activating 'akismet'...
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=akismet --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """

@@ -212,6 +212,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 					WP_CLI::log( 'Latest release resolved to ' . $version['name'] );
 				}
+
+				// Check if this is a WordPress.org plugin/theme directory URL.
+				// If so, extract the slug and treat it as a repository installation.
+				if ( preg_match( '#^https?://wordpress\.org/(plugins|themes)/([^/]+)/?#', $slug, $matches ) ) {
+					$slug      = $matches[2];
+					$is_remote = false;
+					WP_CLI::log( sprintf( 'Detected WordPress.org %s directory URL, using slug: %s', $matches[1], $slug ) );
+				}
 			}
 
 			// Check if a URL to a remote or local zip has been specified.

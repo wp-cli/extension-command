@@ -158,3 +158,51 @@ Feature: Install WordPress themes
       """
       Error: No themes installed.
       """
+
+  Scenario: Install theme using WordPress.org directory URL
+    When I run `wp theme install https://wordpress.org/themes/twentytwelve/`
+    Then STDOUT should contain:
+      """
+      Detected WordPress.org themes directory URL, using slug: twentytwelve
+      """
+    And STDOUT should contain:
+      """
+      Installing Twenty Twelve
+      """
+    And STDOUT should contain:
+      """
+      Theme installed successfully.
+      """
+    And the return code should be 0
+
+    When I run `wp theme list --name=twentytwelve --field=status`
+    Then STDOUT should be:
+      """
+      inactive
+      """
+
+  Scenario: Install and activate theme using WordPress.org directory URL
+    When I run `wp theme install https://wordpress.org/themes/twentyeleven/ --activate`
+    Then STDOUT should contain:
+      """
+      Detected WordPress.org themes directory URL, using slug: twentyeleven
+      """
+    And STDOUT should contain:
+      """
+      Installing Twenty Eleven
+      """
+    And STDOUT should contain:
+      """
+      Theme installed successfully.
+      """
+    And STDOUT should contain:
+      """
+      Activating 'twentyeleven'...
+      """
+    And the return code should be 0
+
+    When I run `wp theme list --name=twentyeleven --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """
