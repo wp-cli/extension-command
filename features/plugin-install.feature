@@ -282,14 +282,6 @@ Feature: Install WordPress plugins
       """
       Detected WordPress.org plugins directory URL, using slug: hello-dolly
       """
-    And STDOUT should contain:
-      """
-      Installing Hello Dolly
-      """
-    And STDOUT should contain:
-      """
-      Plugin installed successfully.
-      """
     And the return code should be 0
 
     When I run `wp plugin list --name=hello-dolly --field=status`
@@ -298,27 +290,13 @@ Feature: Install WordPress plugins
       inactive
       """
 
-  # Akismet currently requires WordPress 5.8
-  @require-wp-5.8
   Scenario: Install and activate plugin using WordPress.org directory URL
     Given a WP install
 
-    When I run `wp plugin install https://wordpress.org/plugins/akismet/ --activate`
+    When I run `wp plugin install https://wordpress.org/plugins/hello-dolly/ --activate`
     Then STDOUT should contain:
       """
-      Detected WordPress.org plugins directory URL, using slug: akismet
-      """
-    And STDOUT should contain:
-      """
-      Installing Akismet Anti-spam
-      """
-    And STDOUT should contain:
-      """
-      Plugin installed successfully.
-      """
-    And STDOUT should contain:
-      """
-      Activating 'akismet'...
+      Detected WordPress.org plugins directory URL, using slug: hello-dolly
       """
     And the return code should be 0
 

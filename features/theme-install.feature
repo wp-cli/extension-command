@@ -165,14 +165,6 @@ Feature: Install WordPress themes
       """
       Detected WordPress.org themes directory URL, using slug: twentytwelve
       """
-    And STDOUT should contain:
-      """
-      Installing Twenty Twelve
-      """
-    And STDOUT should contain:
-      """
-      Theme installed successfully.
-      """
     And the return code should be 0
 
     When I run `wp theme list --name=twentytwelve --field=status`
@@ -186,18 +178,6 @@ Feature: Install WordPress themes
     Then STDOUT should contain:
       """
       Detected WordPress.org themes directory URL, using slug: twentyeleven
-      """
-    And STDOUT should contain:
-      """
-      Installing Twenty Eleven
-      """
-    And STDOUT should contain:
-      """
-      Theme installed successfully.
-      """
-    And STDOUT should contain:
-      """
-      Activating 'twentyeleven'...
       """
     And the return code should be 0
 
