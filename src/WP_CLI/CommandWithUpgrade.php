@@ -218,7 +218,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				// Pattern matches: https://wordpress.org/plugins/plugin-slug/ or https://wordpress.org/themes/theme-slug/
 				// Capture group 1: type (plugins|themes)
 				// Capture group 2: slug (the plugin or theme slug name)
-				if ( preg_match( '~^https?://wordpress\.org/(plugins|themes)/([^/]+)/?~', $slug, $matches ) ) {
+				if ( preg_match( '~^https?://wordpress\.org/(plugins|themes)/([^/]+)/?$~', $slug, $matches ) ) {
 					$slug      = $matches[2]; // Extract the slug.
 					$is_remote = false;
 					WP_CLI::log( sprintf( 'Detected WordPress.org %s directory URL, using slug: %s', $matches[1], $slug ) );
