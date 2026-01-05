@@ -300,7 +300,7 @@ Feature: Install WordPress plugins
       """
     And the return code should be 0
 
-    When I run `wp plugin list --name=akismet --field=status`
+    When I run `wp plugin list --name=hello-dolly --field=status`
     Then STDOUT should be:
       """
       active
