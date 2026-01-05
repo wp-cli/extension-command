@@ -298,6 +298,8 @@ Feature: Install WordPress plugins
       inactive
       """
 
+  # Akismet currently requires WordPress 5.8
+  @require-wp-5.8
   Scenario: Install and activate plugin using WordPress.org directory URL
     Given a WP install
 
