@@ -273,3 +273,35 @@ Feature: Install WordPress plugins
       """
       Error: No plugins installed.
       """
+
+  Scenario: Install plugin using WordPress.org directory URL
+    Given a WP install
+
+    When I run `wp plugin install https://wordpress.org/plugins/hello-dolly/`
+    Then STDOUT should contain:
+      """
+      Detected WordPress.org plugins directory URL, using slug: hello-dolly
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=hello-dolly --field=status`
+    Then STDOUT should be:
+      """
+      inactive
+      """
+
+  Scenario: Install and activate plugin using WordPress.org directory URL
+    Given a WP install
+
+    When I run `wp plugin install https://wordpress.org/plugins/hello-dolly/ --activate`
+    Then STDOUT should contain:
+      """
+      Detected WordPress.org plugins directory URL, using slug: hello-dolly
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=hello-dolly --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """
