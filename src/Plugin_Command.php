@@ -240,12 +240,17 @@ class Plugin_Command extends CommandWithUpgrade {
 		$items = $this->get_item_list();
 
 		// Get all mu-plugins including those in subfolders.
+		// get_mu_plugins() only returns PHP files directly in the mu-plugins directory.
+		// To also get plugins in subfolders, we use get_plugins() with a relative path.
 		$mu_plugins = get_mu_plugins();
 		if ( defined( 'WPMU_PLUGIN_DIR' ) ) {
+			// Get plugins from mu-plugins subfolders using the relative path approach.
+			// This is the standard WordPress method to access plugins in the mu-plugins directory.
 			$mu_plugins_subfolder = get_plugins( '/../' . basename( WPMU_PLUGIN_DIR ) );
-			// Merge subfolder plugins with the main mu-plugins list.
+			// Merge subfolder plugins with root-level mu-plugins.
+			// No duplicates possible: get_mu_plugins() returns 'plugin.php' (root only)
+			// while get_plugins() returns 'subfolder/plugin.php' (different keys).
 			foreach ( $mu_plugins_subfolder as $file => $plugin_data ) {
-				// Only add if not already in the list (avoid duplicates from root-level plugins).
 				if ( ! isset( $mu_plugins[ $file ] ) ) {
 					$mu_plugins[ $file ] = $plugin_data;
 				}
