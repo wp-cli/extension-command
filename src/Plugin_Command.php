@@ -401,6 +401,16 @@ class Plugin_Command extends CommandWithUpgrade {
 				$message = wp_strip_all_tags( $message );
 				$message = str_replace( 'Error: ', '', $message );
 				WP_CLI::warning( "Failed to activate plugin. {$message}" );
+				// If the error is due to unexpected output, display it for debugging
+				if ( 'unexpected_output' === $result->get_error_code() ) {
+					/**
+					 * @var string $output
+					 */
+					$output = $result->get_error_data();
+					if ( ! empty( $output ) ) {
+						WP_CLI::debug( "Unexpected output: {$output}", 'plugin' );
+					}
+				}
 				++$errors;
 			} else {
 				$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
