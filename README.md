@@ -728,6 +728,8 @@ Updates one or more plugins.
 wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
 ~~~
 
+**Alias:** `upgrade`
+
 **OPTIONS**
 
 	[<plugin>...]
@@ -883,6 +885,8 @@ Deletes one or more themes.
 ~~~
 wp theme delete [<theme>...] [--all] [--force]
 ~~~
+
+**Alias:** `uninstall`
 
 Removes the theme or themes from the filesystem.
 
@@ -1467,6 +1471,8 @@ Updates one or more themes.
 ~~~
 wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
 ~~~
+
+**Alias:** `upgrade`
 
 **OPTIONS**
 
