@@ -751,6 +751,31 @@ Feature: Manage WordPress plugins
       | name    | title             | description                                    |
       | test-mu | Test mu-plugin    | Test mu-plugin description                     |
 
+  Scenario: Listing mu-plugins should include plugins from subfolders
+    Given a WP install
+    And a wp-content/mu-plugins/test-mu-root.php file:
+      """
+      <?php
+      // Plugin Name: Test MU Root
+      // Description: Test mu-plugin in root
+      // Version: 1.0.0
+      """
+    And a wp-content/mu-plugins/subfolder-plugin/subfolder-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Subfolder MU Plugin
+       * Description: Test mu-plugin in subfolder
+       * Version: 2.0.0
+       */
+      """
+
+    When I run `wp plugin list --status=must-use --fields=name,title,version`
+    Then STDOUT should be a table containing rows:
+      | name              | title                 | version |
+      | test-mu-root      | Test MU Root          | 1.0.0   |
+      | subfolder-plugin  | Subfolder MU Plugin   | 2.0.0   |
+
   @require-wp-5.5
   Scenario: Listing plugins should include name and auto_update
     Given a WP install
