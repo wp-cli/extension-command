@@ -240,13 +240,9 @@ class Plugin_Command extends CommandWithUpgrade {
 		$items = $this->get_item_list();
 
 		// Get all mu-plugins including those in subfolders.
-		$mu_plugins           = get_mu_plugins();
-		$mu_plugins_subfolder = get_plugins( '/../' . basename( WPMU_PLUGIN_DIR ) );
-		foreach ( $mu_plugins_subfolder as $file => $plugin_data ) {
-			if ( ! isset( $mu_plugins[ $file ] ) ) {
-				$mu_plugins[ $file ] = $plugin_data;
-			}
-		}
+		$mu_plugins_from_root = get_mu_plugins();
+		$all_mu_plugins       = get_plugins( '/../' . basename( WPMU_PLUGIN_DIR ) );
+		$mu_plugins           = array_replace( $all_mu_plugins, $mu_plugins_from_root );
 
 		foreach ( $mu_plugins as $file => $mu_plugin ) {
 			$mu_version = '';
