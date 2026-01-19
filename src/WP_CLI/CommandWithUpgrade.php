@@ -398,7 +398,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 
 		// Verify the constructed path is within the plugin directory.
-		$expected_path = trailingslashit( $real_plugin_dir ) . $dest_filename;
 		if ( realpath( dirname( $dest_path ) ) !== $real_plugin_dir ) {
 			return new WP_Error( 'invalid_path', 'The destination path is outside the plugin directory.' );
 		}
