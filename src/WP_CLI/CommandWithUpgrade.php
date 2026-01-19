@@ -363,15 +363,24 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			return new WP_Error( 'invalid_filename', 'The sanitized filename does not have a .php extension.' );
 		}
 
+		// Ensure plugin directory exists.
+		if ( ! is_dir( WP_PLUGIN_DIR ) ) {
+			wp_mkdir_p( WP_PLUGIN_DIR );
+		}
+
 		// Validate the destination stays within the plugin directory.
 		$dest_path = trailingslashit( WP_PLUGIN_DIR ) . $dest_filename;
 		$real_dest = realpath( WP_PLUGIN_DIR );
-		if ( false !== $real_dest ) {
-			// Ensure destination is within plugin directory (prevent directory traversal).
-			$dest_dir = dirname( $dest_path );
-			if ( 0 !== strpos( $dest_dir, $real_dest ) ) {
-				return new WP_Error( 'invalid_path', 'The destination path is outside the plugin directory.' );
-			}
+		$real_path = realpath( dirname( $dest_path ) );
+
+		// Ensure plugin directory and destination parent directory are valid.
+		if ( false === $real_dest || false === $real_path ) {
+			return new WP_Error( 'invalid_path', 'Cannot validate plugin directory path.' );
+		}
+
+		// Ensure destination is within plugin directory (prevent directory traversal).
+		if ( 0 !== strpos( $real_path, $real_dest ) ) {
+			return new WP_Error( 'invalid_path', 'The destination path is outside the plugin directory.' );
 		}
 
 		// Display info message before downloading.
@@ -384,11 +393,16 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			return new WP_Error( 'download_failed', sprintf( 'Could not download PHP file from %s: %s', esc_url( $url ), $temp_file->get_error_message() ) );
 		}
 
-		// Read the plugin headers from the downloaded file.
+		// Verify the downloaded file is a valid PHP file with plugin headers.
 		$plugin_data = get_plugin_data( $temp_file, false, false );
 
-		// If no plugin name is found, use the filename.
-		$plugin_name = ! empty( $plugin_data['Name'] ) ? $plugin_data['Name'] : '';
+		// Verify this is actually a plugin file with at least a plugin name.
+		if ( empty( $plugin_data['Name'] ) ) {
+			unlink( $temp_file );
+			return new WP_Error( 'invalid_plugin', 'The downloaded file does not appear to be a valid WordPress plugin.' );
+		}
+
+		$plugin_name = $plugin_data['Name'];
 
 		// Check if plugin is already installed.
 		if ( file_exists( $dest_path ) && ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
@@ -398,10 +412,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 
 		// Display plugin info.
-		if ( ! empty( $plugin_name ) ) {
-			$version = ! empty( $plugin_data['Version'] ) ? $plugin_data['Version'] : '';
-			WP_CLI::log( sprintf( 'Installing %s%s', $plugin_name, $version ? " ($version)" : '' ) );
-		}
+		$version = ! empty( $plugin_data['Version'] ) ? $plugin_data['Version'] : '';
+		WP_CLI::log( sprintf( 'Installing %s%s', $plugin_name, $version ? " ($version)" : '' ) );
 
 		// Move the file to the plugins directory.
 		$result = copy( $temp_file, $dest_path );
