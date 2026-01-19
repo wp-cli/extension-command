@@ -363,23 +363,30 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			return new WP_Error( 'invalid_filename', 'The sanitized filename does not have a .php extension.' );
 		}
 
+		// Construct destination path.
+		$dest_path = trailingslashit( WP_PLUGIN_DIR ) . $dest_filename;
+
+		// Check if plugin is already installed before downloading.
+		if ( file_exists( $dest_path ) && ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
+			return new WP_Error( 'already_installed', 'Plugin already installed.' );
+		}
+
 		// Ensure plugin directory exists.
 		if ( ! is_dir( WP_PLUGIN_DIR ) ) {
 			wp_mkdir_p( WP_PLUGIN_DIR );
 		}
 
-		// Validate the destination stays within the plugin directory.
-		$dest_path = trailingslashit( WP_PLUGIN_DIR ) . $dest_filename;
-		$real_dest = realpath( WP_PLUGIN_DIR );
-		$real_path = realpath( dirname( $dest_path ) );
-
-		// Ensure plugin directory and destination parent directory are valid.
-		if ( false === $real_dest || false === $real_path ) {
+		// Validate the destination stays within the plugin directory (prevent directory traversal).
+		// Since single-file plugins are installed directly in WP_PLUGIN_DIR, we just need to ensure
+		// the destination resolves to a file within WP_PLUGIN_DIR.
+		$real_plugin_dir = realpath( WP_PLUGIN_DIR );
+		if ( false === $real_plugin_dir ) {
 			return new WP_Error( 'invalid_path', 'Cannot validate plugin directory path.' );
 		}
 
-		// Ensure destination is within plugin directory (prevent directory traversal).
-		if ( 0 !== strpos( $real_path, $real_dest ) ) {
+		// Verify the constructed path is within the plugin directory.
+		$expected_path = trailingslashit( $real_plugin_dir ) . $dest_filename;
+		if ( realpath( dirname( $dest_path ) ) !== $real_plugin_dir ) {
 			return new WP_Error( 'invalid_path', 'The destination path is outside the plugin directory.' );
 		}
 
@@ -403,13 +410,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 
 		$plugin_name = $plugin_data['Name'];
-
-		// Check if plugin is already installed.
-		if ( file_exists( $dest_path ) && ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
-			// Clean up temp file.
-			unlink( $temp_file );
-			return new WP_Error( 'already_installed', 'Plugin already installed.' );
-		}
 
 		// Display plugin info.
 		$version = ! empty( $plugin_data['Version'] ) ? $plugin_data['Version'] : '';
