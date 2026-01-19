@@ -307,3 +307,30 @@ Feature: Install WordPress plugins
       """
       active
       """
+
+  Scenario: Install plugin from a single PHP file URL with --force flag
+    Given a WP install
+
+    When I run `wp plugin install https://gist.githubusercontent.com/westonruter/dec7d190060732e29a09751ab99cc549/raw/d55866c2fc82ab16f8909ce73fc89986ab28d727/pwa-manifest-short-name.php`
+    Then STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the wp-content/plugins/pwa-manifest-short-name.php file should exist
+
+    When I try `wp plugin install https://gist.githubusercontent.com/westonruter/dec7d190060732e29a09751ab99cc549/raw/d55866c2fc82ab16f8909ce73fc89986ab28d727/pwa-manifest-short-name.php`
+    Then STDERR should contain:
+      """
+      Warning: Plugin already installed.
+      """
+    And STDOUT should contain:
+      """
+      Success: Plugin already installed.
+      """
+
+    When I run `wp plugin install https://gist.githubusercontent.com/westonruter/dec7d190060732e29a09751ab99cc549/raw/d55866c2fc82ab16f8909ce73fc89986ab28d727/pwa-manifest-short-name.php --force`
+    Then STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the wp-content/plugins/pwa-manifest-short-name.php file should exist
