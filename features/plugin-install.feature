@@ -273,3 +273,37 @@ Feature: Install WordPress plugins
       """
       Error: No plugins installed.
       """
+
+  Scenario: Install plugin from a single PHP file URL
+    Given a WP install
+
+    When I run `wp plugin install https://gist.githubusercontent.com/westonruter/dec7d190060732e29a09751ab99cc549/raw/d55866c2fc82ab16f8909ce73fc89986ab28d727/pwa-manifest-short-name.php --activate`
+    Then STDOUT should contain:
+      """
+      Installing
+      """
+    And STDOUT should contain:
+      """
+      Downloading plugin file from
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And STDOUT should contain:
+      """
+      Activating
+      """
+    And the wp-content/plugins/pwa-manifest-short-name.php file should exist
+
+    When I run `wp plugin list --field=name`
+    Then STDOUT should contain:
+      """
+      pwa-manifest-short-name
+      """
+
+    When I run `wp plugin list --name=pwa-manifest-short-name --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """

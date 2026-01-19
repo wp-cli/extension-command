@@ -214,8 +214,25 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			}
 
-			// Check if a URL to a remote or local zip has been specified.
-			if ( $is_remote || ( pathinfo( $slug, PATHINFO_EXTENSION ) === 'zip' && is_file( $slug ) ) ) {
+			// Check if a URL to a remote or local PHP file has been specified (plugins only).
+			$url_path = $is_remote ? Utils\parse_url( $slug, PHP_URL_PATH ) : null;
+			if ( 'plugin' === $this->item_type && $is_remote && is_string( $url_path ) && pathinfo( $url_path, PATHINFO_EXTENSION ) === 'php' ) {
+				// Install from remote PHP file.
+				$result = $this->install_from_php_file( $slug, $assoc_args );
+
+				if ( is_string( $result ) ) {
+					// Update slug to the installed filename for activation.
+					$slug   = $result;
+					$result = true;
+					++$successes;
+				} else {
+					// $result is WP_Error here
+					WP_CLI::warning( $result->get_error_message() );
+					if ( 'already_installed' !== $result->get_error_code() ) {
+						++$errors;
+					}
+				}
+			} elseif ( $is_remote || ( pathinfo( $slug, PATHINFO_EXTENSION ) === 'zip' && is_file( $slug ) ) ) {
 				// Install from local or remote zip file.
 				$file_upgrader = $this->get_upgrader( $assoc_args );
 
@@ -316,6 +333,66 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		}
 		Utils\report_batch_operation_results( $this->item_type, 'install', count( $args ), $successes, $errors );
+	}
+
+	/**
+	 * Install a plugin from a single PHP file URL.
+	 *
+	 * @param string $url        URL to the PHP file.
+	 * @param array  $assoc_args Associative arguments.
+	 * @return string|WP_Error The installed filename on success, WP_Error on failure.
+	 */
+	protected function install_from_php_file( $url, $assoc_args ) {
+		// Ensure required WordPress files are loaded.
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		// Download the file to a temporary location.
+		$temp_file = download_url( $url );
+
+		if ( is_wp_error( $temp_file ) ) {
+			return new WP_Error( 'download_failed', sprintf( 'Could not download PHP file from %s: %s', $url, $temp_file->get_error_message() ) );
+		}
+
+		// Read the plugin headers from the downloaded file.
+		$plugin_data = get_plugin_data( $temp_file, false, false );
+
+		// If no plugin name is found, use the filename.
+		$plugin_name = ! empty( $plugin_data['Name'] ) ? $plugin_data['Name'] : '';
+		$url_path    = (string) Utils\parse_url( $url, PHP_URL_PATH );
+		$filename    = Utils\basename( $url_path );
+
+		// Determine the destination filename.
+		$dest_filename = sanitize_file_name( $filename );
+
+		// Check if plugin is already installed.
+		$dest_path = WP_PLUGIN_DIR . '/' . $dest_filename;
+		if ( file_exists( $dest_path ) && ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
+			// Clean up temp file.
+			unlink( $temp_file );
+			return new WP_Error( 'already_installed', 'Plugin already installed.' );
+		}
+
+		// Display plugin info.
+		if ( ! empty( $plugin_name ) ) {
+			$version = ! empty( $plugin_data['Version'] ) ? $plugin_data['Version'] : '';
+			WP_CLI::log( sprintf( 'Installing %s%s', $plugin_name, $version ? " ($version)" : '' ) );
+		}
+
+		WP_CLI::log( sprintf( 'Downloading plugin file from %s...', $url ) );
+
+		// Move the file to the plugins directory.
+		$result = copy( $temp_file, $dest_path );
+		unlink( $temp_file );
+
+		if ( ! $result ) {
+			return new WP_Error( 'copy_failed', 'Could not copy plugin file to destination.' );
+		}
+
+		WP_CLI::log( 'Plugin installed successfully.' );
+
+		// Return the filename for activation purposes.
+		return $dest_filename;
 	}
 
 	/**
