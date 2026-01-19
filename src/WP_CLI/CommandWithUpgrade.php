@@ -1191,17 +1191,26 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		if ( 403 === $response_code ) {
 			return new \WP_Error(
-				403,
-				$this->build_rate_limiting_error_message( $decoded_body )
+				'api_rate_limit',
+				$this->build_rate_limiting_error_message( $decoded_body ),
+				[ 'status' => 403 ]
 			);
 		}
 
 		if ( 404 === $response_code ) {
-			return new \WP_Error( 404, 'Gist not found.' );
+			return new \WP_Error(
+				'gist_not_found',
+				'Gist not found.',
+				[ 'status' => 404 ]
+			);
 		}
 
 		if ( null === $decoded_body || ! is_object( $decoded_body ) || ! isset( $decoded_body->files ) ) {
-			return new \WP_Error( 500, 'Invalid response from GitHub Gist API.' );
+			return new \WP_Error(
+				'invalid_gist_api_response',
+				'Invalid response from GitHub Gist API.',
+				[ 'status' => 500 ]
+			);
 		}
 
 		// Find PHP files in the gist
