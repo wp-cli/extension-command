@@ -212,6 +212,19 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 					WP_CLI::log( 'Latest release resolved to ' . $version['name'] );
 				}
+
+				// Check if it's a GitHub Gist page URL and convert to raw URL
+				$gist_id = $this->get_gist_id_from_url( $slug );
+				if ( $gist_id && 'plugin' === $this->item_type ) {
+					$raw_url = $this->get_raw_url_from_gist( $gist_id );
+
+					if ( is_wp_error( $raw_url ) ) {
+						WP_CLI::error( $raw_url->get_error_message() );
+					}
+
+					WP_CLI::log( 'Gist resolved to raw file URL.' );
+					$slug = $raw_url;
+				}
 			}
 
 			// Check if a URL to a remote or local PHP file has been specified (plugins only).
@@ -1139,5 +1152,76 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 */
 	private function build_rate_limiting_error_message( $decoded_body ) {
 		return $decoded_body->message . PHP_EOL . $decoded_body->documentation_url . PHP_EOL . 'In order to pass the token to WP-CLI, you need to use the GITHUB_TOKEN environment variable.';
+	}
+
+	/**
+	 * Check if a URL is a GitHub Gist page URL (not the raw URL).
+	 *
+	 * @param string $url The URL to check.
+	 * @return string|null The gist ID if it's a gist URL, null otherwise.
+	 */
+	protected function get_gist_id_from_url( $url ) {
+		// Match gist.github.com URLs but not gist.githubusercontent.com (raw URLs)
+		if ( preg_match( '#^https?://gist\.github\.com/[^/]+/([a-f0-9]+)/?$#i', $url, $matches ) ) {
+			return $matches[1];
+		}
+		return null;
+	}
+
+	/**
+	 * Convert a GitHub Gist page URL to a raw PHP file URL.
+	 *
+	 * @param string $gist_id The gist ID.
+	 * @return string|WP_Error The raw URL of the first PHP file in the gist, or WP_Error on failure.
+	 */
+	protected function get_raw_url_from_gist( $gist_id ) {
+		$api_url = 'https://api.github.com/gists/' . $gist_id;
+		$token   = getenv( 'GITHUB_TOKEN' );
+
+		$request_arguments = $token ? [ 'headers' => [ 'Authorization' => 'Bearer ' . $token ] ] : [];
+
+		$response = \wp_remote_get( $api_url, $request_arguments );
+
+		if ( \is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$response_code = wp_remote_retrieve_response_code( $response );
+		$body          = \wp_remote_retrieve_body( $response );
+		$decoded_body  = json_decode( $body );
+
+		if ( 403 === $response_code ) {
+			return new \WP_Error(
+				403,
+				$this->build_rate_limiting_error_message( $decoded_body )
+			);
+		}
+
+		if ( 404 === $response_code ) {
+			return new \WP_Error( 404, 'Gist not found.' );
+		}
+
+		if ( null === $decoded_body || ! is_object( $decoded_body ) || ! isset( $decoded_body->files ) ) {
+			return new \WP_Error( 500, 'Invalid response from GitHub Gist API.' );
+		}
+
+		// Find PHP files in the gist
+		$php_files = [];
+		$files     = (array) $decoded_body->files;
+		foreach ( $files as $filename => $file_data ) {
+			if ( is_object( $file_data ) && isset( $file_data->raw_url ) && pathinfo( $filename, PATHINFO_EXTENSION ) === 'php' ) {
+				$php_files[] = [
+					'name'    => $filename,
+					'raw_url' => $file_data->raw_url,
+				];
+			}
+		}
+
+		if ( empty( $php_files ) ) {
+			return new \WP_Error( 'no_php_files', 'No PHP files found in the gist.' );
+		}
+
+		// Return the first PHP file found
+		return $php_files[0]['raw_url'];
 	}
 }

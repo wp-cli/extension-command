@@ -334,3 +334,35 @@ Feature: Install WordPress plugins
       Plugin installed successfully.
       """
     And the wp-content/plugins/pwa-manifest-short-name.php file should exist
+
+  Scenario: Install plugin from a GitHub Gist page URL
+    Given a WP install
+
+    When I run `wp plugin install https://gist.github.com/westonruter/dec7d190060732e29a09751ab99cc549 --activate`
+    Then STDOUT should contain:
+      """
+      Gist resolved to raw file URL.
+      """
+    And STDOUT should contain:
+      """
+      Installing
+      """
+    And STDOUT should contain:
+      """
+      Downloading plugin file from
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And STDOUT should contain:
+      """
+      Activating
+      """
+    And the wp-content/plugins/pwa-manifest-short-name.php file should exist
+
+    When I run `wp plugin list --name=pwa-manifest-short-name --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """
