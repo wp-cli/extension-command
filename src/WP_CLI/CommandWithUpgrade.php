@@ -346,6 +346,37 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 
+		// Extract and validate filename before downloading.
+		$url_path = (string) Utils\parse_url( $url, PHP_URL_PATH );
+		$filename = Utils\basename( $url_path );
+
+		// Validate the filename doesn't contain directory separators or relative path components.
+		if ( strpos( $filename, '/' ) !== false || strpos( $filename, '\\' ) !== false || strpos( $filename, '..' ) !== false ) {
+			return new WP_Error( 'invalid_filename', 'The filename contains invalid path components.' );
+		}
+
+		// Determine the destination filename and validate extension.
+		$dest_filename = sanitize_file_name( $filename );
+
+		// Ensure the sanitized filename still has a .php extension.
+		if ( pathinfo( $dest_filename, PATHINFO_EXTENSION ) !== 'php' ) {
+			return new WP_Error( 'invalid_filename', 'The sanitized filename does not have a .php extension.' );
+		}
+
+		// Validate the destination stays within the plugin directory.
+		$dest_path = trailingslashit( WP_PLUGIN_DIR ) . $dest_filename;
+		$real_dest = realpath( WP_PLUGIN_DIR );
+		if ( false !== $real_dest ) {
+			// Ensure destination is within plugin directory (prevent directory traversal).
+			$dest_dir = dirname( $dest_path );
+			if ( 0 !== strpos( $dest_dir, $real_dest ) ) {
+				return new WP_Error( 'invalid_path', 'The destination path is outside the plugin directory.' );
+			}
+		}
+
+		// Display info message before downloading.
+		WP_CLI::log( sprintf( 'Downloading plugin file from %s...', esc_url( $url ) ) );
+
 		// Download the file to a temporary location.
 		$temp_file = download_url( $url );
 
@@ -358,20 +389,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// If no plugin name is found, use the filename.
 		$plugin_name = ! empty( $plugin_data['Name'] ) ? $plugin_data['Name'] : '';
-		$url_path    = (string) Utils\parse_url( $url, PHP_URL_PATH );
-		$filename    = Utils\basename( $url_path );
-
-		// Determine the destination filename.
-		$dest_filename = sanitize_file_name( $filename );
-
-		// Ensure the sanitized filename still has a .php extension.
-		if ( pathinfo( $dest_filename, PATHINFO_EXTENSION ) !== 'php' ) {
-			unlink( $temp_file );
-			return new WP_Error( 'invalid_filename', 'The sanitized filename does not have a .php extension.' );
-		}
 
 		// Check if plugin is already installed.
-		$dest_path = WP_PLUGIN_DIR . '/' . $dest_filename;
 		if ( file_exists( $dest_path ) && ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
 			// Clean up temp file.
 			unlink( $temp_file );
@@ -383,8 +402,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$version = ! empty( $plugin_data['Version'] ) ? $plugin_data['Version'] : '';
 			WP_CLI::log( sprintf( 'Installing %s%s', $plugin_name, $version ? " ($version)" : '' ) );
 		}
-
-		WP_CLI::log( sprintf( 'Downloading plugin file from %s...', esc_url( $url ) ) );
 
 		// Move the file to the plugins directory.
 		$result = copy( $temp_file, $dest_path );
