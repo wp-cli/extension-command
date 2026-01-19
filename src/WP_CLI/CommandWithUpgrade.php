@@ -215,8 +215,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 
 			// Check if a URL to a remote or local PHP file has been specified (plugins only).
-			$url_path = $is_remote ? Utils\parse_url( $slug, PHP_URL_PATH ) : null;
-			if ( 'plugin' === $this->item_type && $is_remote && is_string( $url_path ) && pathinfo( $url_path, PATHINFO_EXTENSION ) === 'php' ) {
+			if ( $this->is_php_file_url( $slug, $is_remote ) ) {
 				// Install from remote PHP file.
 				$result = $this->install_from_php_file( $slug, $assoc_args );
 
@@ -351,7 +350,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$temp_file = download_url( $url );
 
 		if ( is_wp_error( $temp_file ) ) {
-			return new WP_Error( 'download_failed', sprintf( 'Could not download PHP file from %s: %s', $url, $temp_file->get_error_message() ) );
+			return new WP_Error( 'download_failed', sprintf( 'Could not download PHP file from %s: %s', esc_url( $url ), $temp_file->get_error_message() ) );
 		}
 
 		// Read the plugin headers from the downloaded file.
@@ -364,6 +363,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// Determine the destination filename.
 		$dest_filename = sanitize_file_name( $filename );
+
+		// Ensure the sanitized filename still has a .php extension.
+		if ( pathinfo( $dest_filename, PATHINFO_EXTENSION ) !== 'php' ) {
+			unlink( $temp_file );
+			return new WP_Error( 'invalid_filename', 'The sanitized filename does not have a .php extension.' );
+		}
 
 		// Check if plugin is already installed.
 		$dest_path = WP_PLUGIN_DIR . '/' . $dest_filename;
@@ -379,7 +384,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			WP_CLI::log( sprintf( 'Installing %s%s', $plugin_name, $version ? " ($version)" : '' ) );
 		}
 
-		WP_CLI::log( sprintf( 'Downloading plugin file from %s...', $url ) );
+		WP_CLI::log( sprintf( 'Downloading plugin file from %s...', esc_url( $url ) ) );
 
 		// Move the file to the plugins directory.
 		$result = copy( $temp_file, $dest_path );
@@ -393,6 +398,22 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// Return the filename for activation purposes.
 		return $dest_filename;
+	}
+
+	/**
+	 * Check if a URL points to a PHP file for plugin installation.
+	 *
+	 * @param string $slug      The slug/URL to check.
+	 * @param bool   $is_remote Whether the slug is a remote URL.
+	 * @return bool True if it's a PHP file URL for plugin installation.
+	 */
+	protected function is_php_file_url( $slug, $is_remote ) {
+		if ( 'plugin' !== $this->item_type || ! $is_remote ) {
+			return false;
+		}
+
+		$url_path = Utils\parse_url( $slug, PHP_URL_PATH );
+		return is_string( $url_path ) && pathinfo( $url_path, PATHINFO_EXTENSION ) === 'php';
 	}
 
 	/**
