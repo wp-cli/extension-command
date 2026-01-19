@@ -364,6 +364,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$filename = Utils\basename( $url_path );
 
 		// Validate the filename doesn't contain directory separators or relative path components.
+		// Note: Utils\basename() already strips directory components (including ".."), so this check
+		// is primarily a defense-in-depth safeguard in case its behavior changes or is bypassed.
 		if ( strpos( $filename, '/' ) !== false || strpos( $filename, '\\' ) !== false || strpos( $filename, '..' ) !== false ) {
 			return new WP_Error( 'invalid_filename', 'The filename contains invalid path components.' );
 		}
