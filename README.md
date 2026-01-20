@@ -245,7 +245,7 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
 **OPTIONS**
 
 	<plugin|zip|url>...
-		One or more plugins to install. Accepts a plugin slug, the path to a local zip file, or a URL to a remote zip file.
+		One or more plugins to install. Accepts a plugin slug, the path to a local zip file, a URL to a remote zip file, or a URL to a WordPress.org plugin directory.
 
 	[--version=<version>]
 		If set, get that particular version from wordpress.org, instead of the
@@ -323,6 +323,16 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
     Installing the plugin...
     Removing the old version of the plugin...
     Plugin updated successfully
+    Success: Installed 1 of 1 plugins.
+
+    # Install from a WordPress.org plugin directory URL
+    $ wp plugin install https://wordpress.org/plugins/akismet/
+    Detected WordPress.org plugins directory URL, using slug: akismet
+    Installing Akismet Anti-spam: Spam Protection (3.1.11)
+    Downloading install package from https://downloads.wordpress.org/plugin/akismet.3.1.11.zip...
+    Unpacking the package...
+    Installing the plugin...
+    Plugin installed successfully.
     Success: Installed 1 of 1 plugins.
 
 
@@ -1036,7 +1046,7 @@ wp theme install <theme|zip|url>... [--version=<version>] [--force] [--ignore-re
 **OPTIONS**
 
 	<theme|zip|url>...
-		One or more themes to install. Accepts a theme slug, the path to a local zip file, or a URL to a remote zip file.
+		One or more themes to install. Accepts a theme slug, the path to a local zip file, a URL to a remote zip file, or a URL to a WordPress.org theme directory.
 
 	[--version=<version>]
 		If set, get that particular version from wordpress.org, instead of the
@@ -1074,6 +1084,16 @@ wp theme install <theme|zip|url>... [--version=<version>] [--force] [--ignore-re
 
     # Install from a remote zip file
     $ wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+
+    # Install from a WordPress.org theme directory URL
+    $ wp theme install https://wordpress.org/themes/twentysixteen/
+    Detected WordPress.org themes directory URL, using slug: twentysixteen
+    Installing Twenty Sixteen (1.2)
+    Downloading install package from http://downloads.wordpress.org/theme/twentysixteen.1.2.zip...
+    Unpacking the package...
+    Installing the theme...
+    Theme installed successfully.
+    Success: Installed 1 of 1 themes.
 
 
 
