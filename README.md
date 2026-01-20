@@ -239,7 +239,7 @@ These fields are optionally available:
 Installs one or more plugins.
 
 ~~~
-wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-requirements] [--activate] [--activate-network] [--insecure]
+wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-requirements] [--activate] [--activate-network] [--insecure] [--with-dependencies]
 ~~~
 
 **OPTIONS**
@@ -267,6 +267,9 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
 
 	[--insecure]
 		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+	[--with-dependencies]
+		If set, the command will also install all required dependencies of the plugin as specified in the 'Requires Plugins' header.
 
 **EXAMPLES**
 
@@ -325,6 +328,16 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
     Plugin updated successfully
     Success: Installed 1 of 1 plugins.
 
+    # Install a plugin with all its dependencies
+    $ wp plugin install my-plugin --with-dependencies
+    Installing Required Plugin 1 (1.2.3)
+    Plugin installed successfully.
+    Installing Required Plugin 2 (2.0.0)
+    Plugin installed successfully.
+    Installing My Plugin (3.5.0)
+    Plugin installed successfully.
+    Success: Installed 3 of 3 plugins.
+
     # Install from a WordPress.org plugin directory URL
     $ wp plugin install https://wordpress.org/plugins/akismet/
     Detected WordPress.org plugins directory URL, using slug: akismet
@@ -334,6 +347,44 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
     Installing the plugin...
     Plugin installed successfully.
     Success: Installed 1 of 1 plugins.
+
+
+
+### wp plugin install-dependencies
+
+Installs all dependencies of an installed plugin.
+
+~~~
+wp plugin install-dependencies <plugin> [--activate] [--activate-network] [--force]
+~~~
+
+This command is useful when you have a plugin installed that depends on other plugins,
+and you want to install those dependencies without activating the main plugin.
+
+**OPTIONS**
+
+	<plugin>
+		The installed plugin to get dependencies for.
+
+	[--activate]
+		If set, dependencies will be activated immediately after install.
+
+	[--activate-network]
+		If set, dependencies will be network activated immediately after install.
+
+	[--force]
+		If set, the command will overwrite any installed version of the plugin, without prompting
+		for confirmation.
+
+**EXAMPLES**
+
+    # Install all dependencies of an installed plugin
+    $ wp plugin install-dependencies my-plugin
+    Installing Required Plugin 1 (1.2.3)
+    Plugin installed successfully.
+    Installing Required Plugin 2 (2.0.0)
+    Plugin installed successfully.
+    Success: Installed 2 of 2 plugins.
 
 
 
