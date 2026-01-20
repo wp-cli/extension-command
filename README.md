@@ -327,6 +327,33 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
 
 
 
+### wp plugin is-active
+
+Checks if a given plugin is active.
+
+~~~
+wp plugin is-active <plugin> [--network]
+~~~
+
+Returns exit code 0 when active, 1 when not active.
+
+**OPTIONS**
+
+	<plugin>
+		The plugin to check.
+
+	[--network]
+		If set, check if plugin is network-activated.
+
+**EXAMPLES**
+
+    # Check whether plugin is Active; exit status 0 if active, otherwise 1
+    $ wp plugin is-active hello
+    $ echo $?
+    1
+
+
+
 ### wp plugin is-installed
 
 Checks if a given plugin is installed.
@@ -701,6 +728,8 @@ Updates one or more plugins.
 wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
 ~~~
 
+**Alias:** `upgrade`
+
 **OPTIONS**
 
 	[<plugin>...]
@@ -856,6 +885,8 @@ Deletes one or more themes.
 ~~~
 wp theme delete [<theme>...] [--all] [--force]
 ~~~
+
+**Alias:** `uninstall`
 
 Removes the theme or themes from the filesystem.
 
@@ -1043,6 +1074,30 @@ wp theme install <theme|zip|url>... [--version=<version>] [--force] [--ignore-re
 
     # Install from a remote zip file
     $ wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+
+
+
+### wp theme is-active
+
+Checks if a given theme is active.
+
+~~~
+wp theme is-active <theme>
+~~~
+
+Returns exit code 0 when active, 1 when not active.
+
+**OPTIONS**
+
+	<theme>
+		The theme to check.
+
+**EXAMPLES**
+
+    # Check whether theme is Active; exit status 0 if active, otherwise 1
+    $ wp theme is-active twentyfifteen
+    $ echo $?
+    1
 
 
 
@@ -1416,6 +1471,8 @@ Updates one or more themes.
 ~~~
 wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
 ~~~
+
+**Alias:** `upgrade`
 
 **OPTIONS**
 
