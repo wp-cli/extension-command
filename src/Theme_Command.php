@@ -497,7 +497,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * ## OPTIONS
 	 *
 	 * <theme|zip|url>...
-	 * : One or more themes to install. Accepts a theme slug, the path to a local zip file, or a URL to a remote zip file.
+	 * : One or more themes to install. Accepts a theme slug, the path to a local zip file, a URL to a remote zip file, or a URL to a WordPress.org theme directory.
 	 *
 	 * [--version=<version>]
 	 * : If set, get that particular version from wordpress.org, instead of the
@@ -535,6 +535,16 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 *     # Install from a remote zip file
 	 *     $ wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+	 *
+	 *     # Install from a WordPress.org theme directory URL
+	 *     $ wp theme install https://wordpress.org/themes/twentysixteen/
+	 *     Detected WordPress.org themes directory URL, using slug: twentysixteen
+	 *     Installing Twenty Sixteen (1.2)
+	 *     Downloading install package from http://downloads.wordpress.org/theme/twentysixteen.1.2.zip...
+	 *     Unpacking the package...
+	 *     Installing the theme...
+	 *     Theme installed successfully.
+	 *     Success: Installed 1 of 1 themes.
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( count( $args ) > 1 && Utils\get_flag_value( $assoc_args, 'activate', false ) ) {

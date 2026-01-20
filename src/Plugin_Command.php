@@ -1004,7 +1004,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * ## OPTIONS
 	 *
 	 * <plugin|zip|url>...
-	 * : One or more plugins to install. Accepts a plugin slug, the path to a local zip file, or a URL to a remote zip file.
+	 * : One or more plugins to install. Accepts a plugin slug, the path to a local zip file, a URL to a remote zip file, or a URL to a WordPress.org plugin directory.
 	 *
 	 * [--version=<version>]
 	 * : If set, get that particular version from wordpress.org, instead of the
@@ -1082,6 +1082,16 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *     Installing the plugin...
 	 *     Removing the old version of the plugin...
 	 *     Plugin updated successfully
+	 *     Success: Installed 1 of 1 plugins.
+	 *
+	 *     # Install from a WordPress.org plugin directory URL
+	 *     $ wp plugin install https://wordpress.org/plugins/akismet/
+	 *     Detected WordPress.org plugins directory URL, using slug: akismet
+	 *     Installing Akismet Anti-spam: Spam Protection (3.1.11)
+	 *     Downloading install package from https://downloads.wordpress.org/plugin/akismet.3.1.11.zip...
+	 *     Unpacking the package...
+	 *     Installing the plugin...
+	 *     Plugin installed successfully.
 	 *     Success: Installed 1 of 1 plugins.
 	 */
 	public function install( $args, $assoc_args ) {
