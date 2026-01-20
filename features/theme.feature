@@ -87,8 +87,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name            | status   | update    | version | update_version   | auto_update |
-      | twentytwelve    | inactive | available | 1.4     | {UPDATE_VERSION} | off         |
+      | name            | status   | update    | version | update_version   | auto_update | type    |
+      | twentytwelve    | inactive | available | 1.4     | {UPDATE_VERSION} | off         | classic |
 
     When I run `wp theme activate twentytwelve`
     Then STDOUT should not be empty
@@ -105,8 +105,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name            | status   | update    | version | update_version   | auto_update |
-      | twentytwelve    | active   | available | 1.5     | {UPDATE_VERSION} | off         |
+      | name            | status   | update    | version | update_version   | auto_update | type    |
+      | twentytwelve    | active   | available | 1.5     | {UPDATE_VERSION} | off         | classic |
 
     When I try `wp theme update`
     Then STDERR should be:
@@ -435,6 +435,41 @@ Feature: Manage WordPress themes
       | moina-blog    | active   |
       | moina         | parent   |
 
+  @require-wp-5.7
+  Scenario: List broken themes (child theme without parent)
+    Given a WP install
+    And I run `wp theme install moina`
+    And I run `wp theme install moina-blog`
+    
+    When I run `wp theme list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name          | status   |
+      | moina-blog    | inactive |
+      | moina         | inactive |
+    
+    When I run `wp theme delete moina`
+    Then STDOUT should contain:
+      """
+      Deleted 'moina' theme.
+      """
+    
+    When I run `wp theme list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name          | status   |
+      | moina-blog    | inactive |
+    
+    When I try `wp theme activate moina-blog`
+    Then STDERR should contain:
+      """
+      Error: The parent theme is missing. Please install the "moina" parent theme.
+      """
+    
+    When I try `wp theme install moina-blog`
+    Then STDERR should contain:
+      """
+      Warning: moina-blog: Theme already installed.
+      """
+
   Scenario: When updating a theme --format should be the same when using --dry-run
     Given a WP install
     And I run `wp theme delete --all --force`
@@ -687,8 +722,8 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
-      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 100        | 5.6            |
+      | name            | status   | update       | version  | update_version   | auto_update | type    | requires | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | classic | 100      | 5.6            |
 
     When I try `wp theme update example`
     Then STDERR should contain:
@@ -730,11 +765,41 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should be a table containing rows:
-      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
-      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 3.7        | 100            |
+      | name            | status   | update       | version  | update_version   | auto_update | type    | requires | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | classic | 3.7     | 100            |
 
     When I try `wp theme update example`
     Then STDERR should contain:
       """
       Warning: example: This update requires PHP version 100
+      """
+
+  @require-wp-5.9
+  Scenario: Check theme type field for block themes
+    Given a WP install
+
+    When I run `wp theme list --fields=name,type`
+    Then STDOUT should be a table containing rows:
+      | name              | type    |
+      | twentytwentyfour  | block   |
+
+    When I run `wp theme get twentytwentyfour --field=type`
+    Then STDOUT should be:
+      """
+      block
+      """
+
+  Scenario: Check theme type field for classic themes
+    Given a WP install
+
+    When I run `wp theme install twentytwelve --force`
+    And I run `wp theme list --fields=name,type --name=twentytwelve`
+    Then STDOUT should be a table containing rows:
+      | name         | type    |
+      | twentytwelve | classic |
+
+    When I run `wp theme get twentytwelve --field=type`
+    Then STDOUT should be:
+      """
+      classic
       """

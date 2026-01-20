@@ -63,6 +63,7 @@ class Theme_Command extends CommandWithUpgrade {
 		'version',
 		'update_version',
 		'auto_update',
+		'type',
 	];
 
 	public function __construct() {
@@ -668,6 +669,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 *     +---------+----------------+
 	 */
 	public function get( $args, $assoc_args ) {
+		/**
+		 * @var \WP_Theme $theme
+		 */
 		$theme = $this->fetcher->get_check( $args[0] );
 
 		$errors = $theme->errors();
@@ -693,14 +697,22 @@ class Theme_Command extends CommandWithUpgrade {
 			'tags',
 			'theme_root',
 			'theme_root_uri',
+			'type',
 		];
 		$theme_obj  = new stdClass();
 		foreach ( $theme_vars as $var ) {
+			// @phpstan-ignore-next-line
 			$theme_obj->$var = $theme->$var;
 		}
 
 		$theme_obj->status      = $this->get_status( $theme );
 		$theme_obj->description = wordwrap( $theme_obj->description );
+
+		// Determine theme type (block or classic). is_block_theme() was added in WP 5.9.
+		$theme_obj->type = 'classic';
+		if ( method_exists( $theme, 'is_block_theme' ) && $theme->is_block_theme() ) {
+			$theme_obj->type = 'block';
+		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = $theme_vars;
@@ -856,7 +868,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * ## OPTIONS
 	 *
 	 * <theme>
-	 * : The plugin to check.
+	 * : The theme to check.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -996,6 +1008,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * * version
 	 * * update_version
 	 * * auto_update
+	 * * type
 	 *
 	 * These fields are optionally available:
 	 *
@@ -1008,9 +1021,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 *     # List inactive themes.
 	 *     $ wp theme list --status=inactive --format=csv
-	 *     name,status,update,version,update_version,auto_update
-	 *     twentyfourteen,inactive,none,3.8,,off
-	 *     twentysixteen,inactive,available,3.0,3.1,off
+	 *     name,status,update,version,update_version,auto_update,type
+	 *     twentyfourteen,inactive,none,3.8,,off,classic
+	 *     twentysixteen,inactive,available,3.0,3.1,off,classic
 	 *
 	 * @subcommand list
 	 */

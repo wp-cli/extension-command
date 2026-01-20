@@ -327,6 +327,33 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
 
 
 
+### wp plugin is-active
+
+Checks if a given plugin is active.
+
+~~~
+wp plugin is-active <plugin> [--network]
+~~~
+
+Returns exit code 0 when active, 1 when not active.
+
+**OPTIONS**
+
+	<plugin>
+		The plugin to check.
+
+	[--network]
+		If set, check if plugin is network-activated.
+
+**EXAMPLES**
+
+    # Check whether plugin is Active; exit status 0 if active, otherwise 1
+    $ wp plugin is-active hello
+    $ echo $?
+    1
+
+
+
 ### wp plugin is-installed
 
 Checks if a given plugin is installed.
@@ -701,6 +728,8 @@ Updates one or more plugins.
 wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
 ~~~
 
+**Alias:** `upgrade`
+
 **OPTIONS**
 
 	[<plugin>...]
@@ -856,6 +885,8 @@ Deletes one or more themes.
 ~~~
 wp theme delete [<theme>...] [--all] [--force]
 ~~~
+
+**Alias:** `uninstall`
 
 Removes the theme or themes from the filesystem.
 
@@ -1046,6 +1077,30 @@ wp theme install <theme|zip|url>... [--version=<version>] [--force] [--ignore-re
 
 
 
+### wp theme is-active
+
+Checks if a given theme is active.
+
+~~~
+wp theme is-active <theme>
+~~~
+
+Returns exit code 0 when active, 1 when not active.
+
+**OPTIONS**
+
+	<theme>
+		The theme to check.
+
+**EXAMPLES**
+
+    # Check whether theme is Active; exit status 0 if active, otherwise 1
+    $ wp theme is-active twentyfifteen
+    $ echo $?
+    1
+
+
+
 ### wp theme is-installed
 
 Checks if a given theme is installed.
@@ -1123,6 +1178,7 @@ These fields will be displayed by default for each theme:
 * version
 * update_version
 * auto_update
+* type
 
 These fields are optionally available:
 
@@ -1135,9 +1191,9 @@ These fields are optionally available:
 
     # List inactive themes.
     $ wp theme list --status=inactive --format=csv
-    name,status,update,version,update_version,auto_update
-    twentyfourteen,inactive,none,3.8,,off
-    twentysixteen,inactive,available,3.0,3.1,off
+    name,status,update,version,update_version,auto_update,type
+    twentyfourteen,inactive,none,3.8,,off,classic
+    twentysixteen,inactive,available,3.0,3.1,off,classic
 
 
 
@@ -1416,6 +1472,8 @@ Updates one or more themes.
 ~~~
 wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
 ~~~
+
+**Alias:** `upgrade`
 
 **OPTIONS**
 
