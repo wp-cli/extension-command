@@ -174,6 +174,11 @@ class Plugin_Command extends CommandWithUpgrade {
 
 		$items = $this->get_item_list();
 
+		// If specific plugins requested, validate and filter to those
+		if ( ! $all ) {
+			$items = $this->filter_item_list( $items, $args );
+		}
+
 		// Filter to only plugins with available updates
 		$items_with_updates = array_filter(
 			$items,
@@ -181,16 +186,6 @@ class Plugin_Command extends CommandWithUpgrade {
 				return 'available' === $item['update'];
 			}
 		);
-
-		// If specific plugins requested, filter to those
-		if ( ! empty( $args ) ) {
-			$items_with_updates = array_filter(
-				$items_with_updates,
-				function ( $item ) use ( $args ) {
-					return in_array( $item['name'], $args, true );
-				}
-			);
-		}
 
 		if ( empty( $items_with_updates ) ) {
 			WP_CLI::success( 'All plugins are up to date.' );

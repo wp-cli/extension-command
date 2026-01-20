@@ -90,3 +90,13 @@ Feature: Check for plugin updates
     Then STDOUT should be a table containing rows:
       | name               | version |
       | wordpress-importer | 0.5     |
+
+  Scenario: Check for invalid plugin should error
+    Given a WP install
+
+    When I try `wp plugin check-update invalid-plugin-name`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Error:
+      """

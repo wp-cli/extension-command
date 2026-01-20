@@ -88,3 +88,13 @@ Feature: Check for theme updates
     Then STDOUT should be a table containing rows:
       | name           | version |
       | twentyfourteen | 1.0     |
+
+  Scenario: Check for invalid theme should error
+    Given a WP install
+
+    When I try `wp theme check-update invalid-theme-name`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Error:
+      """

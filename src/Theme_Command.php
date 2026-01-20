@@ -168,11 +168,16 @@ class Theme_Command extends CommandWithUpgrade {
 
 		$items = $this->get_item_list();
 
+		// If specific themes requested, validate and filter to those
+		if ( ! $all ) {
+			$items = $this->filter_item_list( $items, $args );
+		}
+
 		// Filter to only themes with available updates
 		$items_with_updates = array_filter(
 			$items,
-			function ( $item ) use ( $args ) {
-				return in_array( $item['name'], $args, true ) && 'available' === $item['update'];
+			function ( $item ) {
+				return 'available' === $item['update'];
 			}
 		);
 
