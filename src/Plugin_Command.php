@@ -631,7 +631,7 @@ class Plugin_Command extends CommandWithUpgrade {
 			}
 
 			if ( ! $compatible_php ) {
-				return new WP_Error( 'requirements_not_met', "This plugin does not work with your version of PHP. Minimum PHP required is $compatible_php" );
+				return new WP_Error( 'requirements_not_met', "This plugin does not work with your version of PHP. Minimum PHP required is $requires_php" );
 			}
 		}
 
