@@ -131,6 +131,12 @@ trait ParseThemeNameInput {
 				$requires_php = ! empty( $theme->get( 'RequiresPHP' ) ) ? $theme->get( 'RequiresPHP' ) : '';
 			}
 
+			// Determine theme type (block or classic). is_block_theme() was added in WP 5.9.
+			$theme_type = 'classic';
+			if ( method_exists( $theme, 'is_block_theme' ) && $theme->is_block_theme() ) {
+				$theme_type = 'block';
+			}
+
 			$items[ $stylesheet ] = [
 				'name'                      => $key,
 				'status'                    => $this->get_status( $theme ),
@@ -146,6 +152,7 @@ trait ParseThemeNameInput {
 				'requires'                  => $requires,
 				'requires_php'              => $requires_php,
 				'update_unavailable_reason' => isset( $update_unavailable_reason ) ? $update_unavailable_reason : '',
+				'type'                      => $theme_type,
 			];
 
 			// Compare version and update information in theme list.
