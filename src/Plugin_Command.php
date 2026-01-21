@@ -406,6 +406,16 @@ class Plugin_Command extends CommandWithUpgrade {
 				$message = wp_strip_all_tags( $message );
 				$message = str_replace( 'Error: ', '', $message );
 				WP_CLI::warning( "Failed to activate plugin. {$message}" );
+				// If the error is due to unexpected output, display it for debugging
+				if ( 'unexpected_output' === $result->get_error_code() ) {
+					/**
+					 * @var string $output
+					 */
+					$output = $result->get_error_data();
+					if ( ! empty( $output ) ) {
+						WP_CLI::debug( "Unexpected output: {$output}", 'plugin' );
+					}
+				}
 				++$errors;
 			} else {
 				$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
@@ -636,7 +646,7 @@ class Plugin_Command extends CommandWithUpgrade {
 			}
 
 			if ( ! $compatible_php ) {
-				return new WP_Error( 'requirements_not_met', "This plugin does not work with your version of PHP. Minimum PHP required is $compatible_php" );
+				return new WP_Error( 'requirements_not_met', "This plugin does not work with your version of PHP. Minimum PHP required is $requires_php" );
 			}
 		}
 
@@ -999,7 +1009,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * ## OPTIONS
 	 *
 	 * <plugin|zip|url>...
-	 * : One or more plugins to install. Accepts a plugin slug, the path to a local zip file, or a URL to a remote zip file.
+	 * : One or more plugins to install. Accepts a plugin slug, the path to a local zip file, a URL to a remote zip file, or a URL to a WordPress.org plugin directory.
 	 *
 	 * [--version=<version>]
 	 * : If set, get that particular version from wordpress.org, instead of the
@@ -1021,6 +1031,9 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+	 *
+	 * [--with-dependencies]
+	 * : If set, the command will also install all required dependencies of the plugin as specified in the 'Requires Plugins' header.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -1078,6 +1091,26 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *     Removing the old version of the plugin...
 	 *     Plugin updated successfully
 	 *     Success: Installed 1 of 1 plugins.
+	 *
+	 *     # Install a plugin with all its dependencies
+	 *     $ wp plugin install my-plugin --with-dependencies
+	 *     Installing Required Plugin 1 (1.2.3)
+	 *     Plugin installed successfully.
+	 *     Installing Required Plugin 2 (2.0.0)
+	 *     Plugin installed successfully.
+	 *     Installing My Plugin (3.5.0)
+	 *     Plugin installed successfully.
+	 *     Success: Installed 3 of 3 plugins.
+	 *
+	 *     # Install from a WordPress.org plugin directory URL
+	 *     $ wp plugin install https://wordpress.org/plugins/akismet/
+	 *     Detected WordPress.org plugins directory URL, using slug: akismet
+	 *     Installing Akismet Anti-spam: Spam Protection (3.1.11)
+	 *     Downloading install package from https://downloads.wordpress.org/plugin/akismet.3.1.11.zip...
+	 *     Unpacking the package...
+	 *     Installing the plugin...
+	 *     Plugin installed successfully.
+	 *     Success: Installed 1 of 1 plugins.
 	 */
 	public function install( $args, $assoc_args ) {
 
@@ -1085,7 +1118,115 @@ class Plugin_Command extends CommandWithUpgrade {
 			wp_mkdir_p( WP_PLUGIN_DIR );
 		}
 
-		parent::install( $args, $assoc_args );
+		// If --with-dependencies is set, we need to handle dependencies
+		if ( Utils\get_flag_value( $assoc_args, 'with-dependencies', false ) ) {
+			if ( WP_CLI\Utils\wp_version_compare( '6.5', '<' ) ) {
+				WP_CLI::error( 'Installing plugins with dependencies requires WordPress 6.5 or greater.' );
+			}
+			$this->install_with_dependencies( $args, $assoc_args );
+		} else {
+			parent::install( $args, $assoc_args );
+		}
+	}
+
+	/**
+	 * Installs plugins with their dependencies.
+	 *
+	 * @param array $args       Plugin slugs to install.
+	 * @param array $assoc_args Associative arguments.
+	 */
+	private function install_with_dependencies( $args, $assoc_args ) {
+		$all_to_install    = [];
+		$installed_tracker = [];
+
+		// Remove with-dependencies from assoc_args to avoid infinite recursion
+		unset( $assoc_args['with-dependencies'] );
+
+		// Collect all plugins and their dependencies
+		foreach ( $args as $slug ) {
+			$this->collect_dependencies( $slug, $all_to_install, $installed_tracker );
+		}
+
+		if ( empty( $all_to_install ) ) {
+			WP_CLI::success( 'No plugins to install.' );
+			return;
+		}
+
+		// Install all collected plugins
+		parent::install( $all_to_install, $assoc_args );
+	}
+
+	/**
+	 * Recursively collects all dependencies for a plugin.
+	 *
+	 * @param string $slug              Plugin slug.
+	 * @param array  &$all_to_install   Reference to array of all plugins to install.
+	 * @param array  &$installed_tracker Reference to array tracking what we've already processed.
+	 */
+	private function collect_dependencies( $slug, &$all_to_install, &$installed_tracker ) {
+		// Skip if already processed
+		if ( isset( $installed_tracker[ $slug ] ) ) {
+			return;
+		}
+
+		$installed_tracker[ $slug ] = true;
+
+		// Skip if it's a URL or zip file (can't get dependencies for those)
+		$is_remote = false !== strpos( $slug, '://' );
+		if ( $is_remote || ( pathinfo( $slug, PATHINFO_EXTENSION ) === 'zip' && is_file( $slug ) ) ) {
+			$all_to_install[] = $slug;
+			return;
+		}
+
+		// Get plugin dependencies from WordPress.org API
+		$dependencies = $this->get_plugin_dependencies( $slug );
+
+		// Recursively install dependencies first
+		if ( ! empty( $dependencies ) ) {
+			foreach ( $dependencies as $dependency_slug ) {
+				$this->collect_dependencies( $dependency_slug, $all_to_install, $installed_tracker );
+			}
+		}
+
+		// Add this plugin to the install list
+		$all_to_install[] = $slug;
+	}
+
+	/**
+	 * Gets the dependencies for a plugin.
+	 *
+	 * @param string $slug Plugin slug.
+	 * @return array Array of dependency slugs.
+	 */
+	private function get_plugin_dependencies( $slug ) {
+		// Find the plugin file for this slug
+		$plugins = get_plugins();
+		foreach ( $plugins as $plugin_file => $plugin_data ) {
+			$plugin_slug = dirname( $plugin_file );
+			if ( '.' === $plugin_slug ) {
+				$plugin_slug = basename( $plugin_file, '.php' );
+			}
+
+			if ( $plugin_slug === $slug ) {
+				WP_Plugin_Dependencies::initialize();
+				return WP_Plugin_Dependencies::get_dependencies( $plugin_file );
+			}
+		}
+
+		// Fallback to WordPress.org API for plugins not yet installed
+		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
+
+		if ( is_wp_error( $api ) ) {
+			WP_CLI::warning( "Could not fetch information for plugin '$slug': " . $api->get_error_message() );
+			return [];
+		}
+
+		// Check if requires_plugins field exists and is not empty
+		if ( ! empty( $api->requires_plugins ) && is_array( $api->requires_plugins ) ) {
+			return $api->requires_plugins;
+		}
+
+		return [];
 	}
 
 	/**
@@ -1380,6 +1521,66 @@ class Plugin_Command extends CommandWithUpgrade {
 		}
 
 		$this->check_active( $plugin->file, $network_wide ) ? WP_CLI::halt( 0 ) : WP_CLI::halt( 1 );
+	}
+
+	/**
+	 * Installs all dependencies of an installed plugin.
+	 *
+	 * This command is useful when you have a plugin installed that depends on other plugins,
+	 * and you want to install those dependencies without activating the main plugin.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The installed plugin to get dependencies for.
+	 *
+	 * [--activate]
+	 * : If set, dependencies will be activated immediately after install.
+	 *
+	 * [--activate-network]
+	 * : If set, dependencies will be network activated immediately after install.
+	 *
+	 * [--force]
+	 * : If set, the command will overwrite any installed version of the plugin, without prompting
+	 * for confirmation.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Install all dependencies of an installed plugin
+	 *     $ wp plugin install-dependencies my-plugin
+	 *     Installing Required Plugin 1 (1.2.3)
+	 *     Plugin installed successfully.
+	 *     Installing Required Plugin 2 (2.0.0)
+	 *     Plugin installed successfully.
+	 *     Success: Installed 2 of 2 plugins.
+	 *
+	 * @subcommand install-dependencies
+	 */
+	public function install_dependencies( $args, $assoc_args ) {
+		if ( WP_CLI\Utils\wp_version_compare( '6.5', '<' ) ) {
+			WP_CLI::error( 'Installing plugin dependencies requires WordPress 6.5 or greater.' );
+		}
+
+		$plugin = $this->fetcher->get_check( $args[0] );
+		$file   = $plugin->file;
+
+		WP_Plugin_Dependencies::initialize();
+		$dependencies = WP_Plugin_Dependencies::get_dependencies( $file );
+
+		if ( empty( $dependencies ) ) {
+			WP_CLI::success( "Plugin '{$args[0]}' has no dependencies." );
+			return;
+		}
+
+		WP_CLI::log( sprintf( "Installing %d %s for '%s'...", count( $dependencies ), Utils\pluralize( 'dependency', count( $dependencies ) ), $args[0] ) );
+
+		// Remove with-dependencies flag to avoid recursive dependency resolution
+		unset( $assoc_args['with-dependencies'] );
+
+		// Install dependencies
+		$this->chained_command = true;
+		$this->install( $dependencies, $assoc_args );
+		$this->chained_command = false;
 	}
 
 	/**

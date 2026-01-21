@@ -63,6 +63,7 @@ class Theme_Command extends CommandWithUpgrade {
 		'version',
 		'update_version',
 		'auto_update',
+		'type',
 	];
 
 	public function __construct() {
@@ -496,7 +497,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * ## OPTIONS
 	 *
 	 * <theme|zip|url>...
-	 * : One or more themes to install. Accepts a theme slug, the path to a local zip file, or a URL to a remote zip file.
+	 * : One or more themes to install. Accepts a theme slug, the path to a local zip file, a URL to a remote zip file, or a URL to a WordPress.org theme directory.
 	 *
 	 * [--version=<version>]
 	 * : If set, get that particular version from wordpress.org, instead of the
@@ -534,6 +535,16 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 *     # Install from a remote zip file
 	 *     $ wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+	 *
+	 *     # Install from a WordPress.org theme directory URL
+	 *     $ wp theme install https://wordpress.org/themes/twentysixteen/
+	 *     Detected WordPress.org themes directory URL, using slug: twentysixteen
+	 *     Installing Twenty Sixteen (1.2)
+	 *     Downloading install package from http://downloads.wordpress.org/theme/twentysixteen.1.2.zip...
+	 *     Unpacking the package...
+	 *     Installing the theme...
+	 *     Theme installed successfully.
+	 *     Success: Installed 1 of 1 themes.
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( count( $args ) > 1 && Utils\get_flag_value( $assoc_args, 'activate', false ) ) {
@@ -587,6 +598,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 *     +---------+----------------+
 	 */
 	public function get( $args, $assoc_args ) {
+		/**
+		 * @var \WP_Theme $theme
+		 */
 		$theme = $this->fetcher->get_check( $args[0] );
 
 		$errors = $theme->errors();
@@ -612,14 +626,22 @@ class Theme_Command extends CommandWithUpgrade {
 			'tags',
 			'theme_root',
 			'theme_root_uri',
+			'type',
 		];
 		$theme_obj  = new stdClass();
 		foreach ( $theme_vars as $var ) {
+			// @phpstan-ignore-next-line
 			$theme_obj->$var = $theme->$var;
 		}
 
 		$theme_obj->status      = $this->get_status( $theme );
 		$theme_obj->description = wordwrap( $theme_obj->description );
+
+		// Determine theme type (block or classic). is_block_theme() was added in WP 5.9.
+		$theme_obj->type = 'classic';
+		if ( method_exists( $theme, 'is_block_theme' ) && $theme->is_block_theme() ) {
+			$theme_obj->type = 'block';
+		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = $theme_vars;
@@ -915,6 +937,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * * version
 	 * * update_version
 	 * * auto_update
+	 * * type
 	 *
 	 * These fields are optionally available:
 	 *
@@ -927,9 +950,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 *     # List inactive themes.
 	 *     $ wp theme list --status=inactive --format=csv
-	 *     name,status,update,version,update_version,auto_update
-	 *     twentyfourteen,inactive,none,3.8,,off
-	 *     twentysixteen,inactive,available,3.0,3.1,off
+	 *     name,status,update,version,update_version,auto_update,type
+	 *     twentyfourteen,inactive,none,3.8,,off,classic
+	 *     twentysixteen,inactive,available,3.0,3.1,off,classic
 	 *
 	 * @subcommand list
 	 */
