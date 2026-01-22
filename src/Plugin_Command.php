@@ -172,11 +172,19 @@ class Plugin_Command extends CommandWithUpgrade {
 		// Force WordPress to check for updates.
 		call_user_func( $this->upgrade_refresh );
 
-		$items = $this->get_item_list();
-
-		// If specific plugins requested, validate and filter to those
-		if ( ! $all ) {
-			$items = $this->filter_item_list( $items, $args );
+		if ( $all ) {
+			// Get all plugins
+			$items = $this->get_item_list();
+		} else {
+			// Get specific plugins and their update info
+			$plugins = $this->fetcher->get_many( $args );
+			$all_items = $this->get_item_list();
+			$items = [];
+			foreach ( $plugins as $plugin ) {
+				if ( isset( $all_items[ $plugin->file ] ) ) {
+					$items[ $plugin->file ] = $all_items[ $plugin->file ];
+				}
+			}
 		}
 
 		// Filter to only plugins with available updates

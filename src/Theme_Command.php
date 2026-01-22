@@ -166,11 +166,20 @@ class Theme_Command extends CommandWithUpgrade {
 		// Force WordPress to check for updates.
 		call_user_func( $this->upgrade_refresh );
 
-		$items = $this->get_item_list();
-
-		// If specific themes requested, validate and filter to those
-		if ( ! $all ) {
-			$items = $this->filter_item_list( $items, $args );
+		if ( $all ) {
+			// Get all themes
+			$items = $this->get_item_list();
+		} else {
+			// Get specific themes and their update info
+			$themes = $this->fetcher->get_many( $args );
+			$all_items = $this->get_item_list();
+			$items = [];
+			foreach ( $themes as $theme ) {
+				$stylesheet = $theme->get_stylesheet();
+				if ( isset( $all_items[ $stylesheet ] ) ) {
+					$items[ $stylesheet ] = $all_items[ $stylesheet ];
+				}
+			}
 		}
 
 		// Filter to only themes with available updates
