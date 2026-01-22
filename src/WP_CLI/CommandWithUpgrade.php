@@ -394,6 +394,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			if ( ! is_dir( WP_PLUGIN_DIR ) ) {
 				return new WP_Error( 'invalid_path', 'Unable to create plugin directory.' );
 			}
+
+			// Verify that the plugin directory was successfully created.
+			if ( ! is_dir( WP_PLUGIN_DIR ) ) {
+				return new WP_Error( 'invalid_path', 'Unable to create plugin directory.' );
+			}
 		}
 
 		// Validate the destination stays within the plugin directory (prevent directory traversal).
