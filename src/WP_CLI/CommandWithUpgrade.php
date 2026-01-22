@@ -1179,8 +1179,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 */
 	protected function get_gist_id_from_url( $url ) {
 		// Match gist.github.com URLs but not gist.githubusercontent.com (raw URLs)
+		// Supports both user-owned gists (gist.github.com/username/id) and anonymous gists (gist.github.com/id)
 		// Gist IDs are hexadecimal strings that can contain both lowercase and uppercase
-		if ( preg_match( '#^https?://gist\.github\.com/[^/]+/([a-fA-F0-9]+)/?$#', $url, $matches ) ) {
+		if ( preg_match( '#^https?://gist\.github\.com/(?:[^/]+/)?([a-fA-F0-9]+)/?$#', $url, $matches ) ) {
 			return $matches[1];
 		}
 		return null;
