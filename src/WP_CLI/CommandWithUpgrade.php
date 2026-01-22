@@ -384,8 +384,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// Determine the destination filename and validate extension.
 		$dest_filename = sanitize_file_name( $filename );
 
-		// Ensure the sanitized filename still has a .php extension.
-		if ( pathinfo( $dest_filename, PATHINFO_EXTENSION ) !== 'php' ) {
+		// Ensure the sanitized filename still has a .php extension (case-insensitive).
+		if ( strtolower( pathinfo( $dest_filename, PATHINFO_EXTENSION ) ) !== 'php' ) {
 			return new WP_Error( 'invalid_filename', 'The sanitized filename does not have a .php extension.' );
 		}
 
@@ -472,7 +472,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 
 		$url_path = Utils\parse_url( $slug, PHP_URL_PATH );
-		return is_string( $url_path ) && pathinfo( $url_path, PATHINFO_EXTENSION ) === 'php';
+		return is_string( $url_path ) && strtolower( pathinfo( $url_path, PATHINFO_EXTENSION ) ) === 'php';
 	}
 
 	/**
@@ -1279,7 +1279,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$php_files = [];
 		$files     = (array) $decoded_body->files;
 		foreach ( $files as $filename => $file_data ) {
-			if ( is_object( $file_data ) && isset( $file_data->raw_url ) && pathinfo( $filename, PATHINFO_EXTENSION ) === 'php' ) {
+			if ( is_object( $file_data ) && isset( $file_data->raw_url ) && strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) ) === 'php' ) {
 				$php_files[] = [
 					'name'    => $filename,
 					'raw_url' => $file_data->raw_url,
