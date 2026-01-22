@@ -58,7 +58,7 @@ Feature: Manage WordPress themes and plugins
     Then STDOUT should not be empty
     And save STDOUT as {UPDATE_VERSION}
 
-    When I run `wp <type> list`
+    When I run `wp <type> list --fields=name,status,update,version,update_version,auto_update`
     Then STDOUT should be a table containing rows:
       | name   | status   | update    | version   | update_version   | auto_update |
       | <item> | inactive | available | <version> | {UPDATE_VERSION} | off         |

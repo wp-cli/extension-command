@@ -49,6 +49,7 @@
             "plugin delete",
             "plugin get",
             "plugin install",
+            "plugin install-dependencies",
             "plugin is-active",
             "plugin is-installed",
             "plugin list",
