@@ -389,6 +389,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// Ensure plugin directory exists.
 		if ( ! is_dir( WP_PLUGIN_DIR ) ) {
 			wp_mkdir_p( WP_PLUGIN_DIR );
+
+			// Verify that the plugin directory was successfully created.
+			if ( ! is_dir( WP_PLUGIN_DIR ) ) {
+				return new WP_Error( 'invalid_path', 'Unable to create plugin directory.' );
+			}
 		}
 
 		// Validate the destination stays within the plugin directory (prevent directory traversal).
@@ -1163,7 +1168,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 */
 	protected function get_gist_id_from_url( $url ) {
 		// Match gist.github.com URLs but not gist.githubusercontent.com (raw URLs)
-		if ( preg_match( '#^https?://gist\.github\.com/[^/]+/([a-f0-9]+)/?$#i', $url, $matches ) ) {
+		// Gist IDs are hexadecimal strings that can contain both lowercase and uppercase
+		if ( preg_match( '#^https?://gist\.github\.com/[^/]+/([a-fA-F0-9]+)/?$#', $url, $matches ) ) {
 			return $matches[1];
 		}
 		return null;
@@ -1191,10 +1197,27 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$body          = \wp_remote_retrieve_body( $response );
 		$decoded_body  = json_decode( $body );
 
-		if ( 403 === $response_code ) {
+		// Handle common HTTP error codes with specific error messages
+		if ( 401 === $response_code ) {
 			return new \WP_Error(
-				'api_rate_limit',
-				$this->build_rate_limiting_error_message( $decoded_body ),
+				'github_unauthorized',
+				'Unauthorized: Invalid or missing GitHub token.',
+				[ 'status' => 401 ]
+			);
+		}
+
+		if ( 403 === $response_code ) {
+			// Check if decoded_body is valid before using it
+			if ( null !== $decoded_body && is_object( $decoded_body ) ) {
+				return new \WP_Error(
+					'github_rate_limited',
+					$this->build_rate_limiting_error_message( $decoded_body ),
+					[ 'status' => 403 ]
+				);
+			}
+			return new \WP_Error(
+				'github_forbidden',
+				'Access forbidden. This may be due to rate limiting or insufficient permissions.',
 				[ 'status' => 403 ]
 			);
 		}
@@ -1207,11 +1230,36 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			);
 		}
 
+		if ( 500 === $response_code ) {
+			return new \WP_Error(
+				'github_server_error',
+				'GitHub server error. Please try again later.',
+				[ 'status' => 500 ]
+			);
+		}
+
+		if ( 503 === $response_code ) {
+			return new \WP_Error(
+				'github_unavailable',
+				'GitHub service is temporarily unavailable. Please try again later.',
+				[ 'status' => 503 ]
+			);
+		}
+
+		// Check for other non-2xx status codes
+		if ( $response_code < 200 || $response_code >= 300 ) {
+			return new \WP_Error(
+				'github_api_error',
+				sprintf( 'GitHub API returned unexpected status code: %d', $response_code ),
+				[ 'status' => $response_code ]
+			);
+		}
+
 		if ( null === $decoded_body || ! is_object( $decoded_body ) || ! isset( $decoded_body->files ) ) {
 			return new \WP_Error(
 				'invalid_gist_api_response',
 				'Invalid response from GitHub Gist API.',
-				[ 'status' => 500 ]
+				[ 'status' => $response_code ]
 			);
 		}
 
