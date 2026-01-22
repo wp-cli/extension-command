@@ -1091,6 +1091,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *     $ wp plugin install https://example.com/my-plugin.php
 	 *     Installing My Plugin (1.0.0)
 	 *     Downloading plugin file from https://example.com/my-plugin.php...
+	 *
 	 *     # Install a plugin with all its dependencies
 	 *     $ wp plugin install my-plugin --with-dependencies
 	 *     Installing Required Plugin 1 (1.2.3)
