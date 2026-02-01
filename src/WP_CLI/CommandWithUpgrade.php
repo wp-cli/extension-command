@@ -390,7 +390,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$insecure       = Utils\get_flag_value( $assoc_args, 'insecure', false );
 		$upgrader_class = $this->get_upgrader_class( $force );
 
-		// Use custom upgrader skin for extensions to display update progress
+		// We need to use ExtensionUpgraderSkin instead of the default UpgraderSkin
+		// to display which extension is being updated. Since the skin is passed to
+		// the upgrader constructor and cannot be changed afterward, we must duplicate
+		// the upgrader creation logic from Utils\get_upgrader() here.
 		if ( ! class_exists( '\WP_Upgrader' ) ) {
 			if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ) ) {
 				include ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
@@ -403,6 +406,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		}
 
+		// Check if the upgrader class constructor supports the insecure flag.
+		// This check is done on each call to maintain compatibility with the
+		// original Utils\get_upgrader() behavior, though it could be optimized
+		// with caching if performance becomes a concern.
 		$uses_insecure_flag = false;
 
 		$reflection  = new \ReflectionClass( $upgrader_class );
