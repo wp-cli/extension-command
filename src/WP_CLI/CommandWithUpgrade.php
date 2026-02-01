@@ -389,7 +389,41 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$force          = Utils\get_flag_value( $assoc_args, 'force', false );
 		$insecure       = Utils\get_flag_value( $assoc_args, 'insecure', false );
 		$upgrader_class = $this->get_upgrader_class( $force );
-		return Utils\get_upgrader( $upgrader_class, $insecure );
+		
+		// Use custom upgrader skin for extensions to display update progress
+		if ( ! class_exists( '\WP_Upgrader' ) ) {
+			if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ) ) {
+				include ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+			}
+		}
+
+		if ( ! class_exists( '\WP_Upgrader_Skin' ) ) {
+			if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php' ) ) {
+				include ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php';
+			}
+		}
+
+		$uses_insecure_flag = false;
+
+		$reflection  = new \ReflectionClass( $upgrader_class );
+		$constructor = $reflection->getConstructor();
+		if ( $constructor ) {
+			$arguments = $constructor->getParameters();
+			foreach ( $arguments as $argument ) {
+				if ( 'insecure' === $argument->name ) {
+					$uses_insecure_flag = true;
+					break;
+				}
+			}
+		}
+
+		$skin = new ExtensionUpgraderSkin();
+
+		if ( $uses_insecure_flag ) {
+			return new $upgrader_class( $skin, $insecure );
+		}
+
+		return new $upgrader_class( $skin );
 	}
 
 	protected function update_many( $args, $assoc_args ) {
