@@ -389,7 +389,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$force          = Utils\get_flag_value( $assoc_args, 'force', false );
 		$insecure       = Utils\get_flag_value( $assoc_args, 'insecure', false );
 		$upgrader_class = $this->get_upgrader_class( $force );
-		
+
 		// Use custom upgrader skin for extensions to display update progress
 		if ( ! class_exists( '\WP_Upgrader' ) ) {
 			if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ) ) {
