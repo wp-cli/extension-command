@@ -389,48 +389,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$force          = Utils\get_flag_value( $assoc_args, 'force', false );
 		$insecure       = Utils\get_flag_value( $assoc_args, 'insecure', false );
 		$upgrader_class = $this->get_upgrader_class( $force );
-
-		// We need to use ExtensionUpgraderSkin instead of the default UpgraderSkin
-		// to display which extension is being updated. Since the skin is passed to
-		// the upgrader constructor and cannot be changed afterward, we must duplicate
-		// the upgrader creation logic from Utils\get_upgrader() here.
-		if ( ! class_exists( '\WP_Upgrader' ) ) {
-			if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ) ) {
-				include ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-			}
-		}
-
-		if ( ! class_exists( '\WP_Upgrader_Skin' ) ) {
-			if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php' ) ) {
-				include ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php';
-			}
-		}
-
-		// Check if the upgrader class constructor supports the insecure flag.
-		// This check is done on each call to maintain compatibility with the
-		// original Utils\get_upgrader() behavior, though it could be optimized
-		// with caching if performance becomes a concern.
-		$uses_insecure_flag = false;
-
-		$reflection  = new \ReflectionClass( $upgrader_class );
-		$constructor = $reflection->getConstructor();
-		if ( $constructor ) {
-			$arguments = $constructor->getParameters();
-			foreach ( $arguments as $argument ) {
-				if ( 'insecure' === $argument->name ) {
-					$uses_insecure_flag = true;
-					break;
-				}
-			}
-		}
-
-		$skin = new ExtensionUpgraderSkin();
-
-		if ( $uses_insecure_flag ) {
-			return new $upgrader_class( $skin, $insecure );
-		}
-
-		return new $upgrader_class( $skin );
+		return Utils\get_upgrader( $upgrader_class, $insecure, new ExtensionUpgraderSkin() );
 	}
 
 	protected function update_many( $args, $assoc_args ) {
