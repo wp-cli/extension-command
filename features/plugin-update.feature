@@ -267,3 +267,52 @@ Feature: Update WordPress plugins
       """
       Success: Updated 1 of 1 plugins (1 skipped).
       """
+
+  @require-wp-5.2
+  Scenario: Show auto_update_indicated field in plugin list
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --fields=name,version,update,auto_update_indicated`
+    Then STDOUT should be a table containing rows:
+      | name               | version | update    | auto_update_indicated |
+      | wordpress-importer | 0.5     | available | no                    |
+
+  @require-wp-5.2
+  Scenario: Using --auto-update-indicated flag when no plugins have auto-update indicated
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin update --auto-update-indicated`
+    Then STDOUT should be:
+      """
+      Success: No plugins with server-indicated automatic updates available.
+      """
+
+  @require-wp-5.2
+  Scenario: Error when using --version with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp plugin update --auto-update-indicated --version=1.0.0`
+    Then STDERR should be:
+      """
+      Error: Cannot use --version with --auto-update-indicated. The version is determined by the server.
+      """
+    And the return code should be 1
+
+  @require-wp-5.2
+  Scenario: Preview updates with --auto-update-indicated and --dry-run
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin update --auto-update-indicated --dry-run`
+    Then STDOUT should be:
+      """
+      Success: No plugins with server-indicated automatic updates available.
+      """
