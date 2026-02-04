@@ -321,6 +321,9 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * [--network]
 	 * : If set, the plugin will be activated for the entire multisite network.
 	 *
+	 * [--force]
+	 * : If set, the plugin activation hooks will be run even if the plugin is already active.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Activate plugin
@@ -345,6 +348,11 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *     Plugin 'buddypress' network activated.
 	 *     Success: Activated 2 of 2 plugins.
 	 *
+	 *     # Force re-running activation hooks for an already active plugin.
+	 *     $ wp plugin activate hello --force
+	 *     Plugin 'hello' activated.
+	 *     Success: Activated 1 of 1 plugins.
+	 *
 	 * @param array $args
 	 * @param array $assoc_args
 	 */
@@ -352,6 +360,7 @@ class Plugin_Command extends CommandWithUpgrade {
 		$network_wide = Utils\get_flag_value( $assoc_args, 'network', false );
 		$all          = Utils\get_flag_value( $assoc_args, 'all', false );
 		$all_exclude  = Utils\get_flag_value( $assoc_args, 'exclude', '' );
+		$force        = Utils\get_flag_value( $assoc_args, 'force', false );
 
 		/**
 		 * @var string $all_exclude
@@ -379,13 +388,23 @@ class Plugin_Command extends CommandWithUpgrade {
 			}
 			// Network-active is the highest level of activation status.
 			if ( 'active-network' === $status ) {
-				WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
-				continue;
+				// If force flag is set, deactivate and reactivate to run activation hooks.
+				if ( $force ) {
+					deactivate_plugins( $plugin->file, false, true );
+				} else {
+					WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+					continue;
+				}
 			}
 			// Don't reactivate active plugins, but do let them become network-active.
 			if ( ! $network_wide && 'active' === $status ) {
-				WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
-				continue;
+				// If force flag is set, deactivate and reactivate to run activation hooks.
+				if ( $force ) {
+					deactivate_plugins( $plugin->file, false, false );
+				} else {
+					WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
+					continue;
+				}
 			}
 
 			// Plugins need to be deactivated before being network activated.
