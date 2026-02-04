@@ -322,7 +322,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * : If set, the plugin will be activated for the entire multisite network.
 	 *
 	 * [--force]
-	 * : If set, the plugin activation hooks will be run even if the plugin is already active.
+	 * : If set, deactivates and reactivates the plugin to re-run activation hooks, even if already active.
 	 *
 	 * ## EXAMPLES
 	 *

@@ -319,7 +319,7 @@ Feature: Install WordPress plugins
        */
       
       register_activation_hook( __FILE__, function() {
-        file_put_contents( WP_CONTENT_DIR . '/install-activation-test.txt', 'Activation hook was run' );
+        @file_put_contents( WP_CONTENT_DIR . '/install-activation-test.txt', 'Activation hook was run' );
       });
       """
     
