@@ -177,3 +177,47 @@ Feature: Activate WordPress plugins
       Debug (plugin): Unexpected output: Unexpected output from plugin activation
       """
     And the return code should be 1
+
+  Scenario: Force activate an already active plugin to re-run activation hooks
+    Given a wp-content/plugins/force-test.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Force Test Plugin
+       * Description: Test plugin for force activation
+       * Author: WP-CLI tests
+       */
+      
+      register_activation_hook( __FILE__, function() {
+        file_put_contents( WP_CONTENT_DIR . '/activation-test.txt', 'Activation hook was run' );
+      });
+      """
+    
+    When I run `wp plugin activate force-test`
+    Then STDOUT should contain:
+      """
+      Plugin 'force-test' activated.
+      """
+    And the return code should be 0
+    And the wp-content/activation-test.txt file should exist
+    
+    # Remove the file to test if it gets recreated with --force
+    When I run `rm wp-content/activation-test.txt`
+    
+    # Try activating without --force (should skip)
+    When I try `wp plugin activate force-test`
+    Then STDERR should be:
+      """
+      Warning: Plugin 'force-test' is already active.
+      Error: No plugins activated.
+      """
+    And the wp-content/activation-test.txt file should not exist
+    
+    # Now try with --force (should re-run activation hooks)
+    When I run `wp plugin activate force-test --force`
+    Then STDOUT should contain:
+      """
+      Plugin 'force-test' activated.
+      """
+    And the return code should be 0
+    And the wp-content/activation-test.txt file should exist
