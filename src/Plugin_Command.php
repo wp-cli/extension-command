@@ -709,7 +709,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
 	 * [--auto-update-indicated]
-	 * : Only update plugins where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version.
+	 * : Only update plugins where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
 	 *
 	 * ## EXAMPLES
 	 *
