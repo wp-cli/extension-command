@@ -96,7 +96,10 @@ class Theme_Cache_Command extends WP_CLI_Command {
 	 * @param array    $assoc_args Associative arguments. Unused.
 	 */
 	public function flush( $args, $assoc_args ) {
-		wp_cache_flush_group( 'themes' );
+		// Only added in WordPress 6.1.
+		if ( function_exists( 'wp_cache_flush_group' ) ) {
+			wp_cache_flush_group( 'themes' );
+		}
 		WP_CLI::success( 'The theme cache was flushed.' );
 	}
 
