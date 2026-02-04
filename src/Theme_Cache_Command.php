@@ -99,8 +99,20 @@ class Theme_Cache_Command extends WP_CLI_Command {
 		// Only added in WordPress 6.1.
 		if ( function_exists( 'wp_cache_flush_group' ) ) {
 			wp_cache_flush_group( 'themes' );
+			WP_CLI::success( 'The theme cache was flushed.' );
+			return;
 		}
-		WP_CLI::success( 'The theme cache was flushed.' );
+
+		// Fallback for WordPress versions prior to 6.1: clear cache for all themes.
+		if ( function_exists( 'wp_get_themes' ) ) {
+			$all_themes = wp_get_themes();
+			foreach ( $all_themes as $theme ) {
+				$this->clear_theme_cache( $theme );
+			}
+			WP_CLI::success( 'The theme cache was flushed.' );
+		} else {
+			WP_CLI::warning( 'Your WordPress version does not support flushing the theme cache group.' );
+		}
 	}
 
 	/**
