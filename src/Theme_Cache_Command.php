@@ -52,7 +52,7 @@ class Theme_Cache_Command extends WP_CLI_Command {
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			$all_themes = wp_get_themes();
-			foreach ( $all_themes as $theme_slug => $theme ) {
+			foreach ( $all_themes as $theme ) {
 				$themes[] = $theme;
 			}
 		} else {
