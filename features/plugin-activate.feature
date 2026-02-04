@@ -206,11 +206,15 @@ Feature: Activate WordPress plugins
     
     # Try activating without --force (should skip)
     When I try `wp plugin activate force-test`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
       Warning: Plugin 'force-test' is already active.
-      Error: No plugins activated.
       """
+    And STDOUT should be:
+      """
+      Success: Plugin already activated.
+      """
+    And the return code should be 0
     And the wp-content/activation-test.txt file should not exist
     
     # Now try with --force (should re-run activation hooks)

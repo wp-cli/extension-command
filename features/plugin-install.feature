@@ -308,7 +308,7 @@ Feature: Install WordPress plugins
 
   Scenario: Force reinstall and activate an already active plugin to re-run activation hooks
     Given a WP install
-    And a wp-content/plugins/install-force-test.php file:
+    And a wp-content/plugins/install-force-test/install-force-test.php file:
       """
       <?php
       /**
@@ -333,11 +333,14 @@ Feature: Install WordPress plugins
     # Remove the file to test if it gets recreated with --force
     When I run `rm wp-content/install-activation-test.txt`
     
+    # Create a zip of the plugin for reinstallation
+    When I run `cd wp-content/plugins && zip -r /tmp/install-force-test.zip install-force-test`
+    
     # Try install --activate without --force (should skip activation hooks)
-    When I run `wp plugin install install-force-test --activate`
+    When I run `wp plugin install /tmp/install-force-test.zip --activate`
     Then STDOUT should contain:
       """
-      Plugin already installed.
+      Unpacking the package...
       """
     And STDOUT should contain:
       """
@@ -350,7 +353,7 @@ Feature: Install WordPress plugins
     And the wp-content/install-activation-test.txt file should not exist
     
     # Now try install --activate --force (should re-run activation hooks)
-    When I run `wp plugin install install-force-test --activate --force`
+    When I run `wp plugin install /tmp/install-force-test.zip --activate --force`
     Then STDOUT should contain:
       """
       Activating 'install-force-test'...
