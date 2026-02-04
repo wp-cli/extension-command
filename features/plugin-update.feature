@@ -268,6 +268,12 @@ Feature: Update WordPress plugins
       Success: Updated 1 of 1 plugins (1 skipped).
       """
 
+  # Tests for --auto-update-indicated feature
+  # Note: These tests verify the flag handling and error cases.
+  # The actual update behavior when autoupdate is true from the server
+  # cannot be easily tested as it requires mocking WordPress.org API responses.
+  # The update functionality itself is handled by the existing update_many method.
+
   @require-wp-5.2
   Scenario: Show auto_update_indicated field in plugin list
     Given a WP install

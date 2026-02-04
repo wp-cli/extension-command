@@ -763,6 +763,11 @@ class Plugin_Command extends CommandWithUpgrade {
 		$all                   = Utils\get_flag_value( $assoc_args, 'all', false );
 		$auto_update_indicated = Utils\get_flag_value( $assoc_args, 'auto-update-indicated', false );
 
+		// Don't allow --version to be set with --auto-update-indicated, as the version comes from the server.
+		if ( $auto_update_indicated && isset( $assoc_args['version'] ) ) {
+			WP_CLI::error( 'Cannot use --version with --auto-update-indicated. The version is determined by the server.' );
+		}
+
 		// If --auto-update-indicated is set, we need to filter plugins by this flag.
 		if ( $auto_update_indicated ) {
 			// Get all plugins with their update info.
@@ -782,11 +787,6 @@ class Plugin_Command extends CommandWithUpgrade {
 			if ( empty( $args ) ) {
 				WP_CLI::success( 'No plugins with server-indicated automatic updates available.' );
 				return;
-			}
-
-			// Don't allow --version to be set with --auto-update-indicated, as the version comes from the server.
-			if ( isset( $assoc_args['version'] ) ) {
-				WP_CLI::error( 'Cannot use --version with --auto-update-indicated. The version is determined by the server.' );
 			}
 
 			// Process the updates.
