@@ -772,6 +772,12 @@ class Plugin_Command extends CommandWithUpgrade {
 		if ( $auto_update_indicated && ( isset( $assoc_args['minor'] ) || isset( $assoc_args['patch'] ) ) ) {
 			WP_CLI::error( 'Cannot use --minor or --patch with --auto-update-indicated. The version is determined by the server.' );
 		}
+
+		// Don't allow plugin names to be specified with --auto-update-indicated.
+		if ( $auto_update_indicated && ! empty( $args ) ) {
+			WP_CLI::error( 'Cannot specify plugin names with --auto-update-indicated. This flag updates all plugins with server-indicated automatic updates.' );
+		}
+
 		// If --auto-update-indicated is set, we need to filter plugins by this flag.
 		if ( $auto_update_indicated ) {
 			// Get all plugins with their update info.

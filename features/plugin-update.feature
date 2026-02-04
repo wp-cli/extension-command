@@ -311,6 +311,39 @@ Feature: Update WordPress plugins
     And the return code should be 1
 
   @require-wp-5.2
+  Scenario: Error when using --minor with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp plugin update --auto-update-indicated --minor`
+    Then STDERR should be:
+      """
+      Error: Cannot use --minor or --patch with --auto-update-indicated. The version is determined by the server.
+      """
+    And the return code should be 1
+
+  @require-wp-5.2
+  Scenario: Error when using --patch with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp plugin update --auto-update-indicated --patch`
+    Then STDERR should be:
+      """
+      Error: Cannot use --minor or --patch with --auto-update-indicated. The version is determined by the server.
+      """
+    And the return code should be 1
+
+  @require-wp-5.2
+  Scenario: Error when specifying plugin names with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp plugin update akismet --auto-update-indicated`
+    Then STDERR should be:
+      """
+      Error: Cannot specify plugin names with --auto-update-indicated. This flag updates all plugins with server-indicated automatic updates.
+      """
+    And the return code should be 1
+
+  @require-wp-5.2
   Scenario: Preview updates with --auto-update-indicated and --dry-run
     Given a WP install
 
