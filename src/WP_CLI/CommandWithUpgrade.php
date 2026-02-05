@@ -1197,7 +1197,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$api_url = 'https://api.github.com/gists/' . $gist_id;
 		$token   = getenv( 'GITHUB_TOKEN' );
 
-		$request_arguments = $token ? [ 'headers' => 'Authorization: Bearer ' . $token ] : [];
+		$request_arguments = $token ? [ 'headers' => [ 'Authorization' => 'Bearer ' . $token ] ] : [];
 
 		$response = \wp_remote_get( $api_url, $request_arguments );
 
