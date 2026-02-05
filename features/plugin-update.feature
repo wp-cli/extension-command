@@ -267,3 +267,25 @@ Feature: Update WordPress plugins
       """
       Success: Updated 1 of 1 plugins (1 skipped).
       """
+
+  @require-wp-5.2
+  Scenario: Updating all plugins should show the name of each plugin as it is updated
+    Given a WP install
+    And I run `wp plugin delete akismet`
+
+    When I run `wp plugin install health-check --version=1.5.0`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin install wordpress-importer --version=0.5`
+    Then STDOUT should not be empty
+
+    When I try `wp plugin update --all`
+    Then STDOUT should contain:
+      """
+      Updating Health Check & Troubleshooting...
+      """
+
+    And STDOUT should contain:
+      """
+      Success: Updated 2 of 2 plugins.
+      """

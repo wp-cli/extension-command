@@ -389,7 +389,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$force          = Utils\get_flag_value( $assoc_args, 'force', false );
 		$insecure       = Utils\get_flag_value( $assoc_args, 'insecure', false );
 		$upgrader_class = $this->get_upgrader_class( $force );
-		return Utils\get_upgrader( $upgrader_class, $insecure );
+
+		if ( ! class_exists( '\WP_Upgrader_Skin' ) ) {
+			if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php' ) ) {
+				include ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php';
+			}
+		}
+
+		return Utils\get_upgrader( $upgrader_class, $insecure, new ExtensionUpgraderSkin() );
 	}
 
 	protected function update_many( $args, $assoc_args ) {
