@@ -1216,6 +1216,10 @@ class Plugin_Command extends CommandWithUpgrade {
 			return [];
 		}
 
+		/**
+		 * @var object{requires_plugins?: array} $api
+		 */
+
 		// Check if requires_plugins field exists and is not empty
 		if ( ! empty( $api->requires_plugins ) && is_array( $api->requires_plugins ) ) {
 			return $api->requires_plugins;
