@@ -378,7 +378,9 @@ class Plugin_Command extends CommandWithUpgrade {
 				continue;
 			}
 			// Network-active is the highest level of activation status.
-			if ( 'active-network' === $status ) {
+			// However, when called from install command (chained_command), always attempt activation
+			// to handle edge cases where the plugin may have been deactivated during the install process.
+			if ( 'active-network' === $status && ! $this->chained_command ) {
 				WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
 				continue;
 			}

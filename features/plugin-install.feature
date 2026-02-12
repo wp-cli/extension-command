@@ -338,3 +338,36 @@ Feature: Install WordPress plugins
       """
       active
       """
+
+  Scenario: Force update a network-active plugin with --activate-network flag should keep it network-activated
+    Given a WP multisite install
+
+    When I run `wp plugin install hello-dolly --activate-network`
+    Then STDOUT should contain:
+      """
+      Plugin 'hello-dolly' network activated.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=hello-dolly --field=status`
+    Then STDOUT should be:
+      """
+      active-network
+      """
+
+    When I run `wp plugin install hello-dolly --force --activate-network`
+    Then STDOUT should contain:
+      """
+      Plugin updated successfully
+      """
+    And STDOUT should contain:
+      """
+      Success: Installed 1 of 1 plugins.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=hello-dolly --field=status`
+    Then STDOUT should be:
+      """
+      active-network
+      """
