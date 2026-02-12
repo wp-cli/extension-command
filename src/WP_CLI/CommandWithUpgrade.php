@@ -322,14 +322,23 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 			if ( true === $allow_activation && count( $extension ) > 0 ) {
 				$this->chained_command = true;
+				$force                 = Utils\get_flag_value( $assoc_args, 'force', false );
 				if ( Utils\get_flag_value( $assoc_args, 'activate-network' ) ) {
 					WP_CLI::log( "Network-activating '$slug'..." );
-					$this->activate( array( $slug ), array( 'network' => true ) );
+					$activate_args = array( 'network' => true );
+					if ( $force ) {
+						$activate_args['force'] = true;
+					}
+					$this->activate( array( $slug ), $activate_args );
 				}
 
 				if ( Utils\get_flag_value( $assoc_args, 'activate' ) ) {
 					WP_CLI::log( "Activating '$slug'..." );
-					$this->activate( array( $slug ) );
+					$activate_args = array();
+					if ( $force ) {
+						$activate_args['force'] = true;
+					}
+					$this->activate( array( $slug ), $activate_args );
 				}
 				$this->chained_command = false;
 			}
