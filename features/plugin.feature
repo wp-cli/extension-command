@@ -298,6 +298,41 @@ Feature: Manage WordPress plugins
       """
     And the return code should be 0
 
+  Scenario: Network activate all plugins when some are already active on a single site
+    Given a WP multisite install
+
+    When I run `wp plugin install wordpress-importer --activate`
+    Then STDOUT should contain:
+      """
+      Plugin 'wordpress-importer' activated.
+      """
+
+    When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name                | status |
+      | akismet             | inactive |
+      | wordpress-importer  | active |
+
+    When I run `wp plugin activate --all --network`
+    Then STDOUT should contain:
+      """
+      Plugin 'akismet' network activated.
+      """
+    And STDOUT should contain:
+      """
+      Plugin 'wordpress-importer' network activated.
+      """
+    And STDOUT should contain:
+      """
+      Success: Network activated 2 of 2 plugins.
+      """
+
+    When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name                | status         |
+      | akismet             | active-network |
+      | wordpress-importer  | active-network |
+
   Scenario: List plugins
     Given a WP install
 
