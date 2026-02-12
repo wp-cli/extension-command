@@ -305,3 +305,36 @@ Feature: Install WordPress plugins
       """
       active
       """
+
+  Scenario: Force update an active plugin with --activate flag should keep it activated
+    Given a WP install
+
+    When I run `wp plugin install hello-dolly --activate`
+    Then STDOUT should contain:
+      """
+      Plugin 'hello-dolly' activated.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=hello-dolly --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """
+
+    When I run `wp plugin install hello-dolly --force --activate`
+    Then STDOUT should contain:
+      """
+      Plugin updated successfully
+      """
+    And STDOUT should contain:
+      """
+      Success: Installed 1 of 1 plugins.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=hello-dolly --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """
