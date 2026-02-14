@@ -49,7 +49,20 @@ class ExtensionUpgraderSkin extends UpgraderSkin {
 	 * Setup hooks to track file changes during upgrade.
 	 */
 	private function setup_file_tracking_hooks() {
-		// Hook into wp_opcache_invalidate_file filter to track files being invalidated
+		// Hook into upgrader_post_install to capture the destination directory
+		add_filter(
+			'upgrader_post_install',
+			function ( $response, $hook_extra, $result ) {
+				if ( $this->track_files && is_array( $result ) && isset( $result['destination'] ) && is_string( $result['destination'] ) ) {
+					$this->scan_directory_for_files( $result['destination'] );
+				}
+				return $response;
+			},
+			10,
+			3
+		);
+
+		// Also hook into wp_opcache_invalidate_file filter to track files being invalidated
 		add_filter(
 			'wp_opcache_invalidate_file',
 			function ( $file ) {
@@ -61,6 +74,29 @@ class ExtensionUpgraderSkin extends UpgraderSkin {
 			10,
 			1
 		);
+	}
+
+	/**
+	 * Recursively scan a directory and add all PHP files to the changed files list.
+	 *
+	 * @param string $dir Directory to scan.
+	 */
+	private function scan_directory_for_files( $dir ) {
+		if ( ! is_dir( $dir ) ) {
+			return;
+		}
+
+		$iterator = new \RecursiveIteratorIterator(
+			new \RecursiveDirectoryIterator( $dir, \RecursiveDirectoryIterator::SKIP_DOTS ),
+			\RecursiveIteratorIterator::SELF_FIRST
+		);
+
+		foreach ( $iterator as $file ) {
+			/** @var \SplFileInfo $file */
+			if ( $file->isFile() && 'php' === $file->getExtension() ) {
+				$this->changed_files[] = $file->getPathname();
+			}
+		}
 	}
 
 	/**
