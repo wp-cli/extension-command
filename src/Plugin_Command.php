@@ -707,6 +707,10 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
+	 * [--show-changed-files]
+	 * : Show the list of files that were changed during the update.
+	 * : Useful for invalidating PHP-FPM opcache using external tools.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp plugin update bbpress --version=dev

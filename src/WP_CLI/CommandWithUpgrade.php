@@ -393,7 +393,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 	}
 
-	protected function get_upgrader( $assoc_args ) {
+	protected function get_upgrader( $assoc_args, $skin = null ) {
 		$force          = Utils\get_flag_value( $assoc_args, 'force', false );
 		$insecure       = Utils\get_flag_value( $assoc_args, 'insecure', false );
 		$upgrader_class = $this->get_upgrader_class( $force );
@@ -404,7 +404,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		}
 
-		return Utils\get_upgrader( $upgrader_class, $insecure, new ExtensionUpgraderSkin() );
+		if ( null === $skin ) {
+			$skin = new ExtensionUpgraderSkin();
+		}
+
+		return Utils\get_upgrader( $upgrader_class, $insecure, $skin );
 	}
 
 	protected function update_many( $args, $assoc_args ) {
@@ -521,13 +525,24 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$result = array();
 
+		// Check if file tracking is requested.
+		$show_changed_files = Utils\get_flag_value( $assoc_args, 'show-changed-files', false );
+		$skin               = null;
+
 		// Only attempt to update if there is something to update.
 		if ( ! empty( $items_to_update ) ) {
 			$cache_manager = WP_CLI::get_http_cache_manager();
 			foreach ( $items_to_update as $item ) {
 				$cache_manager->whitelist_package( $item['update_package'], $this->item_type, $item['name'], $item['update_version'] );
 			}
-			$upgrader = $this->get_upgrader( $assoc_args );
+
+			// Enable file tracking if requested.
+			if ( $show_changed_files ) {
+				$skin = new ExtensionUpgraderSkin();
+				$skin->enable_file_tracking();
+			}
+
+			$upgrader = $this->get_upgrader( $assoc_args, $skin );
 			// Ensure the upgrader uses the download offer present in each item.
 			$transient_filter = function ( $transient ) use ( $items_to_update ) {
 				foreach ( $items_to_update as $name => $item_data ) {
@@ -603,6 +618,22 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		Utils\report_batch_operation_results( $this->item_type, 'update', $total_updated, $num_updated, $errors, $skipped );
 		if ( null !== $exclude ) {
 			WP_CLI::log( "Skipped updates for: $exclude" );
+		}
+
+		// Output changed files if requested.
+		if ( $show_changed_files && null !== $skin ) {
+			$changed_files = $skin->get_changed_files();
+			if ( ! empty( $changed_files ) ) {
+				// Remove duplicates and sort files.
+				$changed_files = array_unique( $changed_files );
+				sort( $changed_files );
+
+				WP_CLI::log( '' );
+				WP_CLI::log( 'Changed files:' );
+				foreach ( $changed_files as $file ) {
+					WP_CLI::log( $file );
+				}
+			}
 		}
 	}
 
