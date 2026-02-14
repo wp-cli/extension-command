@@ -527,7 +527,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// Check if file tracking is requested.
 		$show_changed_files = Utils\get_flag_value( $assoc_args, 'show-changed-files', false );
-		$skin               = null;
+		// Skin is only created if file tracking is needed; otherwise get_upgrader creates default skin.
+		$skin = null;
 
 		// Only attempt to update if there is something to update.
 		if ( ! empty( $items_to_update ) ) {

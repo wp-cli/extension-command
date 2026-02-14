@@ -29,6 +29,13 @@ class ExtensionUpgraderSkin extends UpgraderSkin {
 	private $track_files = false;
 
 	/**
+	 * Whether file tracking hooks have been set up.
+	 *
+	 * @var bool
+	 */
+	private $hooks_setup = false;
+
+	/**
 	 * Enable file tracking for opcache invalidation.
 	 */
 	public function enable_file_tracking() {
@@ -49,6 +56,13 @@ class ExtensionUpgraderSkin extends UpgraderSkin {
 	 * Setup hooks to track file changes during upgrade.
 	 */
 	private function setup_file_tracking_hooks() {
+		// Prevent duplicate hook registrations.
+		if ( $this->hooks_setup ) {
+			return;
+		}
+
+		$this->hooks_setup = true;
+
 		// Hook into upgrader_post_install to capture the destination directory
 		add_filter(
 			'upgrader_post_install',
@@ -73,16 +87,22 @@ class ExtensionUpgraderSkin extends UpgraderSkin {
 			return;
 		}
 
-		$iterator = new \RecursiveIteratorIterator(
-			new \RecursiveDirectoryIterator( $dir, \RecursiveDirectoryIterator::SKIP_DOTS ),
-			\RecursiveIteratorIterator::SELF_FIRST
-		);
+		try {
+			$iterator = new \RecursiveIteratorIterator(
+				new \RecursiveDirectoryIterator( $dir, \RecursiveDirectoryIterator::SKIP_DOTS ),
+				\RecursiveIteratorIterator::SELF_FIRST
+			);
 
-		foreach ( $iterator as $file ) {
-			/** @var \SplFileInfo $file */
-			if ( $file->isFile() && 'php' === $file->getExtension() ) {
-				$this->changed_files[] = $file->getPathname();
+			foreach ( $iterator as $file ) {
+				/** @var \SplFileInfo $file */
+				if ( $file->isFile() && 'php' === $file->getExtension() ) {
+					$this->changed_files[] = $file->getPathname();
+				}
 			}
+			// phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Intentionally ignoring errors to prevent update failure.
+		} catch ( \Exception $e ) {
+			// Silently handle filesystem errors to prevent update process from failing.
+			// The changed files list may be incomplete, but the update should still succeed.
 		}
 	}
 
