@@ -176,3 +176,21 @@ Feature: Update WordPress themes
       """
       Success: Updated 2 of 2 themes.
       """
+
+  Scenario: Show changed files when updating themes
+    Given a WP install
+    And I run `wp theme delete --all --force`
+
+    When I run `wp theme install twentytwelve --version=3.0`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update twentytwelve --show-changed-files`
+    Then STDOUT should contain:
+      """
+      Changed files:
+      """
+    And STDOUT should contain:
+      """
+      twentytwelve
+      """
+
