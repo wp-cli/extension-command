@@ -745,8 +745,8 @@ class Theme_Command extends CommandWithUpgrade {
 	 *     Success: Updated 1 of 1 themes.
 	 *
 	 *     Changed files:
-	 *     /var/www/html/wp-content/themes/twentytwelve/style.php
 	 *     /var/www/html/wp-content/themes/twentytwelve/functions.php
+	 *     /var/www/html/wp-content/themes/twentytwelve/footer.php
 	 *     ...
 	 *
 	 * @alias upgrade

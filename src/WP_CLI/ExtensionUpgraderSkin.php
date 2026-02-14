@@ -61,19 +61,6 @@ class ExtensionUpgraderSkin extends UpgraderSkin {
 			10,
 			3
 		);
-
-		// Also hook into wp_opcache_invalidate_file filter to track files being invalidated
-		add_filter(
-			'wp_opcache_invalidate_file',
-			function ( $file ) {
-				if ( $this->track_files && ! empty( $file ) ) {
-					$this->changed_files[] = $file;
-				}
-				return $file;
-			},
-			10,
-			1
-		);
 	}
 
 	/**
