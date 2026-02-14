@@ -740,6 +740,15 @@ class Theme_Command extends CommandWithUpgrade {
 	 *     # Update all themes
 	 *     $ wp theme update --all
 	 *
+	 *     # Show changed files for opcache invalidation
+	 *     $ wp theme update twentytwelve --show-changed-files
+	 *     Success: Updated 1 of 1 themes.
+	 *
+	 *     Changed files:
+	 *     /var/www/html/wp-content/themes/twentytwelve/style.php
+	 *     /var/www/html/wp-content/themes/twentytwelve/functions.php
+	 *     ...
+	 *
 	 * @alias upgrade
 	 */
 	public function update( $args, $assoc_args ) {
