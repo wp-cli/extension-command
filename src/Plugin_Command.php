@@ -709,7 +709,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *
 	 * [--show-changed-files]
 	 * : Show the list of files that were changed during the update.
-	 * : Useful for invalidating PHP-FPM opcache using external tools.
+	 * Useful for invalidating PHP-FPM opcache using external tools.
 	 *
 	 * ## EXAMPLES
 	 *
