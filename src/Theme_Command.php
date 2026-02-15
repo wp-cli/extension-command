@@ -76,7 +76,7 @@ class Theme_Command extends CommandWithUpgrade {
 	}
 
 	protected function get_upgrader_class( $force ) {
-		return $force ? '\\WP_CLI\\DestructiveThemeUpgrader' : 'Theme_Upgrader';
+		return $force ? '\\WP_CLI\\DestructiveThemeUpgrader' : '\\WP_CLI\\ThemeUpgrader';
 	}
 
 	/**
