@@ -121,11 +121,6 @@ class Theme_Cache_Command extends WP_CLI_Command {
 	 * @param \WP_Theme $theme Theme object.
 	 */
 	private function clear_theme_cache( $theme ) {
-		$cache_hash = md5( $theme->get_theme_root() . '/' . $theme->get_stylesheet() );
-		$cache_keys = [ 'theme', 'screenshot', 'headers', 'page_templates' ];
-
-		foreach ( $cache_keys as $key ) {
-			wp_cache_delete( $key . '-' . $cache_hash, 'themes' );
-		}
+		$theme->cache_delete();
 	}
 }
