@@ -63,6 +63,7 @@ class Theme_Command extends CommandWithUpgrade {
 		'version',
 		'update_version',
 		'auto_update',
+		'auto_update_indicated',
 		'type',
 	];
 
@@ -691,6 +692,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
+	 * [--auto-update-indicated]
+	 * : Only update themes where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Update multiple themes
@@ -739,7 +743,49 @@ class Theme_Command extends CommandWithUpgrade {
 	 * @alias upgrade
 	 */
 	public function update( $args, $assoc_args ) {
-		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+		$all                   = Utils\get_flag_value( $assoc_args, 'all', false );
+		$auto_update_indicated = Utils\get_flag_value( $assoc_args, 'auto-update-indicated', false );
+
+		// Don't allow --version to be set with --auto-update-indicated, as the version comes from the server.
+		if ( $auto_update_indicated && isset( $assoc_args['version'] ) ) {
+			WP_CLI::error( 'Cannot use --version with --auto-update-indicated. The version is determined by the server.' );
+		}
+
+		// Don't allow --minor or --patch to be set with --auto-update-indicated, as the version comes from the server.
+		if ( $auto_update_indicated && ( isset( $assoc_args['minor'] ) || isset( $assoc_args['patch'] ) ) ) {
+			WP_CLI::error( 'Cannot use --minor or --patch with --auto-update-indicated. The version is determined by the server.' );
+		}
+
+		// Don't allow theme names to be specified with --auto-update-indicated.
+		if ( $auto_update_indicated && ! empty( $args ) ) {
+			WP_CLI::error( 'Cannot specify theme names with --auto-update-indicated. This flag updates all themes with server-indicated automatic updates.' );
+		}
+
+		// If --auto-update-indicated is set, we need to filter themes by this flag.
+		if ( $auto_update_indicated ) {
+			// Get all themes with their update info.
+			$items = $this->get_item_list();
+
+			// Filter to only include themes where auto_update_indicated is true.
+			$auto_update_themes = array_filter(
+				$items,
+				function ( $item ) {
+					return ! empty( $item['auto_update_indicated'] );
+				}
+			);
+
+			// Get the theme names to update.
+			$args = array_values( wp_list_pluck( $auto_update_themes, 'name' ) );
+
+			if ( empty( $args ) ) {
+				WP_CLI::success( 'No themes with server-indicated automatic updates available.' );
+				return;
+			}
+
+			// Process the updates.
+			parent::update_many( $args, $assoc_args );
+			return;
+		}
 
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {

@@ -90,8 +90,9 @@ trait ParseThemeNameInput {
 		}
 
 		foreach ( wp_get_themes( [ 'errors' => null ] ) as $key => $theme ) {
-			$stylesheet  = $theme->get_stylesheet();
-			$update_info = ( isset( $all_update_info->response[ $stylesheet ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
+			$stylesheet            = $theme->get_stylesheet();
+			$update_info           = ( isset( $all_update_info->response[ $stylesheet ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
+			$auto_update_indicated = isset( $update_info ) && isset( $update_info['autoupdate'] ) ? (bool) $update_info['autoupdate'] : false;
 
 			// Unlike plugin update responses, the wordpress.org API does not seem to check and filter themes that don't meet
 			// WordPress version requirements into a separate no_updates array
@@ -149,6 +150,7 @@ trait ParseThemeNameInput {
 				'description'               => wordwrap( $theme->get( 'Description' ) ),
 				'author'                    => $theme->get( 'Author' ),
 				'auto_update'               => in_array( $stylesheet, $auto_updates, true ),
+				'auto_update_indicated'     => $auto_update_indicated,
 				'requires'                  => $requires,
 				'requires_php'              => $requires_php,
 				'update_unavailable_reason' => isset( $update_unavailable_reason ) ? $update_unavailable_reason : '',
