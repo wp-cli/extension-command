@@ -58,7 +58,7 @@ trait ParseThemeNameInput {
 
 		if ( is_multisite() ) {
 			/**
-			 * @var array<string, array{enabled: string}>} $site_enabled
+			 * @var array<string, array{enabled: string}> $site_enabled
 			 */
 			$site_enabled = get_option( 'allowedthemes' );
 			if ( empty( $site_enabled ) ) {
@@ -66,7 +66,7 @@ trait ParseThemeNameInput {
 			}
 
 			/**
-			 * @var array<string, array{enabled: string}>} $network_enabled
+			 * @var array<string, array{enabled: string}> $network_enabled
 			 */
 			$network_enabled = get_site_option( 'allowedthemes' );
 			if ( empty( $network_enabled ) ) {
