@@ -533,6 +533,7 @@ These fields are optionally available:
 * requires_php
 * wporg_status
 * wporg_last_updated
+* auto_update_indicated
 
 **EXAMPLES**
 
@@ -803,7 +804,7 @@ wp plugin uninstall [<plugin>...] [--deactivate] [--skip-delete] [--all] [--excl
 Updates one or more plugins.
 
 ~~~
-wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
+wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure] [--auto-update-indicated]
 ~~~
 
 **Alias:** `upgrade`
@@ -844,6 +845,9 @@ wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [-
 
 	[--insecure]
 		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+	[--auto-update-indicated]
+		Only update plugins where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
 
 **EXAMPLES**
 
@@ -1274,6 +1278,7 @@ These fields are optionally available:
 * update_id
 * title
 * description
+* auto_update_indicated
 
 **EXAMPLES**
 
@@ -1558,7 +1563,7 @@ wp theme status [<theme>]
 Updates one or more themes.
 
 ~~~
-wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
+wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure] [--auto-update-indicated]
 ~~~
 
 **Alias:** `upgrade`
@@ -1599,6 +1604,9 @@ wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patc
 
 	[--insecure]
 		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+	[--auto-update-indicated]
+		Only update themes where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
 
 **EXAMPLES**
 
