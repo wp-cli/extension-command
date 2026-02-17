@@ -298,6 +298,7 @@ Feature: Manage WordPress plugins
       """
     And the return code should be 0
 
+  @require-wp-5.2
   Scenario: Network activate all plugins when some are already active on a single site
     Given a WP multisite install
     And I run `wp plugin delete --all`
