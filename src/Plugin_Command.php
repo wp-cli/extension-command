@@ -392,7 +392,7 @@ class Plugin_Command extends CommandWithUpgrade {
 				if ( $force ) {
 					deactivate_plugins( $plugin->file, false, true );
 				} elseif ( ! $this->chained_command ) {
-					// Only skip if not called from install command.
+					// Only skip if not part of a chained command.
 					WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
 					continue;
 				}
@@ -403,7 +403,7 @@ class Plugin_Command extends CommandWithUpgrade {
 				if ( $force ) {
 					deactivate_plugins( $plugin->file, false, false );
 				} elseif ( ! $this->chained_command ) {
-					// Only skip if not called from install command.
+					// Only skip if not part of a chained command.
 					WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
 					continue;
 				}
@@ -417,7 +417,7 @@ class Plugin_Command extends CommandWithUpgrade {
 			$result = activate_plugin( $plugin->file, '', $network_wide );
 
 			if ( is_wp_error( $result ) ) {
-				// When called from install command, treat 'already_active' as success.
+				// When called from a chained command, treat 'already_active' as success.
 				// This handles race conditions where WordPress may have preserved activation
 				// status during the install process.
 				if ( $this->chained_command && 'plugin_already_active' === $result->get_error_code() ) {
