@@ -398,3 +398,77 @@ Feature: Install WordPress plugins
       """
       active
       """
+
+  Scenario: Install with --activate on already-active plugin should keep it activated
+    Given a WP install
+
+    When I run `wp plugin install hello-dolly --activate`
+    Then STDOUT should contain:
+      """
+      Plugin 'hello-dolly' activated.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=hello-dolly --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """
+
+    When I try `wp plugin install hello-dolly --activate`
+    Then STDERR should contain:
+      """
+      Warning: hello-dolly: Plugin already installed.
+      """
+    And STDOUT should contain:
+      """
+      Activating 'hello-dolly'...
+      """
+    And STDOUT should contain:
+      """
+      Plugin 'hello-dolly' activated.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=hello-dolly --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """
+
+  Scenario: Install with --activate-network on already-network-active plugin should keep it activated
+    Given a WP multisite install
+
+    When I run `wp plugin install hello-dolly --activate-network`
+    Then STDOUT should contain:
+      """
+      Plugin 'hello-dolly' network activated.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=hello-dolly --field=status`
+    Then STDOUT should be:
+      """
+      active-network
+      """
+
+    When I try `wp plugin install hello-dolly --activate-network`
+    Then STDERR should contain:
+      """
+      Warning: hello-dolly: Plugin already installed.
+      """
+    And STDOUT should contain:
+      """
+      Network-activating 'hello-dolly'...
+      """
+    And STDOUT should contain:
+      """
+      Plugin 'hello-dolly' network activated.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=hello-dolly --field=status`
+    Then STDOUT should be:
+      """
+      active-network
+      """

@@ -487,7 +487,8 @@ class Plugin_Command extends CommandWithUpgrade {
 				// If force flag is set, deactivate and reactivate to run activation hooks.
 				if ( $force ) {
 					deactivate_plugins( $plugin->file, false, true );
-				} else {
+				} elseif ( ! $this->chained_command ) {
+					// Only skip if not part of a chained command.
 					WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
 					continue;
 				}
@@ -497,7 +498,8 @@ class Plugin_Command extends CommandWithUpgrade {
 				// If force flag is set, deactivate and reactivate to run activation hooks.
 				if ( $force ) {
 					deactivate_plugins( $plugin->file, false, false );
-				} else {
+				} elseif ( ! $this->chained_command ) {
+					// Only skip if not part of a chained command.
 					WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
 					continue;
 				}
@@ -511,22 +513,30 @@ class Plugin_Command extends CommandWithUpgrade {
 			$result = activate_plugin( $plugin->file, '', $network_wide );
 
 			if ( is_wp_error( $result ) ) {
-				$message = $result->get_error_message();
-				$message = (string) preg_replace( '/<a\s[^>]+>.*<\/a>/im', '', $message );
-				$message = wp_strip_all_tags( $message );
-				$message = str_replace( 'Error: ', '', $message );
-				WP_CLI::warning( "Failed to activate plugin. {$message}" );
-				// If the error is due to unexpected output, display it for debugging
-				if ( 'unexpected_output' === $result->get_error_code() ) {
-					/**
-					 * @var string $output
-					 */
-					$output = $result->get_error_data();
-					if ( ! empty( $output ) ) {
-						WP_CLI::debug( "Unexpected output: {$output}", 'plugin' );
+				// When called from a chained command, treat 'already_active' as success.
+				// This handles race conditions where WordPress may have preserved activation
+				// status during the install process.
+				if ( $this->chained_command && 'plugin_already_active' === $result->get_error_code() ) {
+					$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
+					++$successes;
+				} else {
+					$message = $result->get_error_message();
+					$message = (string) preg_replace( '/<a\s[^>]+>.*<\/a>/im', '', $message );
+					$message = wp_strip_all_tags( $message );
+					$message = str_replace( 'Error: ', '', $message );
+					WP_CLI::warning( "Failed to activate plugin. {$message}" );
+					// If the error is due to unexpected output, display it for debugging
+					if ( 'unexpected_output' === $result->get_error_code() ) {
+						/**
+						 * @var string $output
+						 */
+						$output = $result->get_error_data();
+						if ( ! empty( $output ) ) {
+							WP_CLI::debug( "Unexpected output: {$output}", 'plugin' );
+						}
 					}
+					++$errors;
 				}
-				++$errors;
 			} else {
 				$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
 				++$successes;
