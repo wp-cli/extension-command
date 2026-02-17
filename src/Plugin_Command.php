@@ -79,7 +79,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	}
 
 	protected function get_upgrader_class( $force ) {
-		return $force ? '\\WP_CLI\\DestructivePluginUpgrader' : 'Plugin_Upgrader';
+		return $force ? '\\WP_CLI\\DestructivePluginUpgrader' : '\\WP_CLI\\PluginUpgrader';
 	}
 
 	/**
@@ -728,6 +728,10 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
+	 * [--show-changed-files]
+	 * : Show the list of files that were changed during the update.
+	 * Useful for invalidating PHP-FPM opcache using external tools.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp plugin update bbpress --version=dev
@@ -773,6 +777,15 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *     +------------------------+-------------+-------------+---------+
 	 *     | nginx-cache-controller | 3.1.1       | 3.2.0       | Updated |
 	 *     +------------------------+-------------+-------------+---------+
+	 *
+	 *     # Show changed files for opcache invalidation
+	 *     $ wp plugin update akismet --show-changed-files
+	 *     Success: Updated 1 of 1 plugins.
+	 *
+	 *     Changed files:
+	 *     /var/www/html/wp-content/plugins/akismet/akismet.php
+	 *     /var/www/html/wp-content/plugins/akismet/class.akismet.php
+	 *     ...
 	 *
 	 * @alias upgrade
 	 */

@@ -289,3 +289,21 @@ Feature: Update WordPress plugins
       """
       Success: Updated 2 of 2 plugins.
       """
+
+  @require-wp-5.2
+  Scenario: Show changed files when updating plugins
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin update wordpress-importer --show-changed-files`
+    Then STDOUT should contain:
+      """
+      Changed files:
+      """
+    And STDOUT should contain:
+      """
+      wordpress-importer
+      """
+

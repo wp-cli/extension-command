@@ -76,7 +76,7 @@ class Theme_Command extends CommandWithUpgrade {
 	}
 
 	protected function get_upgrader_class( $force ) {
-		return $force ? '\\WP_CLI\\DestructiveThemeUpgrader' : 'Theme_Upgrader';
+		return $force ? '\\WP_CLI\\DestructiveThemeUpgrader' : '\\WP_CLI\\ThemeUpgrader';
 	}
 
 	/**
@@ -691,6 +691,10 @@ class Theme_Command extends CommandWithUpgrade {
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
+	 * [--show-changed-files]
+	 * : Show the list of files that were changed during the update.
+	 * Useful for invalidating PHP-FPM opcache using external tools.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Update multiple themes
@@ -735,6 +739,15 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 *     # Update all themes
 	 *     $ wp theme update --all
+	 *
+	 *     # Show changed files for opcache invalidation
+	 *     $ wp theme update twentytwelve --show-changed-files
+	 *     Success: Updated 1 of 1 themes.
+	 *
+	 *     Changed files:
+	 *     /var/www/html/wp-content/themes/twentytwelve/functions.php
+	 *     /var/www/html/wp-content/themes/twentytwelve/footer.php
+	 *     ...
 	 *
 	 * @alias upgrade
 	 */

@@ -682,6 +682,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			foreach ( $items_to_update as $item ) {
 				$cache_manager->whitelist_package( $item['update_package'], $this->item_type, $item['name'], $item['update_version'] );
 			}
+
+			/**
+			 * @var ThemeUpgrader|PluginUpgrader $upgrader
+			 */
 			$upgrader = $this->get_upgrader( $assoc_args );
 			// Ensure the upgrader uses the download offer present in each item.
 			$transient_filter = function ( $transient ) use ( $items_to_update ) {
@@ -758,6 +762,18 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		Utils\report_batch_operation_results( $this->item_type, 'update', $total_updated, $num_updated, $errors, $skipped );
 		if ( null !== $exclude ) {
 			WP_CLI::log( "Skipped updates for: $exclude" );
+		}
+
+		// Output changed files if requested.
+		if ( Utils\get_flag_value( $assoc_args, 'show-changed-files' ) ) {
+			$changed_files = $upgrader->get_changed_files();
+			if ( ! empty( $changed_files ) ) {
+				WP_CLI::log( '' );
+				WP_CLI::log( 'Changed files:' );
+				foreach ( $changed_files as $file ) {
+					WP_CLI::log( $file );
+				}
+			}
 		}
 	}
 
