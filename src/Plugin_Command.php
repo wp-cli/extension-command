@@ -67,7 +67,6 @@ class Plugin_Command extends CommandWithUpgrade {
 		'version',
 		'update_version',
 		'auto_update',
-		'auto_update_indicated',
 	);
 
 	public function __construct() {
@@ -1837,6 +1836,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * * requires_php
 	 * * wporg_status
 	 * * wporg_last_updated
+	 * * auto_update_indicated
 	 *
 	 * ## EXAMPLES
 	 *

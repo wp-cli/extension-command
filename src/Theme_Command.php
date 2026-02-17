@@ -63,7 +63,6 @@ class Theme_Command extends CommandWithUpgrade {
 		'version',
 		'update_version',
 		'auto_update',
-		'auto_update_indicated',
 		'type',
 	];
 
@@ -991,6 +990,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * * update_id
 	 * * title
 	 * * description
+	 * * auto_update_indicated
 	 *
 	 * ## EXAMPLES
 	 *
