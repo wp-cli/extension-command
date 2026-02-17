@@ -226,10 +226,39 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					$is_remote = false;
 					WP_CLI::log( sprintf( 'Detected WordPress.org %s directory URL, using slug: %s', $matches[1], $slug ) );
 				}
+
+				// Check if it's a GitHub Gist page URL and convert to raw URL
+				$gist_id = $this->get_gist_id_from_url( $slug );
+				if ( $gist_id && 'plugin' === $this->item_type ) {
+					$raw_url = $this->get_raw_url_from_gist( $gist_id );
+
+					if ( is_wp_error( $raw_url ) ) {
+						WP_CLI::error( $raw_url->get_error_message() );
+					}
+
+					WP_CLI::log( 'Gist resolved to raw file URL.' );
+					$slug = $raw_url;
+				}
 			}
 
-			// Check if a URL to a remote or local zip has been specified.
-			if ( $is_remote || ( pathinfo( $slug, PATHINFO_EXTENSION ) === 'zip' && is_file( $slug ) ) ) {
+			// Check if a URL to a remote or local PHP file has been specified (plugins only).
+			if ( $this->is_php_file_url( $slug, $is_remote ) ) {
+				// Install from remote PHP file.
+				$result = $this->install_from_php_file( $slug, $assoc_args );
+
+				if ( is_string( $result ) ) {
+					// Update slug to the installed filename for activation.
+					$slug   = $result;
+					$result = true;
+					++$successes;
+				} else {
+					// $result is WP_Error here
+					WP_CLI::warning( $result->get_error_message() );
+					if ( 'already_installed' !== $result->get_error_code() ) {
+						++$errors;
+					}
+				}
+			} elseif ( $is_remote || ( pathinfo( $slug, PATHINFO_EXTENSION ) === 'zip' && is_file( $slug ) ) ) {
 				// Install from local or remote zip file.
 				$file_upgrader = $this->get_upgrader( $assoc_args );
 
@@ -344,6 +373,123 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		}
 		Utils\report_batch_operation_results( $this->item_type, 'install', count( $args ), $successes, $errors );
+	}
+
+	/**
+	 * Install a plugin from a single PHP file URL.
+	 *
+	 * @param string $url        URL to the PHP file.
+	 * @param array  $assoc_args Associative arguments.
+	 * @return string|WP_Error The installed filename on success, WP_Error on failure.
+	 */
+	protected function install_from_php_file( $url, $assoc_args ) {
+		// Ensure required WordPress files are loaded.
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		// Extract and validate filename before downloading.
+		$url_path = (string) Utils\parse_url( $url, PHP_URL_PATH );
+		$filename = Utils\basename( $url_path );
+
+		// Validate the filename doesn't contain directory separators or relative path components.
+		// Note: Utils\basename() already strips directory components (including ".."), so this check
+		// is primarily a defense-in-depth safeguard in case its behavior changes or is bypassed.
+		if ( strpos( $filename, '/' ) !== false || strpos( $filename, '\\' ) !== false || strpos( $filename, '..' ) !== false ) {
+			return new WP_Error( 'invalid_filename', 'The filename contains invalid path components.' );
+		}
+
+		// Determine the destination filename and validate extension.
+		$dest_filename = sanitize_file_name( $filename );
+
+		// Ensure the sanitized filename still has a .php extension (case-insensitive).
+		if ( strtolower( pathinfo( $dest_filename, PATHINFO_EXTENSION ) ) !== 'php' ) {
+			return new WP_Error( 'invalid_filename', 'The sanitized filename does not have a .php extension.' );
+		}
+
+		// Construct destination path.
+		$dest_path = trailingslashit( WP_PLUGIN_DIR ) . $dest_filename;
+
+		// Check if plugin is already installed before downloading.
+		if ( file_exists( $dest_path ) && ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
+			return new WP_Error( 'already_installed', 'Plugin already installed.' );
+		}
+
+		// Ensure plugin directory exists.
+		if ( ! is_dir( WP_PLUGIN_DIR ) ) {
+			wp_mkdir_p( WP_PLUGIN_DIR );
+
+			// Verify that the plugin directory was successfully created.
+			if ( ! is_dir( WP_PLUGIN_DIR ) ) {
+				return new WP_Error( 'invalid_path', 'Unable to create plugin directory.' );
+			}
+		}
+
+		// Validate the destination stays within the plugin directory (prevent directory traversal).
+		// Since single-file plugins are installed directly in WP_PLUGIN_DIR, we just need to ensure
+		// the destination resolves to a file within WP_PLUGIN_DIR.
+		$real_plugin_dir = realpath( WP_PLUGIN_DIR );
+		if ( false === $real_plugin_dir ) {
+			return new WP_Error( 'invalid_path', 'Cannot validate plugin directory path.' );
+		}
+
+		// Verify the constructed path is within the plugin directory.
+		if ( realpath( dirname( $dest_path ) ) !== $real_plugin_dir ) {
+			return new WP_Error( 'invalid_path', 'The destination path is outside the plugin directory.' );
+		}
+
+		// Display info message before downloading.
+		WP_CLI::log( sprintf( 'Downloading plugin file from %s...', esc_url( $url ) ) );
+
+		// Download the file to a temporary location.
+		$temp_file = download_url( $url );
+
+		if ( is_wp_error( $temp_file ) ) {
+			return new WP_Error( 'download_failed', sprintf( 'Could not download PHP file from %s: %s', esc_url( $url ), $temp_file->get_error_message() ) );
+		}
+
+		// Verify the downloaded file is a valid PHP file with plugin headers.
+		$plugin_data = get_plugin_data( $temp_file, false, false );
+
+		// Verify this is actually a plugin file with at least a plugin name.
+		if ( empty( $plugin_data['Name'] ) ) {
+			unlink( $temp_file );
+			return new WP_Error( 'invalid_plugin', 'The downloaded file does not appear to be a valid WordPress plugin.' );
+		}
+
+		$plugin_name = $plugin_data['Name'];
+
+		// Display plugin info.
+		$version = ! empty( $plugin_data['Version'] ) ? $plugin_data['Version'] : '';
+		WP_CLI::log( sprintf( 'Installing %s%s', $plugin_name, $version ? " ($version)" : '' ) );
+
+		// Move the file to the plugins directory.
+		$result = copy( $temp_file, $dest_path );
+		unlink( $temp_file );
+
+		if ( ! $result ) {
+			return new WP_Error( 'copy_failed', 'Could not copy plugin file to destination.' );
+		}
+
+		WP_CLI::log( 'Plugin installed successfully.' );
+
+		// Return the filename for activation purposes.
+		return $dest_filename;
+	}
+
+	/**
+	 * Check if a URL points to a PHP file for plugin installation.
+	 *
+	 * @param string $slug      The slug/URL to check.
+	 * @param bool   $is_remote Whether the slug is a remote URL.
+	 * @return bool True if it's a PHP file URL for plugin installation.
+	 */
+	protected function is_php_file_url( $slug, $is_remote ) {
+		if ( 'plugin' !== $this->item_type || ! $is_remote ) {
+			return false;
+		}
+
+		$url_path = Utils\parse_url( $slug, PHP_URL_PATH );
+		return is_string( $url_path ) && strtolower( pathinfo( $url_path, PATHINFO_EXTENSION ) ) === 'php';
 	}
 
 	/**
@@ -1050,5 +1196,133 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 */
 	private function build_rate_limiting_error_message( $decoded_body ) {
 		return $decoded_body->message . PHP_EOL . $decoded_body->documentation_url . PHP_EOL . 'In order to pass the token to WP-CLI, you need to use the GITHUB_TOKEN environment variable.';
+	}
+
+	/**
+	 * Check if a URL is a GitHub Gist page URL (not the raw URL).
+	 *
+	 * @param string $url The URL to check.
+	 * @return string|null The gist ID if it's a gist URL, null otherwise.
+	 */
+	protected function get_gist_id_from_url( $url ) {
+		// Match gist.github.com URLs but not gist.githubusercontent.com (raw URLs)
+		// Supports both user-owned gists (gist.github.com/username/id) and anonymous gists (gist.github.com/id)
+		// Gist IDs are hexadecimal strings that can contain both lowercase and uppercase
+		if ( preg_match( '#^https?://gist\.github\.com/(?:[^/]+/)?([a-fA-F0-9]+)/?$#', $url, $matches ) ) {
+			return $matches[1];
+		}
+		return null;
+	}
+
+	/**
+	 * Convert a GitHub Gist page URL to a raw PHP file URL.
+	 *
+	 * @param string $gist_id The gist ID.
+	 * @return string|WP_Error The raw URL of the first PHP file in the gist, or WP_Error on failure.
+	 */
+	protected function get_raw_url_from_gist( $gist_id ) {
+		$api_url = 'https://api.github.com/gists/' . $gist_id;
+		$token   = getenv( 'GITHUB_TOKEN' );
+
+		$request_arguments = $token ? [ 'headers' => [ 'Authorization' => 'Bearer ' . $token ] ] : [];
+
+		$response = \wp_remote_get( $api_url, $request_arguments );
+
+		if ( \is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$response_code = wp_remote_retrieve_response_code( $response );
+		$body          = \wp_remote_retrieve_body( $response );
+		$decoded_body  = json_decode( $body );
+
+		// Handle common HTTP error codes with specific error messages
+		if ( 401 === $response_code ) {
+			return new \WP_Error(
+				'github_unauthorized',
+				'Unauthorized: Invalid or missing GitHub token.',
+				[ 'status' => 401 ]
+			);
+		}
+
+		if ( 403 === $response_code ) {
+			// Check if decoded_body is valid before using it
+			if ( null !== $decoded_body && is_object( $decoded_body ) ) {
+				return new \WP_Error(
+					'github_rate_limited',
+					$this->build_rate_limiting_error_message( $decoded_body ),
+					[ 'status' => 403 ]
+				);
+			}
+			return new \WP_Error(
+				'github_forbidden',
+				'Access forbidden. This may be due to rate limiting or insufficient permissions.',
+				[ 'status' => 403 ]
+			);
+		}
+
+		if ( 404 === $response_code ) {
+			return new \WP_Error(
+				'gist_not_found',
+				'Gist not found.',
+				[ 'status' => 404 ]
+			);
+		}
+
+		if ( 500 === $response_code ) {
+			return new \WP_Error(
+				'github_server_error',
+				'GitHub server error. Please try again later.',
+				[ 'status' => 500 ]
+			);
+		}
+
+		if ( 503 === $response_code ) {
+			return new \WP_Error(
+				'github_unavailable',
+				'GitHub service is temporarily unavailable. Please try again later.',
+				[ 'status' => 503 ]
+			);
+		}
+
+		// Check for other non-2xx status codes
+		if ( $response_code < 200 || $response_code >= 300 ) {
+			return new \WP_Error(
+				'github_api_error',
+				sprintf( 'GitHub API returned unexpected status code: %d', $response_code ),
+				[ 'status' => $response_code ]
+			);
+		}
+
+		/**
+		 * @var null|object{files: array<string, object{raw_url: string}>} $decoded_body
+		 */
+
+		if ( null === $decoded_body || ! is_object( $decoded_body ) || ! isset( $decoded_body->files ) ) {
+			return new \WP_Error(
+				'invalid_gist_api_response',
+				'Invalid response from GitHub Gist API.',
+				[ 'status' => $response_code ]
+			);
+		}
+
+		// Find PHP files in the gist
+		$php_files = [];
+		$files     = (array) $decoded_body->files;
+		foreach ( $files as $filename => $file_data ) {
+			if ( is_object( $file_data ) && isset( $file_data->raw_url ) && strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) ) === 'php' ) {
+				$php_files[] = [
+					'name'    => $filename,
+					'raw_url' => $file_data->raw_url,
+				];
+			}
+		}
+
+		if ( empty( $php_files ) ) {
+			return new \WP_Error( 'no_php_files', 'No PHP files found in the gist.' );
+		}
+
+		// Return the first PHP file found
+		return $php_files[0]['raw_url'];
 	}
 }
