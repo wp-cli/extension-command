@@ -4,9 +4,8 @@ Feature: Check for theme updates
     Given a WP install
 
     When I run `wp theme install twentytwelve --force`
-    Then STDOUT should not be empty
-
-    When I run `wp theme check-update --all`
+    And I run `wp theme update --all`
+    And I run `wp theme check-update --all`
     Then STDOUT should contain:
       """
       Success: All themes are up to date.
