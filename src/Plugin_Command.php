@@ -383,7 +383,7 @@ class Plugin_Command extends CommandWithUpgrade {
 		}
 		foreach ( $plugins as $plugin ) {
 			$status = $this->get_status( $plugin->file );
-			if ( $all && in_array( $status, [ 'active', 'active-network' ], true ) ) {
+			if ( $all && ! $force && in_array( $status, [ 'active', 'active-network' ], true ) ) {
 				continue;
 			}
 			// Network-active is the highest level of activation status.

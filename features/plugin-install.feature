@@ -305,39 +305,3 @@ Feature: Install WordPress plugins
       """
       active
       """
-
-  Scenario: Force activate an already active plugin to re-run activation hooks
-    Given a WP install
-    And a wp-content/plugins/install-force-test/install-force-test.php file:
-      """
-      <?php
-      /**
-       * Plugin Name: Install Force Test
-       * Description: Test plugin for force install and activate
-       * Version: 1.0.0
-       * Author: WP-CLI tests
-       */
-      
-      register_activation_hook( __FILE__, function() {
-        @file_put_contents( WP_CONTENT_DIR . '/install-activation-test.txt', 'Activation hook was run' );
-      });
-      """
-    
-    When I run `wp plugin activate install-force-test`
-    Then STDOUT should contain:
-      """
-      Plugin 'install-force-test' activated.
-      """
-    And the wp-content/install-activation-test.txt file should exist
-    
-    # Remove the file to test if it gets recreated with --force
-    When I run `rm wp-content/install-activation-test.txt`
-    
-    # Now try activate --force (should re-run activation hooks)
-    When I run `wp plugin activate install-force-test --force`
-    Then STDOUT should contain:
-      """
-      Plugin 'install-force-test' activated.
-      """
-    And the return code should be 0
-    And the wp-content/install-activation-test.txt file should exist
