@@ -726,6 +726,57 @@ wp plugin status [<plugin>]
 
 
 
+### wp plugin check-update
+
+Checks for plugin updates without performing them.
+
+~~~
+wp plugin check-update [<plugin>...] [--all] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+Lists the available plugin updates. Similar to `wp core check-update`.
+
+**OPTIONS**
+
+	[<plugin>...]
+		One or more plugins to check for updates.
+
+	[--all]
+		If set, all plugins will be checked for updates.
+
+	[--field=<field>]
+		Prints the value of a single field for each update.
+
+	[--fields=<fields>]
+		Limit the output to specific object fields. Defaults to name,status,version,update_version.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Check for plugin updates
+    $ wp plugin check-update
+    +-----------+--------+---------+----------------+
+    | name      | status | version | update_version |
+    +-----------+--------+---------+----------------+
+    | akismet   | active | 4.1.0   | 4.1.1          |
+    +-----------+--------+---------+----------------+
+
+    # List plugins with available updates in JSON format
+    $ wp plugin check-update --format=json
+    [{"name":"akismet","status":"active","version":"4.1.0","update_version":"4.1.1"}]
+
+
+
 ### wp plugin toggle
 
 Toggles a plugin's activation state.
@@ -1555,6 +1606,57 @@ wp theme status [<theme>]
          Status: Inactive
          Version: 1.2
          Author: the WordPress team
+
+
+
+### wp theme check-update
+
+Checks for theme updates without performing them.
+
+~~~
+wp theme check-update [<theme>...] [--all] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+Lists the available theme updates. Similar to `wp core check-update`.
+
+**OPTIONS**
+
+	[<theme>...]
+		One or more themes to check for updates.
+
+	[--all]
+		If set, all themes will be checked for updates.
+
+	[--field=<field>]
+		Prints the value of a single field for each update.
+
+	[--fields=<fields>]
+		Limit the output to specific object fields. Defaults to name,status,version,update_version.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Check for theme updates
+    $ wp theme check-update
+    +------------+----------+---------+----------------+
+    | name       | status   | version | update_version |
+    +------------+----------+---------+----------------+
+    | twentytwelve | inactive | 2.0     | 2.1            |
+    +------------+----------+---------+----------------+
+
+    # List themes with available updates in JSON format
+    $ wp theme check-update --format=json
+    [{"name":"twentytwelve","status":"inactive","version":"2.0","update_version":"2.1"}]
 
 
 
