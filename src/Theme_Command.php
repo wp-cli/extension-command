@@ -171,9 +171,9 @@ class Theme_Command extends CommandWithUpgrade {
 			$items = $this->get_item_list();
 		} else {
 			// Get specific themes and their update info
-			$themes = $this->fetcher->get_many( $args );
+			$themes    = $this->fetcher->get_many( $args );
 			$all_items = $this->get_item_list();
-			$items = [];
+			$items     = [];
 			foreach ( $themes as $theme ) {
 				$stylesheet = $theme->get_stylesheet();
 				if ( isset( $all_items[ $stylesheet ] ) ) {

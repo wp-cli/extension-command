@@ -177,9 +177,9 @@ class Plugin_Command extends CommandWithUpgrade {
 			$items = $this->get_item_list();
 		} else {
 			// Get specific plugins and their update info
-			$plugins = $this->fetcher->get_many( $args );
+			$plugins   = $this->fetcher->get_many( $args );
 			$all_items = $this->get_item_list();
-			$items = [];
+			$items     = [];
 			foreach ( $plugins as $plugin ) {
 				if ( isset( $all_items[ $plugin->file ] ) ) {
 					$items[ $plugin->file ] = $all_items[ $plugin->file ];
