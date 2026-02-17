@@ -384,9 +384,8 @@ class Plugin_Command extends CommandWithUpgrade {
 		foreach ( $plugins as $plugin ) {
 			$status = $this->get_status( $plugin->file );
 			// When using --all flag, skip plugins that are already in the target state.
-			// For --all --network, only skip plugins that are already network-active.
-			// For --all without --network, only skip plugins that are already active.
-			if ( $all && ! $force && ( ( $network_wide && 'active-network' === $status ) || ( ! $network_wide && 'active' === $status ) ) ) {
+			$target_status = $network_wide ? 'active-network' : 'active';
+			if ( $all && ! $force && $target_status === $status ) {
 				continue;
 			}
 			// Network-active is the highest level of activation status.
