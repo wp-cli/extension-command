@@ -1,5 +1,7 @@
 <?php
 
+use \WP_CLI\Utils;
+
 /**
  * Sets, gets, and removes theme mods.
  *
@@ -80,57 +82,117 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 */
 	public function get( $args, $assoc_args ) {
 
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
+		if ( ! Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
 			WP_CLI::error( 'You must specify at least one mod or use --all.' );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			$args = array();
 		}
 
-		$list = array();
-		$mods = get_theme_mods();
-		if ( ! is_array( $mods ) ) {
-			// If no mods are set (perhaps new theme), make sure foreach still works.
-			$mods = array();
-		}
-		foreach ( $mods as $k => $v ) {
-			// If mods were given, skip the others.
-			if ( ! empty( $args ) && ! in_array( $k, $args, true ) ) {
-				continue;
-			}
+		// This array will hold the list of theme mods in a format suitable for the WP CLI Formatter.
+		$mod_list = array();
 
-			if ( is_array( $v ) ) {
-				$list[] = [
-					'key'   => $k,
-					'value' => '=>',
-				];
-				foreach ( $v as $_k => $_v ) {
-					$list[] = [
-						'key'   => "    $_k",
-						'value' => $_v,
-					];
-				}
-			} else {
-				$list[] = [
-					'key'   => $k,
-					'value' => $v,
-				];
+		// If specific mods are requested, filter out any that aren't requested.
+		$mods = ! empty( $args ) ? array_intersect_key( get_theme_mods(), array_flip( $args ) ) : get_theme_mods();
+
+		// Generate the list of items ready for output. We use an initial separator that we can replace later depending on format.
+		$separator = '\t';
+		array_walk(
+			$mods,
+			function ( $value, $key ) use ( &$mod_list, $separator ) {
+				$this->mod_to_string( $key, $value, $mod_list, $separator );
 			}
+		);
+
+		// Take our Formatter-friendly list and adjust it according to the requested format.
+		switch ( Utils\get_flag_value( $assoc_args, 'format' ) ) {
+			// For tables we use a double space to indent child items.
+			case 'table':
+				$mod_list = array_map(
+					static function ( $item ) use ( $separator ) {
+						$parts   = explode( $separator, $item['key'] );
+						$new_key = array_pop( $parts );
+						if ( ! empty( $parts ) ) {
+							$new_key = str_repeat( '  ', count( $parts ) ) . $new_key;
+						}
+						return [
+							'key'   => $new_key,
+							'value' => $item['value'],
+						];
+					},
+					$mod_list
+				);
+				break;
+
+			// For JSON, CSV, and YAML formats we use dot notation to show the hierarchy.
+			case 'csv':
+			case 'yaml':
+			case 'json':
+				$mod_list = array_filter(
+					array_map(
+						static function ( $item ) use ( $separator ) {
+							return [
+								'key'   => str_replace( $separator, '.', $item['key'] ),
+								'value' => $item['value'],
+							];
+						},
+						$mod_list
+					),
+					function ( $item ) {
+						return ! empty( $item['value'] );
+					}
+				);
+				break;
 		}
 
-		// For unset mods, show blank value.
-		foreach ( $args as $mod ) {
-			if ( ! isset( $mods[ $mod ] ) ) {
-				$list[] = [
-					'key'   => $mod,
-					'value' => '',
-				];
-			}
-		}
-
+		// Output the list using the WP CLI Formatter.
 		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields, 'thememods' );
-		$formatter->display_items( $list );
+		$formatter->display_items( $mod_list );
+	}
+
+	/**
+	 * Convert the theme mods to a flattened array with a string representation of the keys.
+	 *
+	 * @param string $key       The mod key
+	 * @param mixed  $value     The value of the mod.
+	 * @param array  $mod_list  The list so far, passed by reference.
+	 * @param string $separator A string to separate keys to denote their place in the tree.
+	 */
+	private function mod_to_string( $key, $value, &$mod_list, $separator ) {
+		if ( is_array( $value ) || is_object( $value ) ) {
+			// Convert objects to arrays for easier handling.
+			$value = (array) $value;
+
+			// Explicitly handle empty arrays to ensure they are displayed.
+			if ( empty( $value ) ) {
+				$mod_list[] = array(
+					'key'   => $key,
+					'value' => '[empty array]',
+				);
+				return;
+			}
+
+			// Arrays get their own entry in the list to allow for sensible table output.
+			$mod_list[] = array(
+				'key'   => $key,
+				'value' => '',
+			);
+
+			foreach ( $value as $child_key => $child_value ) {
+				$this->mod_to_string( $key . $separator . $child_key, $child_value, $mod_list, $separator );
+			}
+		} else {
+			// Explicitly handle boolean values to ensure they are displayed correctly.
+			if ( is_bool( $value ) ) {
+				$value = $value ? '[true]' : '[false]';
+			}
+
+			$mod_list[] = array(
+				'key'   => $key,
+				'value' => $value,
+			);
+		}
 	}
 
 	/**
@@ -206,11 +268,11 @@ class Theme_Mod_Command extends WP_CLI_Command {
 	 */
 	public function remove( $args, $assoc_args ) {
 
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
+		if ( ! Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
 			WP_CLI::error( 'You must specify at least one mod or use --all.' );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			remove_theme_mods();
 			WP_CLI::success( 'Theme mods removed.' );
 			return;
