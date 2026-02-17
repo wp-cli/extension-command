@@ -98,5 +98,5 @@ Feature: Check for plugin updates
     Then the return code should be 1
     And STDERR should contain:
       """
-      Error:
+      Warning: The 'invalid-plugin-name' plugin could not be found.
       """

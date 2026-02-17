@@ -96,5 +96,5 @@ Feature: Check for theme updates
     Then the return code should be 1
     And STDERR should contain:
       """
-      Error:
+      Warning: The 'invalid-theme-name' theme could not be found.
       """
