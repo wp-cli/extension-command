@@ -415,6 +415,9 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * [--network]
 	 * : If set, the plugin will be activated for the entire multisite network.
 	 *
+	 * [--force]
+	 * : If set, deactivates and reactivates the plugin to re-run activation hooks, even if already active.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Activate plugin
@@ -439,6 +442,11 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *     Plugin 'buddypress' network activated.
 	 *     Success: Activated 2 of 2 plugins.
 	 *
+	 *     # Force re-running activation hooks for an already active plugin.
+	 *     $ wp plugin activate hello --force
+	 *     Plugin 'hello' activated.
+	 *     Success: Activated 1 of 1 plugins.
+	 *
 	 * @param array $args
 	 * @param array $assoc_args
 	 */
@@ -446,6 +454,7 @@ class Plugin_Command extends CommandWithUpgrade {
 		$network_wide = Utils\get_flag_value( $assoc_args, 'network', false );
 		$all          = Utils\get_flag_value( $assoc_args, 'all', false );
 		$all_exclude  = Utils\get_flag_value( $assoc_args, 'exclude', '' );
+		$force        = Utils\get_flag_value( $assoc_args, 'force', false );
 
 		/**
 		 * @var string $all_exclude
@@ -468,18 +477,28 @@ class Plugin_Command extends CommandWithUpgrade {
 		}
 		foreach ( $plugins as $plugin ) {
 			$status = $this->get_status( $plugin->file );
-			if ( $all && in_array( $status, [ 'active', 'active-network' ], true ) ) {
+			if ( $all && ! $force && in_array( $status, [ 'active', 'active-network' ], true ) ) {
 				continue;
 			}
 			// Network-active is the highest level of activation status.
 			if ( 'active-network' === $status ) {
-				WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
-				continue;
+				// If force flag is set, deactivate and reactivate to run activation hooks.
+				if ( $force ) {
+					deactivate_plugins( $plugin->file, false, true );
+				} else {
+					WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+					continue;
+				}
 			}
 			// Don't reactivate active plugins, but do let them become network-active.
 			if ( ! $network_wide && 'active' === $status ) {
-				WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
-				continue;
+				// If force flag is set, deactivate and reactivate to run activation hooks.
+				if ( $force ) {
+					deactivate_plugins( $plugin->file, false, false );
+				} else {
+					WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
+					continue;
+				}
 			}
 
 			// Plugins need to be deactivated before being network activated.
@@ -1310,6 +1329,10 @@ class Plugin_Command extends CommandWithUpgrade {
 			return [];
 		}
 
+		/**
+		 * @var object{requires_plugins?: array} $api
+		 */
+
 		// Check if requires_plugins field exists and is not empty
 		if ( ! empty( $api->requires_plugins ) && is_array( $api->requires_plugins ) ) {
 			return $api->requires_plugins;
@@ -1583,6 +1606,10 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *
 	 * Returns exit code 0 when active, 1 when not active.
 	 *
+	 * If the plugin does not exist but is still in WordPress's active plugins storage
+	 * (such as the active plugins option or the sitewide plugins option for network-activated plugins),
+	 * a warning will be emitted.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <plugin>
@@ -1606,6 +1633,55 @@ class Plugin_Command extends CommandWithUpgrade {
 		$plugin = $this->fetcher->get( $args[0] );
 
 		if ( ! $plugin ) {
+			// Plugin not found via fetcher, but it might still be in active_plugins option
+			// Check if it's in the active_plugins list
+			$input_name = $args[0];
+			// For network plugins: active_sitewide_plugins is an array where keys are plugin files and values are timestamps
+			// For regular plugins: active_plugins is an array of plugin file paths
+			$active_plugins = $network_wide ? get_site_option( 'active_sitewide_plugins', [] ) : get_option( 'active_plugins', [] );
+
+			// Ensure we have an array to work with
+			if ( ! is_array( $active_plugins ) ) {
+				$active_plugins = [];
+			}
+
+			// For network-wide plugins, extract the plugin files from the keys
+			if ( $network_wide ) {
+				$active_plugin_files = array_keys( $active_plugins );
+			} else {
+				$active_plugin_files = $active_plugins;
+			}
+
+			// Try to find a matching plugin file in active_plugins using the same logic as the fetcher
+			// This matches: exact file name, "name.php", or directory name
+			$found_in_active = '';
+			foreach ( $active_plugin_files as $plugin_file ) {
+				// Ensure plugin_file is a string
+				if ( ! is_string( $plugin_file ) ) {
+					continue;
+				}
+
+				// Check if the input matches the plugin file in various ways
+				// This mirrors the logic in WP_CLI\Fetchers\Plugin::get()
+				if (
+					"$input_name.php" === $plugin_file ||
+					$plugin_file === $input_name ||
+					( dirname( $plugin_file ) === $input_name && '.' !== $input_name )
+				) {
+					$found_in_active = $plugin_file;
+					break;
+				}
+			}
+
+			if ( $found_in_active ) {
+				// Plugin is in active_plugins but file doesn't exist
+				// Use validate_plugin to confirm the file is missing
+				$validation = validate_plugin( $found_in_active );
+				if ( is_wp_error( $validation ) ) {
+					WP_CLI::warning( "Plugin '{$input_name}' is marked as active but the plugin file does not exist." );
+				}
+			}
+
 			WP_CLI::halt( 1 );
 		}
 

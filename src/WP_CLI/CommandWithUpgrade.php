@@ -81,6 +81,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 */
 	abstract protected function filter_item_list( $items, $args );
 
+	/**
+	 * @return array<string, array{slug: string, name: string, update: string, recently_active?: bool, status: string, version: string}>
+	 */
 	abstract protected function get_all_items();
 
 	/**
@@ -238,6 +241,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 					$filter = function ( $source ) use ( $slug ) {
 						/**
+						 * @var \WP_Filesystem_Base $wp_filesystem
+						 */
+						global $wp_filesystem;
+
+						/**
 						 * @var string $path
 						 */
 						$path     = Utils\parse_url( $slug, PHP_URL_PATH );
@@ -255,7 +263,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						}
 						$new_path = substr_replace( $source, $slug_dir, (int) strrpos( $source, $source_dir ), strlen( $source_dir ) );
 
-						if ( $GLOBALS['wp_filesystem']->move( $source, $new_path ) ) {
+						if ( $wp_filesystem->move( $source, $new_path ) ) {
 							WP_CLI::log( sprintf( "Renamed Github-based project from '%s' to '%s'.", $source_dir, $slug_dir ) );
 							return $new_path;
 						}
@@ -314,14 +322,23 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 			if ( true === $allow_activation && count( $extension ) > 0 ) {
 				$this->chained_command = true;
+				$force                 = Utils\get_flag_value( $assoc_args, 'force', false );
 				if ( Utils\get_flag_value( $assoc_args, 'activate-network' ) ) {
 					WP_CLI::log( "Network-activating '$slug'..." );
-					$this->activate( array( $slug ), array( 'network' => true ) );
+					$activate_args = array( 'network' => true );
+					if ( $force ) {
+						$activate_args['force'] = true;
+					}
+					$this->activate( array( $slug ), $activate_args );
 				}
 
 				if ( Utils\get_flag_value( $assoc_args, 'activate' ) ) {
 					WP_CLI::log( "Activating '$slug'..." );
-					$this->activate( array( $slug ) );
+					$activate_args = array();
+					if ( $force ) {
+						$activate_args['force'] = true;
+					}
+					$this->activate( array( $slug ), $activate_args );
 				}
 				$this->chained_command = false;
 			}
@@ -389,7 +406,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$force          = Utils\get_flag_value( $assoc_args, 'force', false );
 		$insecure       = Utils\get_flag_value( $assoc_args, 'insecure', false );
 		$upgrader_class = $this->get_upgrader_class( $force );
-		return Utils\get_upgrader( $upgrader_class, $insecure );
+
+		if ( ! class_exists( '\WP_Upgrader_Skin' ) ) {
+			if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php' ) ) {
+				include ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php';
+			}
+		}
+
+		return Utils\get_upgrader( $upgrader_class, $insecure, new ExtensionUpgraderSkin() );
 	}
 
 	protected function update_many( $args, $assoc_args ) {
@@ -867,6 +891,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// In older WP versions these used to be objects.
 		foreach ( $items as $index => $item_object ) {
 			if ( is_array( $item_object ) ) {
+				/**
+				 * @var array{slug: string} $item_object
+				 */
 				$items[ $index ]['url'] = "https://wordpress.org/{$plural}/{$item_object['slug']}/";
 			} elseif ( $item_object instanceof \stdClass ) {
 				$item_object->url = "https://wordpress.org/{$plural}/{$item_object->slug}/";
