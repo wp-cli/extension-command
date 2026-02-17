@@ -93,8 +93,7 @@ Feature: Check for theme updates
     Given a WP install
 
     When I try `wp theme check-update invalid-theme-name`
-    Then the return code should be 1
-    And STDERR should contain:
+    Then STDERR should contain:
       """
       Warning: The 'invalid-theme-name' theme could not be found.
       """

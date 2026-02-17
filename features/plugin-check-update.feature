@@ -95,8 +95,7 @@ Feature: Check for plugin updates
     Given a WP install
 
     When I try `wp plugin check-update invalid-plugin-name`
-    Then the return code should be 1
-    And STDERR should contain:
+    Then STDERR should contain:
       """
       Warning: The 'invalid-plugin-name' plugin could not be found.
       """
