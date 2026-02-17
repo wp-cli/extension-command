@@ -57,7 +57,7 @@ See the WordPress [Plugin Handbook](https://developer.wordpress.org/plugins/) de
 Activates one or more plugins.
 
 ~~~
-wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network]
+wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network] [--force]
 ~~~
 
 **OPTIONS**
@@ -73,6 +73,9 @@ wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network]
 
 	[--network]
 		If set, the plugin will be activated for the entire multisite network.
+
+	[--force]
+		If set, deactivates and reactivates the plugin to re-run activation hooks, even if already active.
 
 **EXAMPLES**
 
@@ -97,6 +100,11 @@ wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network]
     Plugin 'bbpress' network activated.
     Plugin 'buddypress' network activated.
     Success: Activated 2 of 2 plugins.
+
+    # Force re-running activation hooks for an already active plugin.
+    $ wp plugin activate hello --force
+    Plugin 'hello' activated.
+    Success: Activated 1 of 1 plugins.
 
 
 
@@ -245,7 +253,7 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
 **OPTIONS**
 
 	<plugin|zip|url>...
-		One or more plugins to install. Accepts a plugin slug, the path to a local zip file, a URL to a remote zip file, or a URL to a WordPress.org plugin directory.
+		One or more plugins to install. Accepts a plugin slug, the path to a local zip file, a URL to a remote zip file or PHP file, or a URL to a WordPress.org plugin directory.
 
 	[--version=<version>]
 		If set, get that particular version from wordpress.org, instead of the
@@ -327,6 +335,11 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
     Removing the old version of the plugin...
     Plugin updated successfully
     Success: Installed 1 of 1 plugins.
+
+    # Install from a remote PHP file
+    $ wp plugin install https://example.com/my-plugin.php
+    Installing My Plugin (1.0.0)
+    Downloading plugin file from https://example.com/my-plugin.php...
 
     # Install a plugin with all its dependencies
     $ wp plugin install my-plugin --with-dependencies
@@ -520,6 +533,7 @@ These fields are optionally available:
 * requires_php
 * wporg_status
 * wporg_last_updated
+* auto_update_indicated
 
 **EXAMPLES**
 
@@ -790,7 +804,7 @@ wp plugin uninstall [<plugin>...] [--deactivate] [--skip-delete] [--all] [--excl
 Updates one or more plugins.
 
 ~~~
-wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
+wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure] [--auto-update-indicated]
 ~~~
 
 **Alias:** `upgrade`
@@ -831,6 +845,9 @@ wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [-
 
 	[--insecure]
 		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+	[--auto-update-indicated]
+		Only update plugins where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
 
 **EXAMPLES**
 
@@ -1261,6 +1278,7 @@ These fields are optionally available:
 * update_id
 * title
 * description
+* auto_update_indicated
 
 **EXAMPLES**
 
@@ -1545,7 +1563,7 @@ wp theme status [<theme>]
 Updates one or more themes.
 
 ~~~
-wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
+wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure] [--auto-update-indicated]
 ~~~
 
 **Alias:** `upgrade`
@@ -1586,6 +1604,9 @@ wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patc
 
 	[--insecure]
 		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+	[--auto-update-indicated]
+		Only update themes where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
 
 **EXAMPLES**
 

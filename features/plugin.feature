@@ -298,6 +298,44 @@ Feature: Manage WordPress plugins
       """
     And the return code should be 0
 
+  @require-wp-5.2
+  Scenario: Network activate all plugins when some are already active on a single site
+    Given a WP multisite install
+    And I run `wp plugin delete --all`
+
+    When I run `wp plugin install debug-bar`
+    And I run `wp plugin install wordpress-importer --activate`
+    Then STDOUT should contain:
+      """
+      Plugin 'wordpress-importer' activated.
+      """
+
+    When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name                | status |
+      | debug-bar           | inactive |
+      | wordpress-importer  | active |
+
+    When I run `wp plugin activate --all --network`
+    Then STDOUT should contain:
+      """
+      Plugin 'debug-bar' network activated.
+      """
+    And STDOUT should contain:
+      """
+      Plugin 'wordpress-importer' network activated.
+      """
+    And STDOUT should contain:
+      """
+      Success: Network activated 2 of 2 plugins.
+      """
+
+    When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name                | status         |
+      | debug-bar           | active-network |
+      | wordpress-importer  | active-network |
+
   Scenario: List plugins
     Given a WP install
 
