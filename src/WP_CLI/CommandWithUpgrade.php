@@ -1294,6 +1294,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			);
 		}
 
+		/**
+		 * @var null|object{files: array<string, object{raw_url: string}>} $decoded_body
+		 */
+
 		if ( null === $decoded_body || ! is_object( $decoded_body ) || ! isset( $decoded_body->files ) ) {
 			return new \WP_Error(
 				'invalid_gist_api_response',
