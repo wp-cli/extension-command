@@ -253,7 +253,7 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
 **OPTIONS**
 
 	<plugin|zip|url>...
-		One or more plugins to install. Accepts a plugin slug, the path to a local zip file, a URL to a remote zip file, or a URL to a WordPress.org plugin directory.
+		One or more plugins to install. Accepts a plugin slug, the path to a local zip file, a URL to a remote zip file or PHP file, or a URL to a WordPress.org plugin directory.
 
 	[--version=<version>]
 		If set, get that particular version from wordpress.org, instead of the
@@ -335,6 +335,11 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
     Removing the old version of the plugin...
     Plugin updated successfully
     Success: Installed 1 of 1 plugins.
+
+    # Install from a remote PHP file
+    $ wp plugin install https://example.com/my-plugin.php
+    Installing My Plugin (1.0.0)
+    Downloading plugin file from https://example.com/my-plugin.php...
 
     # Install a plugin with all its dependencies
     $ wp plugin install my-plugin --with-dependencies
