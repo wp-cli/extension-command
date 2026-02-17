@@ -562,6 +562,62 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		return Utils\get_upgrader( $upgrader_class, $insecure, new ExtensionUpgraderSkin() );
 	}
 
+	/**
+	 * Handles the --auto-update-indicated flag logic for both plugins and themes.
+	 *
+	 * This method validates flag combinations, filters items by auto_update_indicated,
+	 * and processes updates if any items are found.
+	 *
+	 * @param array $args        Positional arguments (item names).
+	 * @param array $assoc_args  Associative arguments (flags).
+	 * @return bool              Returns true if auto-update-indicated was handled, false otherwise.
+	 */
+	protected function handle_auto_update_indicated( $args, $assoc_args ) {
+		$auto_update_indicated = Utils\get_flag_value( $assoc_args, 'auto-update-indicated', false );
+
+		if ( ! $auto_update_indicated ) {
+			return false;
+		}
+
+		// Don't allow --version to be set with --auto-update-indicated, as the version comes from the server.
+		if ( isset( $assoc_args['version'] ) ) {
+			WP_CLI::error( 'Cannot use --version with --auto-update-indicated. The version is determined by the server.' );
+		}
+
+		// Don't allow --minor or --patch to be set with --auto-update-indicated, as the version comes from the server.
+		if ( isset( $assoc_args['minor'] ) || isset( $assoc_args['patch'] ) ) {
+			WP_CLI::error( 'Cannot use --minor or --patch with --auto-update-indicated. The version is determined by the server.' );
+		}
+
+		// Don't allow item names to be specified with --auto-update-indicated.
+		if ( ! empty( $args ) ) {
+			WP_CLI::error( "Cannot specify {$this->item_type} names with --auto-update-indicated. This flag updates all {$this->item_type}s with server-indicated automatic updates." );
+		}
+
+		// Get all items with their update info.
+		$items = $this->get_item_list();
+
+		// Filter to only include items where auto_update_indicated is true.
+		$auto_update_items = array_filter(
+			$items,
+			function ( $item ) {
+				return ! empty( $item['auto_update_indicated'] );
+			}
+		);
+
+		// Get the item names to update.
+		$args = array_values( wp_list_pluck( $auto_update_items, 'name' ) );
+
+		if ( empty( $args ) ) {
+			WP_CLI::success( "No {$this->item_type}s with server-indicated automatic updates available." );
+			return true;
+		}
+
+		// Process the updates.
+		$this->update_many( $args, $assoc_args );
+		return true;
+	}
+
 	protected function update_many( $args, $assoc_args ) {
 		call_user_func( $this->upgrade_refresh );
 

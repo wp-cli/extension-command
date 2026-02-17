@@ -742,47 +742,10 @@ class Theme_Command extends CommandWithUpgrade {
 	 * @alias upgrade
 	 */
 	public function update( $args, $assoc_args ) {
-		$all                   = Utils\get_flag_value( $assoc_args, 'all', false );
-		$auto_update_indicated = Utils\get_flag_value( $assoc_args, 'auto-update-indicated', false );
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
-		// Don't allow --version to be set with --auto-update-indicated, as the version comes from the server.
-		if ( $auto_update_indicated && isset( $assoc_args['version'] ) ) {
-			WP_CLI::error( 'Cannot use --version with --auto-update-indicated. The version is determined by the server.' );
-		}
-
-		// Don't allow --minor or --patch to be set with --auto-update-indicated, as the version comes from the server.
-		if ( $auto_update_indicated && ( isset( $assoc_args['minor'] ) || isset( $assoc_args['patch'] ) ) ) {
-			WP_CLI::error( 'Cannot use --minor or --patch with --auto-update-indicated. The version is determined by the server.' );
-		}
-
-		// Don't allow theme names to be specified with --auto-update-indicated.
-		if ( $auto_update_indicated && ! empty( $args ) ) {
-			WP_CLI::error( 'Cannot specify theme names with --auto-update-indicated. This flag updates all themes with server-indicated automatic updates.' );
-		}
-
-		// If --auto-update-indicated is set, we need to filter themes by this flag.
-		if ( $auto_update_indicated ) {
-			// Get all themes with their update info.
-			$items = $this->get_item_list();
-
-			// Filter to only include themes where auto_update_indicated is true.
-			$auto_update_themes = array_filter(
-				$items,
-				function ( $item ) {
-					return ! empty( $item['auto_update_indicated'] );
-				}
-			);
-
-			// Get the theme names to update.
-			$args = array_values( wp_list_pluck( $auto_update_themes, 'name' ) );
-
-			if ( empty( $args ) ) {
-				WP_CLI::success( 'No themes with server-indicated automatic updates available.' );
-				return;
-			}
-
-			// Process the updates.
-			parent::update_many( $args, $assoc_args );
+		// Handle --auto-update-indicated flag if present.
+		if ( $this->handle_auto_update_indicated( $args, $assoc_args ) ) {
 			return;
 		}
 
