@@ -306,7 +306,7 @@ Feature: Install WordPress plugins
       active
       """
 
-  Scenario: Force update an active plugin with --activate flag should keep it activated
+  Scenario: Install with --activate on already-active plugin should keep it activated
     Given a WP install
 
     When I run `wp plugin install hello-dolly --activate`
@@ -322,14 +322,18 @@ Feature: Install WordPress plugins
       active
       """
 
-    When I run `wp plugin install hello-dolly --force --activate`
-    Then STDOUT should contain:
+    When I try `wp plugin install hello-dolly --activate`
+    Then STDERR should contain:
       """
-      Plugin updated successfully
+      Warning: hello-dolly: Plugin already installed.
       """
     And STDOUT should contain:
       """
-      Success: Installed 1 of 1 plugins.
+      Activating 'hello-dolly'...
+      """
+    And STDOUT should contain:
+      """
+      Plugin 'hello-dolly' activated.
       """
     And the return code should be 0
 
@@ -339,7 +343,7 @@ Feature: Install WordPress plugins
       active
       """
 
-  Scenario: Force update a network-active plugin with --activate-network flag should keep it network-activated
+  Scenario: Install with --activate-network on already-network-active plugin should keep it activated
     Given a WP multisite install
 
     When I run `wp plugin install hello-dolly --activate-network`
@@ -355,14 +359,18 @@ Feature: Install WordPress plugins
       active-network
       """
 
-    When I run `wp plugin install hello-dolly --force --activate-network`
-    Then STDOUT should contain:
+    When I try `wp plugin install hello-dolly --activate-network`
+    Then STDERR should contain:
       """
-      Plugin updated successfully
+      Warning: hello-dolly: Plugin already installed.
       """
     And STDOUT should contain:
       """
-      Success: Installed 1 of 1 plugins.
+      Network-activating 'hello-dolly'...
+      """
+    And STDOUT should contain:
+      """
+      Plugin 'hello-dolly' network activated.
       """
     And the return code should be 0
 
