@@ -786,6 +786,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
+	 * [--auto-update-indicated]
+	 * : Only update themes where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Update multiple themes
@@ -835,6 +838,11 @@ class Theme_Command extends CommandWithUpgrade {
 	 */
 	public function update( $args, $assoc_args ) {
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		// Handle --auto-update-indicated flag if present.
+		if ( $this->handle_auto_update_indicated( $args, $assoc_args ) ) {
+			return;
+		}
 
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {
@@ -1040,6 +1048,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * * update_id
 	 * * title
 	 * * description
+	 * * auto_update_indicated
 	 *
 	 * ## EXAMPLES
 	 *

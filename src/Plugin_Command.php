@@ -477,7 +477,9 @@ class Plugin_Command extends CommandWithUpgrade {
 		}
 		foreach ( $plugins as $plugin ) {
 			$status = $this->get_status( $plugin->file );
-			if ( $all && ! $force && in_array( $status, [ 'active', 'active-network' ], true ) ) {
+			// When using --all flag, skip plugins that are already in the target state.
+			$skip_statuses = $network_wide ? array( 'active-network' ) : array( 'active', 'active-network' );
+			if ( $all && ! $force && in_array( $status, $skip_statuses, true ) ) {
 				continue;
 			}
 			// Network-active is the highest level of activation status.
@@ -820,6 +822,9 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
+	 * [--auto-update-indicated]
+	 * : Only update plugins where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp plugin update bbpress --version=dev
@@ -871,6 +876,11 @@ class Plugin_Command extends CommandWithUpgrade {
 	public function update( $args, $assoc_args ) {
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
+		// Handle --auto-update-indicated flag if present.
+		if ( $this->handle_auto_update_indicated( $args, $assoc_args ) ) {
+			return;
+		}
+
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {
 			return;
@@ -919,8 +929,9 @@ class Plugin_Command extends CommandWithUpgrade {
 				$duplicate_names[ $name ] = array();
 			}
 
-			$requires     = isset( $update_info ) && isset( $update_info['requires'] ) ? $update_info['requires'] : null;
-			$requires_php = isset( $update_info ) && isset( $update_info['requires_php'] ) ? $update_info['requires_php'] : null;
+			$requires              = isset( $update_info ) && isset( $update_info['requires'] ) ? $update_info['requires'] : null;
+			$requires_php          = isset( $update_info ) && isset( $update_info['requires_php'] ) ? $update_info['requires_php'] : null;
+			$auto_update_indicated = isset( $update_info ) && isset( $update_info['autoupdate'] ) ? (bool) $update_info['autoupdate'] : false;
 
 			// If an update has requires_php set, check to see if the local version of PHP meets that requirement
 			// The plugins update API already filters out plugins that don't meet WordPress requirements, but does not
@@ -962,6 +973,7 @@ class Plugin_Command extends CommandWithUpgrade {
 				'description'               => wordwrap( $details['Description'] ),
 				'file'                      => $file,
 				'auto_update'               => in_array( $file, $auto_updates, true ),
+				'auto_update_indicated'     => $auto_update_indicated,
 				'author'                    => $details['Author'],
 				'tested_up_to'              => '',
 				'requires'                  => $requires,
@@ -1888,6 +1900,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * * requires_php
 	 * * wporg_status
 	 * * wporg_last_updated
+	 * * auto_update_indicated
 	 *
 	 * ## EXAMPLES
 	 *

@@ -155,6 +155,87 @@ Feature: Update WordPress themes
       1.1.1
       """
 
+  # Tests for --auto-update-indicated feature
+  # Note: These tests verify the flag handling and error cases.
+  # The actual update behavior when autoupdate is true from the server
+  # cannot be easily tested as it requires mocking WordPress.org API responses.
+  # The update functionality itself is handled by the existing update_many method.
+
+  Scenario: Show auto_update_indicated field in theme list
+    Given a WP install
+
+    When I run `wp theme install twentytwelve --version=3.0 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp theme list --fields=name,version,update,auto_update_indicated`
+    Then STDOUT should be a table containing rows:
+      | name         | version | update    | auto_update_indicated |
+      | twentytwelve | 3.0     | available | no                    |
+
+  Scenario: Using --auto-update-indicated flag when no themes have auto-update indicated
+    Given a WP install
+
+    When I run `wp theme install twentytwelve --version=3.0 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update --auto-update-indicated`
+    Then STDOUT should be:
+      """
+      Success: No themes with server-indicated automatic updates available.
+      """
+
+  Scenario: Error when using --version with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp theme update --auto-update-indicated --version=1.0.0`
+    Then STDERR should be:
+      """
+      Error: Cannot use --version with --auto-update-indicated. The version is determined by the server.
+      """
+    And the return code should be 1
+
+  Scenario: Error when using --minor with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp theme update --auto-update-indicated --minor`
+    Then STDERR should be:
+      """
+      Error: Cannot use --minor or --patch with --auto-update-indicated. The version is determined by the server.
+      """
+    And the return code should be 1
+
+  Scenario: Error when using --patch with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp theme update --auto-update-indicated --patch`
+    Then STDERR should be:
+      """
+      Error: Cannot use --minor or --patch with --auto-update-indicated. The version is determined by the server.
+      """
+    And the return code should be 1
+
+  Scenario: Error when specifying theme names with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp theme update twentytwelve --auto-update-indicated`
+    Then STDERR should be:
+      """
+      Error: Cannot specify theme names with --auto-update-indicated. This flag updates all themes with server-indicated automatic updates.
+      """
+    And the return code should be 1
+
+  Scenario: Preview updates with --auto-update-indicated and --dry-run
+    Given a WP install
+
+    When I run `wp theme install twentytwelve --version=3.0 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update --auto-update-indicated --dry-run`
+    Then STDOUT should be:
+      """
+      Success: No themes with server-indicated automatic updates available.
+      """
+
   @require-wp-4.5
   Scenario: Updating all themes should show the name of each theme as it is updated
     Given a WP install
