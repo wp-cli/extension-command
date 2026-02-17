@@ -205,7 +205,7 @@ Feature: Activate WordPress plugins
     When I run `rm wp-content/activation-test.txt`
     
     # Try activating without --force (should skip)
-    When I try `wp plugin activate force-test`
+    And I try `wp plugin activate force-test`
     Then STDERR should contain:
       """
       Warning: Plugin 'force-test' is already active.
