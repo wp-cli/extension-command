@@ -57,7 +57,7 @@ See the WordPress [Plugin Handbook](https://developer.wordpress.org/plugins/) de
 Activates one or more plugins.
 
 ~~~
-wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network]
+wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network] [--force]
 ~~~
 
 **OPTIONS**
@@ -73,6 +73,9 @@ wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network]
 
 	[--network]
 		If set, the plugin will be activated for the entire multisite network.
+
+	[--force]
+		If set, deactivates and reactivates the plugin to re-run activation hooks, even if already active.
 
 **EXAMPLES**
 
@@ -97,6 +100,11 @@ wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network]
     Plugin 'bbpress' network activated.
     Plugin 'buddypress' network activated.
     Success: Activated 2 of 2 plugins.
+
+    # Force re-running activation hooks for an already active plugin.
+    $ wp plugin activate hello --force
+    Plugin 'hello' activated.
+    Success: Activated 1 of 1 plugins.
 
 
 
@@ -397,6 +405,10 @@ wp plugin is-active <plugin> [--network]
 ~~~
 
 Returns exit code 0 when active, 1 when not active.
+
+If the plugin does not exist but is still in WordPress's active plugins storage
+(such as the active plugins option or the sitewide plugins option for network-activated plugins),
+a warning will be emitted.
 
 **OPTIONS**
 
