@@ -116,6 +116,100 @@ class Plugin_Command extends CommandWithUpgrade {
 	}
 
 	/**
+	 * Checks for plugin updates without performing them.
+	 *
+	 * Lists the available plugin updates. Similar to `wp core check-update`.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<plugin>...]
+	 * : One or more plugins to check for updates.
+	 *
+	 * [--all]
+	 * : If set, all plugins will be checked for updates.
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each update.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to name,status,version,update_version.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check for plugin updates
+	 *     $ wp plugin check-update
+	 *     +-----------+--------+---------+----------------+
+	 *     | name      | status | version | update_version |
+	 *     +-----------+--------+---------+----------------+
+	 *     | akismet   | active | 4.1.0   | 4.1.1          |
+	 *     +-----------+--------+---------+----------------+
+	 *
+	 *     # List plugins with available updates in JSON format
+	 *     $ wp plugin check-update --format=json
+	 *     [{"name":"akismet","status":"active","version":"4.1.0","update_version":"4.1.1"}]
+	 *
+	 * @subcommand check-update
+	 */
+	public function check_update( $args, $assoc_args ) {
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		$args = $this->check_optional_args_and_all( $args, $all );
+		if ( ! $args ) {
+			return;
+		}
+
+		// Force WordPress to check for updates.
+		call_user_func( $this->upgrade_refresh );
+
+		if ( $all ) {
+			// Get all plugins
+			$items = $this->get_item_list();
+		} else {
+			// Get specific plugins and their update info
+			$plugins   = $this->fetcher->get_many( $args );
+			$all_items = $this->get_item_list();
+			$items     = [];
+			foreach ( $plugins as $plugin ) {
+				if ( isset( $all_items[ $plugin->file ] ) ) {
+					$items[ $plugin->file ] = $all_items[ $plugin->file ];
+				}
+			}
+		}
+
+		// Filter to only plugins with available updates
+		$items_with_updates = array_filter(
+			$items,
+			function ( $item ) {
+				return 'available' === $item['update'];
+			}
+		);
+
+		if ( empty( $items_with_updates ) ) {
+			WP_CLI::success( 'All plugins are up to date.' );
+			return;
+		}
+
+		// Set default fields for check-update output
+		if ( ! isset( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = 'name,status,version,update_version';
+		}
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_items( array_values( $items_with_updates ) );
+	}
+
+	/**
 	 * Searches the WordPress.org plugin directory.
 	 *
 	 * Displays plugins in the WordPress.org plugin directory matching a given
