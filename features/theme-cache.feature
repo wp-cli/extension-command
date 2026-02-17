@@ -17,7 +17,7 @@ Feature: Manage theme cache
       """
 
   Scenario: Clear cache for multiple themes
-    When I run `wp theme install twentytwentythree --force`
+    When I run `wp theme install twentytwentyone --force`
     Then STDOUT should contain:
       """
       Success:
@@ -29,14 +29,14 @@ Feature: Manage theme cache
       Success:
       """
 
-    When I run `wp theme cache clear twentytwentythree twentytwenty`
+    When I run `wp theme cache clear twentytwentyone twentytwenty`
     Then STDOUT should be:
       """
       Success: Cleared cache for 2 themes.
       """
 
   Scenario: Clear cache for all themes
-    When I run `wp theme install twentytwentythree --force`
+    When I run `wp theme install twentytwentyone --force`
     Then STDOUT should contain:
       """
       Success:
