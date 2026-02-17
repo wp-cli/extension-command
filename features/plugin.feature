@@ -300,8 +300,10 @@ Feature: Manage WordPress plugins
 
   Scenario: Network activate all plugins when some are already active on a single site
     Given a WP multisite install
+    And I run `wp plugin delete --all`
 
-    When I run `wp plugin install wordpress-importer --activate`
+    When I run `wp plugin install debug-bar`
+    And I run `wp plugin install wordpress-importer --activate`
     Then STDOUT should contain:
       """
       Plugin 'wordpress-importer' activated.
@@ -310,13 +312,13 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name                | status |
-      | akismet             | inactive |
+      | debug-bar           | inactive |
       | wordpress-importer  | active |
 
     When I run `wp plugin activate --all --network`
     Then STDOUT should contain:
       """
-      Plugin 'akismet' network activated.
+      Plugin 'debug-bar' network activated.
       """
     And STDOUT should contain:
       """
@@ -330,7 +332,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name                | status         |
-      | akismet             | active-network |
+      | debug-bar           | active-network |
       | wordpress-importer  | active-network |
 
   Scenario: List plugins
