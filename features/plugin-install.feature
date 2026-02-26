@@ -472,3 +472,29 @@ Feature: Install WordPress plugins
       """
       active-network
       """
+
+  Scenario: Install plugin from a zip file with a custom --slug
+    Given a WP install
+
+    When I run `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/archive/refs/heads/master.zip --slug=my-custom-plugin`
+    Then STDOUT should contain:
+      """
+      Renamed 'generic-example-plugin-master' to 'my-custom-plugin'.
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the wp-content/plugins/my-custom-plugin directory should exist
+    And the wp-content/plugins/generic-example-plugin-master directory should not exist
+    And the return code should be 0
+
+  Scenario: Error when --slug is used with multiple plugins
+    Given a WP install
+
+    When I try `wp plugin install hello-dolly akismet --slug=my-plugin`
+    Then STDERR should contain:
+      """
+      Error: The --slug option can only be used when installing a single item.
+      """
+    And the return code should be 1

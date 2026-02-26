@@ -1165,6 +1165,9 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * [--with-dependencies]
 	 * : If set, the command will also install all required dependencies of the plugin as specified in the 'Requires Plugins' header.
 	 *
+	 * [--slug=<slug>]
+	 * : Use this as the target directory name when installing from a zip file. Cannot be used when installing multiple plugins.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Install the latest version from wordpress.org and activate
