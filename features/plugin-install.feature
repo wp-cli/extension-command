@@ -335,6 +335,7 @@ Feature: Install WordPress plugins
       """
     And the wp-content/plugins/pwa-manifest-short-name.php file should exist
 
+  @github-api
   Scenario: Install plugin from a GitHub Gist page URL
     Given a WP install
 
