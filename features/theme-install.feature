@@ -186,3 +186,29 @@ Feature: Install WordPress themes
       """
       active
       """
+
+  Scenario: Install theme from a zip file with a custom --slug
+    Given a WP install
+
+    When I run `wp theme install https://github.com/wp-cli-test/generic-example-theme/archive/refs/heads/master.zip --slug=my-custom-theme`
+    Then STDOUT should contain:
+      """
+      Renamed 'generic-example-theme-master' to 'my-custom-theme'.
+      """
+    And STDOUT should contain:
+      """
+      Theme installed successfully.
+      """
+    And the wp-content/themes/my-custom-theme directory should exist
+    And the wp-content/themes/generic-example-theme-master directory should not exist
+    And the return code should be 0
+
+  Scenario: Error when --slug is used with multiple themes
+    Given a WP install
+
+    When I try `wp theme install twentytwelve twentyeleven --slug=my-theme`
+    Then STDERR should contain:
+      """
+      Error: The --slug option can only be used when installing a single item.
+      """
+    And the return code should be 1
