@@ -433,6 +433,15 @@ Feature: Manage WordPress plugins
       | name               | status   | update   |
       | wordpress-importer | inactive | none     |
 
+    When I run `wp plugin list --fields=name,status,update --status=inactive --skip-update-check --debug=http`
+    Then STDERR should not contain:
+      """
+      HTTP POST request to https://api.wordpress.org/plugins/update-check
+      """
+    And STDOUT should be a table containing rows:
+      | name               | status   | update   |
+      | wordpress-importer | inactive | none     |
+
   # WordPress Importer requires WP 5.2.
   @require-wp-5.2
   Scenario: Install a plugin when directory doesn't yet exist

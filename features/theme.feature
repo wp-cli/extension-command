@@ -233,6 +233,15 @@ Feature: Manage WordPress themes
       | name      | status   | update |
       | astra     | inactive | none   |
 
+    When I run `wp theme list --fields=name,status,update --skip-update-check --debug=http`
+    Then STDERR should not contain:
+      """
+      HTTP POST request to https://api.wordpress.org/themes/update-check
+      """
+    And STDOUT should be a table containing rows:
+      | name      | status   | update |
+      | astra     | inactive | none   |
+
   Scenario: Doing wp theme list does a force check by default, deleting any existing transient values
     Given a WP install
 
