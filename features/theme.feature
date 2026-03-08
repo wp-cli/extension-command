@@ -228,11 +228,6 @@ Feature: Manage WordPress themes
       Success: Transient deleted.
       """
 
-    When I run `wp theme list --fields=name,status,update --skip-update-check`
-    Then STDOUT should be a table containing rows:
-      | name      | status   | update |
-      | astra     | inactive | none   |
-
     When I run `wp theme list --fields=name,status,update --skip-update-check --debug=http`
     Then STDERR should not contain:
       """

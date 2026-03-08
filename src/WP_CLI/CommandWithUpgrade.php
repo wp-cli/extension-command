@@ -824,12 +824,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( false === Utils\get_flag_value( $assoc_args, 'skip-update-check', false ) ) {
 			delete_site_transient( $this->upgrade_transient );
 			call_user_func( $this->upgrade_refresh );
-		} else {
-			// In admin context, WordPress hooks wp_update_plugins/wp_update_themes to the
-			// load-plugins.php/load-themes.php actions. Remove those callbacks to prevent
-			// update checks from running when --skip-update-check is passed.
-			remove_action( 'load-plugins.php', 'wp_update_plugins' );
-			remove_action( 'load-themes.php', 'wp_update_themes' );
 		}
 
 		$all_items = $this->get_all_items();
