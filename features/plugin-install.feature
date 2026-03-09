@@ -323,6 +323,10 @@ Feature: Install WordPress plugins
       """
       Warning: Plugin already installed.
       """
+    And STDERR should not contain:
+      """
+      plugin could not be found
+      """
     And STDOUT should contain:
       """
       Success: Plugin already installed.
@@ -371,14 +375,14 @@ Feature: Install WordPress plugins
   Scenario: Install plugin using WordPress.org directory URL
     Given a WP install
 
-    When I run `wp plugin install https://wordpress.org/plugins/hello-dolly/`
+    When I run `wp plugin install https://wordpress.org/plugins/debug-bar/`
     Then STDOUT should contain:
       """
-      Detected WordPress.org plugins directory URL, using slug: hello-dolly
+      Detected WordPress.org plugins directory URL, using slug: debug-bar
       """
     And the return code should be 0
 
-    When I run `wp plugin list --name=hello-dolly --field=status`
+    When I run `wp plugin list --name=debug-bar --field=status`
     Then STDOUT should be:
       """
       inactive
@@ -387,14 +391,14 @@ Feature: Install WordPress plugins
   Scenario: Install and activate plugin using WordPress.org directory URL
     Given a WP install
 
-    When I run `wp plugin install https://wordpress.org/plugins/hello-dolly/ --activate`
+    When I run `wp plugin install https://wordpress.org/plugins/debug-bar/ --activate`
     Then STDOUT should contain:
       """
-      Detected WordPress.org plugins directory URL, using slug: hello-dolly
+      Detected WordPress.org plugins directory URL, using slug: debug-bar
       """
     And the return code should be 0
 
-    When I run `wp plugin list --name=hello-dolly --field=status`
+    When I run `wp plugin list --name=debug-bar --field=status`
     Then STDOUT should be:
       """
       active
@@ -403,35 +407,35 @@ Feature: Install WordPress plugins
   Scenario: Install with --activate on already-active plugin should keep it activated
     Given a WP install
 
-    When I run `wp plugin install hello-dolly --activate`
+    When I run `wp plugin install debug-bar --activate`
     Then STDOUT should contain:
       """
-      Plugin 'hello-dolly' activated.
+      Plugin 'debug-bar' activated.
       """
     And the return code should be 0
 
-    When I run `wp plugin list --name=hello-dolly --field=status`
+    When I run `wp plugin list --name=debug-bar --field=status`
     Then STDOUT should be:
       """
       active
       """
 
-    When I try `wp plugin install hello-dolly --activate`
+    When I try `wp plugin install debug-bar --activate`
     Then STDERR should contain:
       """
-      Warning: hello-dolly: Plugin already installed.
+      Warning: debug-bar: Plugin already installed.
       """
     And STDOUT should contain:
       """
-      Activating 'hello-dolly'...
+      Activating 'debug-bar'...
       """
     And STDOUT should contain:
       """
-      Plugin 'hello-dolly' activated.
+      Plugin 'debug-bar' activated.
       """
     And the return code should be 0
 
-    When I run `wp plugin list --name=hello-dolly --field=status`
+    When I run `wp plugin list --name=debug-bar --field=status`
     Then STDOUT should be:
       """
       active
@@ -440,35 +444,35 @@ Feature: Install WordPress plugins
   Scenario: Install with --activate-network on already-network-active plugin should keep it activated
     Given a WP multisite install
 
-    When I run `wp plugin install hello-dolly --activate-network`
+    When I run `wp plugin install debug-bar --activate-network`
     Then STDOUT should contain:
       """
-      Plugin 'hello-dolly' network activated.
+      Plugin 'debug-bar' network activated.
       """
     And the return code should be 0
 
-    When I run `wp plugin list --name=hello-dolly --field=status`
+    When I run `wp plugin list --name=debug-bar --field=status`
     Then STDOUT should be:
       """
       active-network
       """
 
-    When I try `wp plugin install hello-dolly --activate-network`
+    When I try `wp plugin install debug-bar --activate-network`
     Then STDERR should contain:
       """
-      Warning: hello-dolly: Plugin already installed.
+      Warning: debug-bar: Plugin already installed.
       """
     And STDOUT should contain:
       """
-      Network-activating 'hello-dolly'...
+      Network-activating 'debug-bar'...
       """
     And STDOUT should contain:
       """
-      Plugin 'hello-dolly' network activated.
+      Plugin 'debug-bar' network activated.
       """
     And the return code should be 0
 
-    When I run `wp plugin list --name=hello-dolly --field=status`
+    When I run `wp plugin list --name=debug-bar --field=status`
     Then STDOUT should be:
       """
       active-network

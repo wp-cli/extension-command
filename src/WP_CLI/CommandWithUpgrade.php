@@ -254,7 +254,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				} else {
 					// $result is WP_Error here
 					WP_CLI::warning( $result->get_error_message() );
-					if ( 'already_installed' !== $result->get_error_code() ) {
+					if ( 'already_installed' === $result->get_error_code() ) {
+						if ( $result->get_error_data( 'slug' ) ) {
+							$slug = $result->get_error_data( 'slug' );
+						}
+					} else {
 						++$errors;
 					}
 				}
@@ -338,6 +342,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			}
 
+			// Only plugins cache really exists.
+			if ( 'plugin' === $this->item_type ) {
+				wp_cache_delete( 'plugins', 'plugins' );
+			}
+
 			// Check extension is available or not.
 			$extension = $this->fetcher->get_many( array( $slug ) );
 
@@ -411,7 +420,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// Check if plugin is already installed before downloading.
 		if ( file_exists( $dest_path ) && ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
-			return new WP_Error( 'already_installed', 'Plugin already installed.' );
+			$error = new WP_Error( 'already_installed', 'Plugin already installed.' );
+			// An easy way to provide the slug of the installed plugin.
+			$error->add_data( $dest_filename, 'slug' );
+			return $error;
 		}
 
 		// Ensure plugin directory exists.

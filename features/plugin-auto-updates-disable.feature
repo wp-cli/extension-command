@@ -2,7 +2,7 @@ Feature: Disable auto-updates for WordPress plugins
 
   Background:
     Given a WP install
-    And I run `wp plugin install duplicate-post https://github.com/wp-cli/sample-plugin/archive/refs/heads/master.zip --ignore-requirements`
+    And I run `wp plugin install debug-bar https://github.com/wp-cli/sample-plugin/archive/refs/heads/master.zip --ignore-requirements`
     And I run `wp plugin auto-updates enable --all`
 
   @require-wp-5.5
@@ -25,7 +25,7 @@ Feature: Disable auto-updates for WordPress plugins
 
   @require-wp-5.5
   Scenario: Disable auto-updates for multiple plugins
-    When I run `wp plugin auto-updates disable sample-plugin duplicate-post`
+    When I run `wp plugin auto-updates disable sample-plugin debug-bar`
     Then STDOUT should be:
       """
       Success: Disabled 2 of 2 plugin auto-updates.
@@ -73,7 +73,7 @@ Feature: Disable auto-updates for WordPress plugins
   @require-wp-5.5
   Scenario: Filter when disabling auto-updates for already disabled selection of plugins
     When I run `wp plugin auto-updates disable sample-plugin`
-    And I run `wp plugin auto-updates disable sample-plugin duplicate-post --enabled-only`
+    And I run `wp plugin auto-updates disable sample-plugin debug-bar --enabled-only`
     Then STDOUT should be:
       """
       Success: Disabled 1 of 1 plugin auto-updates.

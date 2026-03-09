@@ -22,7 +22,7 @@ Feature: Search WordPress.org plugins
   Scenario: Search for plugins with url field
     Given a WP install
 
-    When I run `wp plugin search gutenberg --fields=slug,url --format=csv`
+    When I run `wp plugin search gutenberg --fields=slug,url --format=csv --per-page=20`
     Then STDOUT should contain:
       """
       gutenberg,https://wordpress.org/plugins/gutenberg/
