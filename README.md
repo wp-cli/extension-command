@@ -948,6 +948,148 @@ wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [-
 
 
 
+### wp plugin auto-updates
+
+Manages plugin auto-updates.
+
+~~~
+wp plugin auto-updates
+~~~
+
+**EXAMPLES**
+
+    # Enable the auto-updates for a plugin
+    $ wp plugin auto-updates enable hello
+    Plugin auto-updates for 'hello' enabled.
+    Success: Enabled 1 of 1 plugin auto-updates.
+
+    # Disable the auto-updates for a plugin
+    $ wp plugin auto-updates disable hello
+    Plugin auto-updates for 'hello' disabled.
+    Success: Disabled 1 of 1 plugin auto-updates.
+
+    # Get the status of plugin auto-updates
+    $ wp plugin auto-updates status hello
+    Auto-updates for plugin 'hello' are disabled.
+
+
+
+
+
+### wp plugin auto-updates disable
+
+Disables the auto-updates for a plugin.
+
+~~~
+wp plugin auto-updates disable [<plugin>...] [--all] [--enabled-only]
+~~~
+
+**OPTIONS**
+
+	[<plugin>...]
+		One or more plugins to disable auto-updates for.
+
+	[--all]
+		If set, auto-updates will be disabled for all plugins.
+
+	[--enabled-only]
+		If set, filters list of plugins to only include the ones that have
+		auto-updates enabled.
+
+**EXAMPLES**
+
+    # Disable the auto-updates for a plugin
+    $ wp plugin auto-updates disable hello
+    Plugin auto-updates for 'hello' disabled.
+    Success: Disabled 1 of 1 plugin auto-updates.
+
+
+
+### wp plugin auto-updates enable
+
+Enables the auto-updates for a plugin.
+
+~~~
+wp plugin auto-updates enable [<plugin>...] [--all] [--disabled-only]
+~~~
+
+**OPTIONS**
+
+	[<plugin>...]
+		One or more plugins to enable auto-updates for.
+
+	[--all]
+		If set, auto-updates will be enabled for all plugins.
+
+	[--disabled-only]
+		If set, filters list of plugins to only include the ones that have
+		auto-updates disabled.
+
+**EXAMPLES**
+
+    # Enable the auto-updates for a plugin
+    $ wp plugin auto-updates enable hello
+    Plugin auto-updates for 'hello' enabled.
+    Success: Enabled 1 of 1 plugin auto-updates.
+
+
+
+### wp plugin auto-updates status
+
+Shows the status of auto-updates for a plugin.
+
+~~~
+wp plugin auto-updates status [<plugin>...] [--all] [--enabled-only] [--disabled-only] [--field=<field>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[<plugin>...]
+		One or more plugins to show the status of the auto-updates of.
+
+	[--all]
+		If set, the status of auto-updates for all plugins will be shown.
+
+	[--enabled-only]
+		If set, filters list of plugins to only include the ones that have
+		auto-updates enabled.
+
+	[--disabled-only]
+		If set, filters list of plugins to only include the ones that have
+		auto-updates disabled.
+
+	[--field=<field>]
+		Only show the provided field.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		---
+
+**EXAMPLES**
+
+    # Get the status of plugin auto-updates
+    $ wp plugin auto-updates status hello
+    +-------+----------+
+    | name  | status   |
+    +-------+----------+
+    | hello | disabled |
+    +-------+----------+
+
+    # Get the list of plugins that have auto-updates enabled
+    $ wp plugin auto-updates status --all --enabled-only --field=name
+    akismet
+    duplicate-post
+
+
+
 ### wp theme
 
 Manages themes, including installs, activations, and updates.
@@ -1792,6 +1934,148 @@ wp theme mod list [--field=<field>] [--format=<format>]
     | link_color       | #dd9933 |
     | main_text_color  | #8224e3 |
     +------------------+---------+
+
+
+
+### wp theme auto-updates
+
+Manages theme auto-updates.
+
+~~~
+wp theme auto-updates
+~~~
+
+**EXAMPLES**
+
+    # Enable the auto-updates for a theme
+    $ wp theme auto-updates enable twentysixteen
+    Theme auto-updates for 'twentysixteen' enabled.
+    Success: Enabled 1 of 1 theme auto-updates.
+
+    # Disable the auto-updates for a theme
+    $ wp theme auto-updates disable twentysixteen
+    Theme auto-updates for 'twentysixteen' disabled.
+    Success: Disabled 1 of 1 theme auto-updates.
+
+    # Get the status of theme auto-updates
+    $ wp theme auto-updates status twentysixteen
+    Auto-updates for theme 'twentysixteen' are disabled.
+
+
+
+
+
+### wp theme auto-updates disable
+
+Disables the auto-updates for a theme.
+
+~~~
+wp theme auto-updates disable [<theme>...] [--all] [--enabled-only]
+~~~
+
+**OPTIONS**
+
+	[<theme>...]
+		One or more themes to disable auto-updates for.
+
+	[--all]
+		If set, auto-updates will be disabled for all themes.
+
+	[--enabled-only]
+		If set, filters list of themes to only include the ones that have
+		auto-updates enabled.
+
+**EXAMPLES**
+
+    # Disable the auto-updates for a theme
+    $ wp theme auto-updates disable twentysixteen
+    Theme auto-updates for 'twentysixteen' disabled.
+    Success: Disabled 1 of 1 theme auto-updates.
+
+
+
+### wp theme auto-updates enable
+
+Enables the auto-updates for a theme.
+
+~~~
+wp theme auto-updates enable [<theme>...] [--all] [--disabled-only]
+~~~
+
+**OPTIONS**
+
+	[<theme>...]
+		One or more themes to enable auto-updates for.
+
+	[--all]
+		If set, auto-updates will be enabled for all themes.
+
+	[--disabled-only]
+		If set, filters list of themes to only include the ones that have
+		auto-updates disabled.
+
+**EXAMPLES**
+
+    # Enable the auto-updates for a theme
+    $ wp theme auto-updates enable twentysixteen
+    Theme auto-updates for 'twentysixteen' enabled.
+    Success: Enabled 1 of 1 theme auto-updates.
+
+
+
+### wp theme auto-updates status
+
+Shows the status of auto-updates for a theme.
+
+~~~
+wp theme auto-updates status [<theme>...] [--all] [--enabled-only] [--disabled-only] [--field=<field>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[<theme>...]
+		One or more themes to show the status of the auto-updates of.
+
+	[--all]
+		If set, the status of auto-updates for all themes will be shown.
+
+	[--enabled-only]
+		If set, filters list of themes to only include the ones that have
+		auto-updates enabled.
+
+	[--disabled-only]
+		If set, filters list of themes to only include the ones that have
+		auto-updates disabled.
+
+	[--field=<field>]
+		Only show the provided field.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		---
+
+**EXAMPLES**
+
+    # Get the status of theme auto-updates
+    $ wp theme auto-updates status twentysixteen
+    +---------------+----------+
+    | name          | status   |
+    +---------------+----------+
+    | twentysixteen | disabled |
+    +---------------+----------+
+
+    # Get the list of themes that have auto-updates enabled
+    $ wp theme auto-updates status --all --enabled-only --field=name
+    twentysixteen
+    twentyseventeen
 
 ## Installing
 
