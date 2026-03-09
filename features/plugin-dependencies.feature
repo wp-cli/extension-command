@@ -61,7 +61,7 @@ Feature: Plugin dependencies support
       <?php
       /**
        * Plugin Name: Test Plugin
-       * Requires Plugins: debug-bar, debug-bar
+       * Requires Plugins: debug-bar, disable-embeds
        */
       """
 
@@ -81,7 +81,7 @@ Feature: Plugin dependencies support
       inactive
       """
 
-    When I run `wp plugin list --name=debug-bar --field=status`
+    When I run `wp plugin list --name=disable-embeds --field=status`
     Then STDOUT should be:
       """
       inactive
