@@ -1872,7 +1872,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *   - yaml
 	 * ---
 	 *
-	 * [--status=<status>]
+	 * [--status=<status>...]
 	 * : Filter the output by plugin status.
 	 * ---
 	 * options:

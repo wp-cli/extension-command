@@ -926,10 +926,16 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					continue;
 				}
 
-				// This can be either a value to filter by or a comma-separated list of values.
-				// Also, it is not forbidden for a value to contain a comma (in which case we can filter only by one).
 				$field_filter = $assoc_args[ $field ];
-				if (
+				if ( is_array( $field_filter ) ) {
+					// Multiple values passed by repeating the argument (e.g., --name=plugin1 --name=plugin2).
+					/** @var string[] $field_filter */
+					if ( ! in_array( $item[ $field ], $field_filter, true ) ) {
+						unset( $all_items[ $key ] );
+					}
+				} elseif (
+					// This can be either a value to filter by or a comma-separated list of values.
+					// Also, it is not forbidden for a value to contain a comma (in which case we can filter only by one).
 					$item[ $field ] !== $field_filter
 					&& ! in_array( $item[ $field ], array_map( 'trim', explode( ',', $field_filter ) ), true )
 				) {

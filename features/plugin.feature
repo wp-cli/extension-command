@@ -407,6 +407,30 @@ Feature: Manage WordPress plugins
       | akismet            | active   | akismet/akismet.php                       |
       | wordpress-importer | inactive | wordpress-importer/wordpress-importer.php |
 
+    When I run `wp plugin list --status=active --status=inactive --fields=name,status,file`
+    Then STDOUT should be a table containing rows:
+      | name               | status   | file                                      |
+      | akismet            | active   | akismet/akismet.php                       |
+      | wordpress-importer | inactive | wordpress-importer/wordpress-importer.php |
+
+  Scenario: Filter plugin list by multiple names
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --ignore-requirements`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --name=akismet,wordpress-importer --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name               | status   |
+      | akismet            | inactive |
+      | wordpress-importer | inactive |
+
+    When I run `wp plugin list --name=akismet --name=wordpress-importer --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name               | status   |
+      | akismet            | inactive |
+      | wordpress-importer | inactive |
+
   @require-wp-5.2
   Scenario: Flag `--skip-update-check` skips update check when running `wp plugin list`
     Given a WP install
