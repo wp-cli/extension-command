@@ -188,6 +188,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$successes   = 0;
 		$errors      = 0;
 		$custom_slug = Utils\get_flag_value( $assoc_args, 'slug', false );
+		if ( $custom_slug ) {
+			$custom_slug = sanitize_file_name( $custom_slug );
+		}
 
 		if ( $custom_slug && count( $args ) > 1 ) {
 			WP_CLI::error( 'The --slug option can only be used when installing a single item.' );
