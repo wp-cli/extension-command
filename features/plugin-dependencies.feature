@@ -119,7 +119,8 @@ Feature: Plugin dependencies support
       Warning: akismet: Plugin already installed.
       """
 
-    When I run `wp plugin list --fields=name,status --format=csv`
+    # Expecting a warning for BuddyPress attempting a redirect upon activation.
+    When I try `wp plugin list --fields=name,status --format=csv`
     Then STDOUT should contain:
       """
       buddypress,active
