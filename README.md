@@ -247,7 +247,7 @@ These fields are optionally available:
 Installs one or more plugins.
 
 ~~~
-wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-requirements] [--activate] [--activate-network] [--insecure] [--with-dependencies]
+wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-requirements] [--activate] [--activate-network] [--insecure] [--with-dependencies] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
@@ -278,6 +278,9 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
 
 	[--with-dependencies]
 		If set, the command will also install all required dependencies of the plugin as specified in the 'Requires Plugins' header.
+
+	[--slug=<slug>]
+		Use this as the target directory name when installing from a zip file. Cannot be used when installing multiple plugins.
 
 **EXAMPLES**
 
@@ -1305,7 +1308,7 @@ wp theme get <theme> [--field=<field>] [--fields=<fields>] [--format=<format>]
 Installs one or more themes.
 
 ~~~
-wp theme install <theme|zip|url>... [--version=<version>] [--force] [--ignore-requirements] [--activate] [--insecure]
+wp theme install <theme|zip|url>... [--version=<version>] [--force] [--ignore-requirements] [--activate] [--insecure] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
@@ -1330,6 +1333,9 @@ wp theme install <theme|zip|url>... [--version=<version>] [--force] [--ignore-re
 
 	[--insecure]
 		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+	[--slug=<slug>]
+		Use this as the target directory name when installing from a zip file. Cannot be used when installing multiple themes.
 
 **EXAMPLES**
 
