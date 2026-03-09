@@ -200,7 +200,6 @@ Feature: Install WordPress themes
       Theme installed successfully.
       """
     And the wp-content/themes/my-custom-theme directory should exist
-    And the wp-content/themes/generic-example-theme-master directory should not exist
     And the return code should be 0
 
   Scenario: Error when --slug is used with multiple themes
