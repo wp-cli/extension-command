@@ -323,6 +323,10 @@ Feature: Install WordPress plugins
       """
       Warning: Plugin already installed.
       """
+    And STDERR should not contain:
+      """
+      plugin could not be found
+      """
     And STDOUT should contain:
       """
       Success: Plugin already installed.
