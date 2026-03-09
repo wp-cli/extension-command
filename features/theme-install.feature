@@ -190,10 +190,10 @@ Feature: Install WordPress themes
   Scenario: Install theme from a zip file with a custom --slug
     Given a WP install
 
-    When I run `wp theme install https://github.com/wp-cli-test/generic-example-theme/archive/refs/heads/master.zip --slug=my-custom-theme`
+    When I run `wp theme install https://downloads.wordpress.org/theme/twentytwelve.zip --slug=my-custom-theme`
     Then STDOUT should contain:
       """
-      Renamed 'generic-example-theme-master' to 'my-custom-theme'.
+      Renamed 'twentytwelve' to 'my-custom-theme'.
       """
     And STDOUT should contain:
       """
