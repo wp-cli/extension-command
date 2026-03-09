@@ -288,7 +288,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						if ( $source_dir === $custom_slug ) {
 							return $source;
 						}
-						$new_path = substr_replace( $source, $custom_slug, (int) strrpos( $source, $source_dir ), strlen( $source_dir ) );
+						$custom_slug = sanitize_file_name( $custom_slug );
+						$new_path    = substr_replace( $source, $custom_slug, (int) strrpos( $source, $source_dir ), strlen( $source_dir ) );
 
 						if ( $wp_filesystem->move( $source, $new_path ) ) {
 							WP_CLI::log( sprintf( "Renamed '%s' to '%s'.", $source_dir, $custom_slug ) );
