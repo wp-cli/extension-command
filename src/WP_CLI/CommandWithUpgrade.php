@@ -185,8 +185,17 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	public function install( $args, $assoc_args ) {
-		$successes = 0;
-		$errors    = 0;
+		$successes   = 0;
+		$errors      = 0;
+		$custom_slug = Utils\get_flag_value( $assoc_args, 'slug', false );
+		if ( $custom_slug ) {
+			$custom_slug = sanitize_file_name( $custom_slug );
+		}
+
+		if ( $custom_slug && count( $args ) > 1 ) {
+			WP_CLI::error( 'The --slug option can only be used when installing a single item.' );
+		}
+
 		foreach ( $args as $slug ) {
 
 			if ( empty( $slug ) ) {
@@ -267,10 +276,33 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$file_upgrader = $this->get_upgrader( $assoc_args );
 
 				$filter = false;
-				// If a GitHub URL, do some guessing as to the correct plugin/theme directory.
-				if ( $is_remote && 'github.com' === Utils\parse_url( $slug, PHP_URL_HOST )
+				if ( $custom_slug ) {
+					// If --slug is specified, rename the extracted directory to the provided slug.
+					$filter = function ( $source ) use ( $custom_slug ) {
+						/**
+						 * @var \WP_Filesystem_Base $wp_filesystem
+						 */
+						global $wp_filesystem;
+
+						$source_dir = Utils\basename( $source ); // `$source` is trailing-slashed path to the unzipped archive directory.
+						if ( $source_dir === $custom_slug ) {
+							return $source;
+						}
+						$custom_slug = sanitize_file_name( $custom_slug );
+						$new_path    = substr_replace( $source, $custom_slug, (int) strrpos( $source, $source_dir ), strlen( $source_dir ) );
+
+						if ( $wp_filesystem->move( $source, $new_path ) ) {
+							WP_CLI::log( sprintf( "Renamed '%s' to '%s'.", $source_dir, $custom_slug ) );
+							return $new_path;
+						}
+
+						return new WP_Error( 'wpcli_install_slug', "Couldn't rename to '{$custom_slug}'." );
+					};
+					add_filter( 'upgrader_source_selection', $filter, 10 );
+				} elseif ( $is_remote && 'github.com' === Utils\parse_url( $slug, PHP_URL_HOST )
 						// Don't attempt to rename ZIPs uploaded to the releases page or coming from a raw source.
 						&& ! preg_match( '#github\.com/[^/]+/[^/]+/(?:releases/download|raw)/#', $slug ) ) {
+					// If a GitHub URL, do some guessing as to the correct plugin/theme directory.
 
 					$filter = function ( $source ) use ( $slug ) {
 						/**

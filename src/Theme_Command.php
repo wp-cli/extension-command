@@ -612,6 +612,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
+	 * [--slug=<slug>]
+	 * : Use this as the target directory name when installing from a zip file. Cannot be used when installing multiple themes.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Install the latest version from wordpress.org and activate
