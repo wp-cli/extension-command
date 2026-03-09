@@ -826,6 +826,12 @@ Feature: Manage WordPress themes
       | twentyeleven  | active   |
       | twentytwelve  | inactive |
 
+    When I run `wp theme list --status=active,inactive --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name          | status   |
+      | twentyeleven  | active   |
+      | twentytwelve  | inactive |
+
     When I run `wp theme list --status=active --status=inactive --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name          | status   |
