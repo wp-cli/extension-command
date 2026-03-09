@@ -2,7 +2,7 @@ Feature: Enable auto-updates for WordPress plugins
 
   Background:
     Given a WP install
-    And I run `wp plugin install duplicate-post https://github.com/wp-cli/sample-plugin/archive/refs/heads/master.zip --ignore-requirements`
+    And I run `wp plugin install debug-bar https://github.com/wp-cli/sample-plugin/archive/refs/heads/master.zip --ignore-requirements`
 
   @require-wp-5.5
   Scenario: Show an error if required params are missing
@@ -24,7 +24,7 @@ Feature: Enable auto-updates for WordPress plugins
 
   @require-wp-5.5
   Scenario: Enable auto-updates for multiple plugins
-    When I run `wp plugin auto-updates enable sample-plugin duplicate-post`
+    When I run `wp plugin auto-updates enable sample-plugin debug-bar`
     Then STDOUT should be:
       """
       Success: Enabled 2 of 2 plugin auto-updates.
@@ -72,7 +72,7 @@ Feature: Enable auto-updates for WordPress plugins
   @require-wp-5.5
   Scenario: Filter when enabling auto-updates for already enabled selection of plugins
     When I run `wp plugin auto-updates enable sample-plugin`
-    And I run `wp plugin auto-updates enable sample-plugin duplicate-post --disabled-only`
+    And I run `wp plugin auto-updates enable sample-plugin debug-bar --disabled-only`
     Then STDOUT should be:
       """
       Success: Enabled 1 of 1 plugin auto-updates.

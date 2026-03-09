@@ -61,7 +61,7 @@ Feature: Plugin dependencies support
       <?php
       /**
        * Plugin Name: Test Plugin
-       * Requires Plugins: duplicate-post, debug-bar
+       * Requires Plugins: debug-bar, debug-bar
        */
       """
 
@@ -75,7 +75,7 @@ Feature: Plugin dependencies support
       Success:
       """
 
-    When I run `wp plugin list --name=duplicate-post --field=status`
+    When I run `wp plugin list --name=debug-bar --field=status`
     Then STDOUT should be:
       """
       inactive
