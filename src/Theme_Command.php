@@ -1021,7 +1021,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 *   - yaml
 	 * ---
 	 *
-	 * [--status=<status>]
+	 * [--status=<status>...]
 	 * : Filter the output by theme status.
 	 * ---
 	 * options:

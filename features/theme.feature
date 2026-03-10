@@ -807,3 +807,33 @@ Feature: Manage WordPress themes
       """
       classic
       """
+
+  Scenario: Filter theme list by multiple names
+    Given a WP install
+    And I run `wp theme delete --all --force`
+    And I run `wp theme install twentyeleven --activate`
+    And I run `wp theme install twentytwelve`
+
+    When I run `wp theme list --name=twentytwelve,twentyeleven --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name          | status   |
+      | twentyeleven  | active   |
+      | twentytwelve  | inactive |
+
+    When I run `wp theme list --name=twentytwelve --name=twentyeleven --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name          | status   |
+      | twentyeleven  | active   |
+      | twentytwelve  | inactive |
+
+    When I run `wp theme list --status=active,inactive --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name          | status   |
+      | twentyeleven  | active   |
+      | twentytwelve  | inactive |
+
+    When I run `wp theme list --status=active --status=inactive --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name          | status   |
+      | twentyeleven  | active   |
+      | twentytwelve  | inactive |
