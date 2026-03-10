@@ -464,7 +464,7 @@ Returns exit code 0 when installed, 1 when uninstalled.
 Gets a list of plugins.
 
 ~~~
-wp plugin list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--status=<status>] [--skip-update-check] [--recently-active]
+wp plugin list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--status=<status>...] [--skip-update-check] [--recently-active]
 ~~~
 
 Displays a list of the plugins installed on the site with activation
@@ -495,7 +495,7 @@ Use `--status=dropin` to list installed dropins (e.g. `object-cache.php`).
 		  - yaml
 		---
 
-	[--status=<status>]
+	[--status=<status>...]
 		Filter the output by plugin status.
 		---
 		options:
@@ -1421,7 +1421,7 @@ Returns exit code 0 when installed, 1 when uninstalled.
 Gets a list of themes.
 
 ~~~
-wp theme list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--status=<status>] [--skip-update-check]
+wp theme list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--status=<status>...] [--skip-update-check]
 ~~~
 
 **OPTIONS**
@@ -1447,7 +1447,7 @@ wp theme list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--forma
 		  - yaml
 		---
 
-	[--status=<status>]
+	[--status=<status>...]
 		Filter the output by theme status.
 		---
 		options:
