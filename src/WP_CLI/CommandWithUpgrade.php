@@ -609,17 +609,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			WP_CLI::log( "Skipped updates for: $exclude" );
 		}
 
-		// Output changed files if requested.
-		if ( Utils\get_flag_value( $assoc_args, 'show-changed-files' ) ) {
-			$changed_files = $upgrader->get_changed_files();
-			if ( ! empty( $changed_files ) ) {
-				WP_CLI::log( '' );
-				WP_CLI::log( 'Changed files:' );
-				foreach ( $changed_files as $file ) {
-					WP_CLI::log( $file );
-				}
-			}
-		}
+		WP_CLI::do_hook( "{$this->item_type}_update_finished", $upgrader->get_changed_files() );
 	}
 
 	// phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Whitelisting to provide backward compatibility to classes possibly extending this class.
