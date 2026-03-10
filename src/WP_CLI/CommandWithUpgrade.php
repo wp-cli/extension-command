@@ -555,6 +555,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			remove_filter( 'site_transient_' . $this->upgrade_transient, $transient_filter, 999 );
 		}
 
+		if ( ! is_array( $result ) ) {
+			// This should never happen, but bulk_upgrade() can return false.
+			WP_CLI::error( 'Plugin upgrader is unable to connect to the filesystem.' );
+		}
+
 		/**
 		 * @var array $items_to_update
 		 */
@@ -609,7 +614,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			WP_CLI::log( "Skipped updates for: $exclude" );
 		}
 
-		WP_CLI::do_hook( "{$this->item_type}_update_finished", $upgrader->get_changed_files() );
+		if ( isset( $upgrader ) ) {
+			WP_CLI::do_hook( "{$this->item_type}_update_finished", $upgrader->get_changed_files() );
+		}
 	}
 
 	// phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Whitelisting to provide backward compatibility to classes possibly extending this class.
