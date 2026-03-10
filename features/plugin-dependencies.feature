@@ -61,7 +61,7 @@ Feature: Plugin dependencies support
       <?php
       /**
        * Plugin Name: Test Plugin
-       * Requires Plugins: duplicate-post, debug-bar
+       * Requires Plugins: debug-bar, disable-embeds
        */
       """
 
@@ -75,13 +75,13 @@ Feature: Plugin dependencies support
       Success:
       """
 
-    When I run `wp plugin list --name=duplicate-post --field=status`
+    When I run `wp plugin list --name=debug-bar --field=status`
     Then STDOUT should be:
       """
       inactive
       """
 
-    When I run `wp plugin list --name=debug-bar --field=status`
+    When I run `wp plugin list --name=disable-embeds --field=status`
     Then STDOUT should be:
       """
       inactive
@@ -119,7 +119,8 @@ Feature: Plugin dependencies support
       Warning: akismet: Plugin already installed.
       """
 
-    When I run `wp plugin list --fields=name,status --format=csv`
+    # Expecting a warning for BuddyPress attempting a redirect upon activation.
+    When I try `wp plugin list --fields=name,status --format=csv`
     Then STDOUT should contain:
       """
       buddypress,active

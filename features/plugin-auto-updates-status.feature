@@ -2,7 +2,7 @@ Feature: Show the status of auto-updates for WordPress plugins
 
   Background:
     Given a WP install
-    And I run `wp plugin install duplicate-post https://github.com/wp-cli/sample-plugin/archive/refs/heads/master.zip --ignore-requirements`
+    And I run `wp plugin install debug-bar https://github.com/wp-cli/sample-plugin/archive/refs/heads/master.zip --ignore-requirements`
 
   @require-wp-5.5
   Scenario: Show an error if required params are missing
@@ -23,10 +23,10 @@ Feature: Show the status of auto-updates for WordPress plugins
 
   @require-wp-5.5
   Scenario: Show the status of auto-updates multiple plugins
-    When I run `wp plugin auto-updates status duplicate-post sample-plugin`
+    When I run `wp plugin auto-updates status debug-bar sample-plugin`
     Then STDOUT should be a table containing rows:
       | name           | status   |
-      | duplicate-post | disabled |
+      | debug-bar | disabled |
       | sample-plugin          | disabled |
     And the return code should be 0
 
@@ -36,7 +36,7 @@ Feature: Show the status of auto-updates for WordPress plugins
     Then STDOUT should be a table containing rows:
       | name           | status   |
       | akismet        | disabled |
-      | duplicate-post | disabled |
+      | debug-bar | disabled |
       | sample-plugin          | disabled |
     And the return code should be 0
 
@@ -45,7 +45,7 @@ Feature: Show the status of auto-updates for WordPress plugins
     Then STDOUT should be a table containing rows:
       | name           | status   |
       | akismet        | enabled  |
-      | duplicate-post | enabled  |
+      | debug-bar | enabled  |
       | sample-plugin          | enabled  |
     And the return code should be 0
 
@@ -57,7 +57,7 @@ Feature: Show the status of auto-updates for WordPress plugins
     Then STDOUT should be a table containing rows:
       | name           | status   |
       | akismet        | disabled |
-      | duplicate-post | disabled |
+      | debug-bar | disabled |
       | sample-plugin          | enabled  |
     And the return code should be 0
 
@@ -71,7 +71,7 @@ Feature: Show the status of auto-updates for WordPress plugins
     Then STDOUT should be a table containing rows:
       | name           | status   |
       | akismet        | disabled |
-      | duplicate-post | disabled |
+      | debug-bar | disabled |
     And the return code should be 0
 
     When I try `wp plugin auto-updates status --all --enabled-only --disabled-only`
@@ -92,7 +92,7 @@ Feature: Show the status of auto-updates for WordPress plugins
       """
     And STDOUT should contain:
       """
-      duplicate-post
+      debug-bar
       """
 
     When I run `wp plugin auto-updates status sample-plugin --field=status`
@@ -114,7 +114,7 @@ Feature: Show the status of auto-updates for WordPress plugins
       """
     And STDOUT should contain:
       """
-      {"name":"duplicate-post","status":"disabled"}
+      {"name":"debug-bar","status":"disabled"}
       """
 
     When I run `wp plugin auto-updates status --all --format=csv`
@@ -128,7 +128,7 @@ Feature: Show the status of auto-updates for WordPress plugins
       """
     And STDOUT should contain:
       """
-      duplicate-post,disabled
+      debug-bar,disabled
       """
 
   @require-wp-5.5

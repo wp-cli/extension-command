@@ -110,6 +110,101 @@ class Theme_Command extends CommandWithUpgrade {
 	}
 
 	/**
+	 * Checks for theme updates without performing them.
+	 *
+	 * Lists the available theme updates. Similar to `wp core check-update`.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<theme>...]
+	 * : One or more themes to check for updates.
+	 *
+	 * [--all]
+	 * : If set, all themes will be checked for updates.
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each update.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to name,status,version,update_version.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check for theme updates
+	 *     $ wp theme check-update
+	 *     +------------+----------+---------+----------------+
+	 *     | name       | status   | version | update_version |
+	 *     +------------+----------+---------+----------------+
+	 *     | twentytwelve | inactive | 2.0     | 2.1            |
+	 *     +------------+----------+---------+----------------+
+	 *
+	 *     # List themes with available updates in JSON format
+	 *     $ wp theme check-update --format=json
+	 *     [{"name":"twentytwelve","status":"inactive","version":"2.0","update_version":"2.1"}]
+	 *
+	 * @subcommand check-update
+	 */
+	public function check_update( $args, $assoc_args ) {
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		$args = $this->check_optional_args_and_all( $args, $all );
+		if ( ! $args ) {
+			return;
+		}
+
+		// Force WordPress to check for updates.
+		call_user_func( $this->upgrade_refresh );
+
+		if ( $all ) {
+			// Get all themes
+			$items = $this->get_item_list();
+		} else {
+			// Get specific themes and their update info
+			$themes    = $this->fetcher->get_many( $args );
+			$all_items = $this->get_item_list();
+			$items     = [];
+			foreach ( $themes as $theme ) {
+				$stylesheet = $theme->get_stylesheet();
+				if ( isset( $all_items[ $stylesheet ] ) ) {
+					$items[ $stylesheet ] = $all_items[ $stylesheet ];
+				}
+			}
+		}
+
+		// Filter to only themes with available updates
+		$items_with_updates = array_filter(
+			$items,
+			function ( $item ) {
+				return 'available' === $item['update'];
+			}
+		);
+
+		if ( empty( $items_with_updates ) ) {
+			WP_CLI::success( 'All themes are up to date.' );
+			return;
+		}
+
+		// Set default fields for check-update output
+		if ( ! isset( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = 'name,status,version,update_version';
+		}
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_items( array_values( $items_with_updates ) );
+	}
+
+	/**
 	 * Searches the WordPress.org theme directory.
 	 *
 	 * Displays themes in the WordPress.org theme directory matching a given
@@ -517,6 +612,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
+	 * [--slug=<slug>]
+	 * : Use this as the target directory name when installing from a zip file. Cannot be used when installing multiple themes.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Install the latest version from wordpress.org and activate
@@ -691,6 +789,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
+	 * [--auto-update-indicated]
+	 * : Only update themes where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Update multiple themes
@@ -740,6 +841,11 @@ class Theme_Command extends CommandWithUpgrade {
 	 */
 	public function update( $args, $assoc_args ) {
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		// Handle --auto-update-indicated flag if present.
+		if ( $this->handle_auto_update_indicated( $args, $assoc_args ) ) {
+			return;
+		}
 
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {
@@ -915,7 +1021,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 *   - yaml
 	 * ---
 	 *
-	 * [--status=<status>]
+	 * [--status=<status>...]
 	 * : Filter the output by theme status.
 	 * ---
 	 * options:
@@ -945,6 +1051,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * * update_id
 	 * * title
 	 * * description
+	 * * auto_update_indicated
 	 *
 	 * ## EXAMPLES
 	 *

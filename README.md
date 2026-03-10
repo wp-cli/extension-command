@@ -57,7 +57,7 @@ See the WordPress [Plugin Handbook](https://developer.wordpress.org/plugins/) de
 Activates one or more plugins.
 
 ~~~
-wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network]
+wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network] [--force]
 ~~~
 
 **OPTIONS**
@@ -73,6 +73,9 @@ wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network]
 
 	[--network]
 		If set, the plugin will be activated for the entire multisite network.
+
+	[--force]
+		If set, deactivates and reactivates the plugin to re-run activation hooks, even if already active.
 
 **EXAMPLES**
 
@@ -97,6 +100,11 @@ wp plugin activate [<plugin>...] [--all] [--exclude=<name>] [--network]
     Plugin 'bbpress' network activated.
     Plugin 'buddypress' network activated.
     Success: Activated 2 of 2 plugins.
+
+    # Force re-running activation hooks for an already active plugin.
+    $ wp plugin activate hello --force
+    Plugin 'hello' activated.
+    Success: Activated 1 of 1 plugins.
 
 
 
@@ -239,13 +247,13 @@ These fields are optionally available:
 Installs one or more plugins.
 
 ~~~
-wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-requirements] [--activate] [--activate-network] [--insecure] [--with-dependencies]
+wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-requirements] [--activate] [--activate-network] [--insecure] [--with-dependencies] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
 
 	<plugin|zip|url>...
-		One or more plugins to install. Accepts a plugin slug, the path to a local zip file, a URL to a remote zip file, or a URL to a WordPress.org plugin directory.
+		One or more plugins to install. Accepts a plugin slug, the path to a local zip file, a URL to a remote zip file or PHP file, or a URL to a WordPress.org plugin directory.
 
 	[--version=<version>]
 		If set, get that particular version from wordpress.org, instead of the
@@ -270,6 +278,9 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
 
 	[--with-dependencies]
 		If set, the command will also install all required dependencies of the plugin as specified in the 'Requires Plugins' header.
+
+	[--slug=<slug>]
+		Use this as the target directory name when installing from a zip file. Cannot be used when installing multiple plugins.
 
 **EXAMPLES**
 
@@ -327,6 +338,11 @@ wp plugin install <plugin|zip|url>... [--version=<version>] [--force] [--ignore-
     Removing the old version of the plugin...
     Plugin updated successfully
     Success: Installed 1 of 1 plugins.
+
+    # Install from a remote PHP file
+    $ wp plugin install https://example.com/my-plugin.php
+    Installing My Plugin (1.0.0)
+    Downloading plugin file from https://example.com/my-plugin.php...
 
     # Install a plugin with all its dependencies
     $ wp plugin install my-plugin --with-dependencies
@@ -448,7 +464,7 @@ Returns exit code 0 when installed, 1 when uninstalled.
 Gets a list of plugins.
 
 ~~~
-wp plugin list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--status=<status>] [--skip-update-check] [--recently-active]
+wp plugin list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--status=<status>...] [--skip-update-check] [--recently-active]
 ~~~
 
 Displays a list of the plugins installed on the site with activation
@@ -479,7 +495,7 @@ Use `--status=dropin` to list installed dropins (e.g. `object-cache.php`).
 		  - yaml
 		---
 
-	[--status=<status>]
+	[--status=<status>...]
 		Filter the output by plugin status.
 		---
 		options:
@@ -520,6 +536,7 @@ These fields are optionally available:
 * requires_php
 * wporg_status
 * wporg_last_updated
+* auto_update_indicated
 
 **EXAMPLES**
 
@@ -712,6 +729,57 @@ wp plugin status [<plugin>]
 
 
 
+### wp plugin check-update
+
+Checks for plugin updates without performing them.
+
+~~~
+wp plugin check-update [<plugin>...] [--all] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+Lists the available plugin updates. Similar to `wp core check-update`.
+
+**OPTIONS**
+
+	[<plugin>...]
+		One or more plugins to check for updates.
+
+	[--all]
+		If set, all plugins will be checked for updates.
+
+	[--field=<field>]
+		Prints the value of a single field for each update.
+
+	[--fields=<fields>]
+		Limit the output to specific object fields. Defaults to name,status,version,update_version.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Check for plugin updates
+    $ wp plugin check-update
+    +-----------+--------+---------+----------------+
+    | name      | status | version | update_version |
+    +-----------+--------+---------+----------------+
+    | akismet   | active | 4.1.0   | 4.1.1          |
+    +-----------+--------+---------+----------------+
+
+    # List plugins with available updates in JSON format
+    $ wp plugin check-update --format=json
+    [{"name":"akismet","status":"active","version":"4.1.0","update_version":"4.1.1"}]
+
+
+
 ### wp plugin toggle
 
 Toggles a plugin's activation state.
@@ -790,7 +858,7 @@ wp plugin uninstall [<plugin>...] [--deactivate] [--skip-delete] [--all] [--excl
 Updates one or more plugins.
 
 ~~~
-wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
+wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure] [--auto-update-indicated]
 ~~~
 
 **Alias:** `upgrade`
@@ -831,6 +899,9 @@ wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [-
 
 	[--insecure]
 		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+	[--auto-update-indicated]
+		Only update plugins where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
 
 **EXAMPLES**
 
@@ -877,6 +948,148 @@ wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [-
     +------------------------+-------------+-------------+---------+
     | nginx-cache-controller | 3.1.1       | 3.2.0       | Updated |
     +------------------------+-------------+-------------+---------+
+
+
+
+### wp plugin auto-updates
+
+Manages plugin auto-updates.
+
+~~~
+wp plugin auto-updates
+~~~
+
+**EXAMPLES**
+
+    # Enable the auto-updates for a plugin
+    $ wp plugin auto-updates enable hello
+    Plugin auto-updates for 'hello' enabled.
+    Success: Enabled 1 of 1 plugin auto-updates.
+
+    # Disable the auto-updates for a plugin
+    $ wp plugin auto-updates disable hello
+    Plugin auto-updates for 'hello' disabled.
+    Success: Disabled 1 of 1 plugin auto-updates.
+
+    # Get the status of plugin auto-updates
+    $ wp plugin auto-updates status hello
+    Auto-updates for plugin 'hello' are disabled.
+
+
+
+
+
+### wp plugin auto-updates disable
+
+Disables the auto-updates for a plugin.
+
+~~~
+wp plugin auto-updates disable [<plugin>...] [--all] [--enabled-only]
+~~~
+
+**OPTIONS**
+
+	[<plugin>...]
+		One or more plugins to disable auto-updates for.
+
+	[--all]
+		If set, auto-updates will be disabled for all plugins.
+
+	[--enabled-only]
+		If set, filters list of plugins to only include the ones that have
+		auto-updates enabled.
+
+**EXAMPLES**
+
+    # Disable the auto-updates for a plugin
+    $ wp plugin auto-updates disable hello
+    Plugin auto-updates for 'hello' disabled.
+    Success: Disabled 1 of 1 plugin auto-updates.
+
+
+
+### wp plugin auto-updates enable
+
+Enables the auto-updates for a plugin.
+
+~~~
+wp plugin auto-updates enable [<plugin>...] [--all] [--disabled-only]
+~~~
+
+**OPTIONS**
+
+	[<plugin>...]
+		One or more plugins to enable auto-updates for.
+
+	[--all]
+		If set, auto-updates will be enabled for all plugins.
+
+	[--disabled-only]
+		If set, filters list of plugins to only include the ones that have
+		auto-updates disabled.
+
+**EXAMPLES**
+
+    # Enable the auto-updates for a plugin
+    $ wp plugin auto-updates enable hello
+    Plugin auto-updates for 'hello' enabled.
+    Success: Enabled 1 of 1 plugin auto-updates.
+
+
+
+### wp plugin auto-updates status
+
+Shows the status of auto-updates for a plugin.
+
+~~~
+wp plugin auto-updates status [<plugin>...] [--all] [--enabled-only] [--disabled-only] [--field=<field>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[<plugin>...]
+		One or more plugins to show the status of the auto-updates of.
+
+	[--all]
+		If set, the status of auto-updates for all plugins will be shown.
+
+	[--enabled-only]
+		If set, filters list of plugins to only include the ones that have
+		auto-updates enabled.
+
+	[--disabled-only]
+		If set, filters list of plugins to only include the ones that have
+		auto-updates disabled.
+
+	[--field=<field>]
+		Only show the provided field.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		---
+
+**EXAMPLES**
+
+    # Get the status of plugin auto-updates
+    $ wp plugin auto-updates status hello
+    +-------+----------+
+    | name  | status   |
+    +-------+----------+
+    | hello | disabled |
+    +-------+----------+
+
+    # Get the list of plugins that have auto-updates enabled
+    $ wp plugin auto-updates status --all --enabled-only --field=name
+    akismet
+    duplicate-post
 
 
 
@@ -1095,7 +1308,7 @@ wp theme get <theme> [--field=<field>] [--fields=<fields>] [--format=<format>]
 Installs one or more themes.
 
 ~~~
-wp theme install <theme|zip|url>... [--version=<version>] [--force] [--ignore-requirements] [--activate] [--insecure]
+wp theme install <theme|zip|url>... [--version=<version>] [--force] [--ignore-requirements] [--activate] [--insecure] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
@@ -1120,6 +1333,9 @@ wp theme install <theme|zip|url>... [--version=<version>] [--force] [--ignore-re
 
 	[--insecure]
 		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+	[--slug=<slug>]
+		Use this as the target directory name when installing from a zip file. Cannot be used when installing multiple themes.
 
 **EXAMPLES**
 
@@ -1205,7 +1421,7 @@ Returns exit code 0 when installed, 1 when uninstalled.
 Gets a list of themes.
 
 ~~~
-wp theme list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--status=<status>] [--skip-update-check]
+wp theme list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--status=<status>...] [--skip-update-check]
 ~~~
 
 **OPTIONS**
@@ -1231,7 +1447,7 @@ wp theme list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--forma
 		  - yaml
 		---
 
-	[--status=<status>]
+	[--status=<status>...]
 		Filter the output by theme status.
 		---
 		options:
@@ -1261,6 +1477,7 @@ These fields are optionally available:
 * update_id
 * title
 * description
+* auto_update_indicated
 
 **EXAMPLES**
 
@@ -1540,12 +1757,63 @@ wp theme status [<theme>]
 
 
 
+### wp theme check-update
+
+Checks for theme updates without performing them.
+
+~~~
+wp theme check-update [<theme>...] [--all] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+Lists the available theme updates. Similar to `wp core check-update`.
+
+**OPTIONS**
+
+	[<theme>...]
+		One or more themes to check for updates.
+
+	[--all]
+		If set, all themes will be checked for updates.
+
+	[--field=<field>]
+		Prints the value of a single field for each update.
+
+	[--fields=<fields>]
+		Limit the output to specific object fields. Defaults to name,status,version,update_version.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Check for theme updates
+    $ wp theme check-update
+    +------------+----------+---------+----------------+
+    | name       | status   | version | update_version |
+    +------------+----------+---------+----------------+
+    | twentytwelve | inactive | 2.0     | 2.1            |
+    +------------+----------+---------+----------------+
+
+    # List themes with available updates in JSON format
+    $ wp theme check-update --format=json
+    [{"name":"twentytwelve","status":"inactive","version":"2.0","update_version":"2.1"}]
+
+
+
 ### wp theme update
 
 Updates one or more themes.
 
 ~~~
-wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure]
+wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure] [--auto-update-indicated]
 ~~~
 
 **Alias:** `upgrade`
@@ -1586,6 +1854,9 @@ wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patc
 
 	[--insecure]
 		Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+	[--auto-update-indicated]
+		Only update themes where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
 
 **EXAMPLES**
 
@@ -1669,6 +1940,148 @@ wp theme mod list [--field=<field>] [--format=<format>]
     | link_color       | #dd9933 |
     | main_text_color  | #8224e3 |
     +------------------+---------+
+
+
+
+### wp theme auto-updates
+
+Manages theme auto-updates.
+
+~~~
+wp theme auto-updates
+~~~
+
+**EXAMPLES**
+
+    # Enable the auto-updates for a theme
+    $ wp theme auto-updates enable twentysixteen
+    Theme auto-updates for 'twentysixteen' enabled.
+    Success: Enabled 1 of 1 theme auto-updates.
+
+    # Disable the auto-updates for a theme
+    $ wp theme auto-updates disable twentysixteen
+    Theme auto-updates for 'twentysixteen' disabled.
+    Success: Disabled 1 of 1 theme auto-updates.
+
+    # Get the status of theme auto-updates
+    $ wp theme auto-updates status twentysixteen
+    Auto-updates for theme 'twentysixteen' are disabled.
+
+
+
+
+
+### wp theme auto-updates disable
+
+Disables the auto-updates for a theme.
+
+~~~
+wp theme auto-updates disable [<theme>...] [--all] [--enabled-only]
+~~~
+
+**OPTIONS**
+
+	[<theme>...]
+		One or more themes to disable auto-updates for.
+
+	[--all]
+		If set, auto-updates will be disabled for all themes.
+
+	[--enabled-only]
+		If set, filters list of themes to only include the ones that have
+		auto-updates enabled.
+
+**EXAMPLES**
+
+    # Disable the auto-updates for a theme
+    $ wp theme auto-updates disable twentysixteen
+    Theme auto-updates for 'twentysixteen' disabled.
+    Success: Disabled 1 of 1 theme auto-updates.
+
+
+
+### wp theme auto-updates enable
+
+Enables the auto-updates for a theme.
+
+~~~
+wp theme auto-updates enable [<theme>...] [--all] [--disabled-only]
+~~~
+
+**OPTIONS**
+
+	[<theme>...]
+		One or more themes to enable auto-updates for.
+
+	[--all]
+		If set, auto-updates will be enabled for all themes.
+
+	[--disabled-only]
+		If set, filters list of themes to only include the ones that have
+		auto-updates disabled.
+
+**EXAMPLES**
+
+    # Enable the auto-updates for a theme
+    $ wp theme auto-updates enable twentysixteen
+    Theme auto-updates for 'twentysixteen' enabled.
+    Success: Enabled 1 of 1 theme auto-updates.
+
+
+
+### wp theme auto-updates status
+
+Shows the status of auto-updates for a theme.
+
+~~~
+wp theme auto-updates status [<theme>...] [--all] [--enabled-only] [--disabled-only] [--field=<field>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[<theme>...]
+		One or more themes to show the status of the auto-updates of.
+
+	[--all]
+		If set, the status of auto-updates for all themes will be shown.
+
+	[--enabled-only]
+		If set, filters list of themes to only include the ones that have
+		auto-updates enabled.
+
+	[--disabled-only]
+		If set, filters list of themes to only include the ones that have
+		auto-updates disabled.
+
+	[--field=<field>]
+		Only show the provided field.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		---
+
+**EXAMPLES**
+
+    # Get the status of theme auto-updates
+    $ wp theme auto-updates status twentysixteen
+    +---------------+----------+
+    | name          | status   |
+    +---------------+----------+
+    | twentysixteen | disabled |
+    +---------------+----------+
+
+    # Get the list of themes that have auto-updates enabled
+    $ wp theme auto-updates status --all --enabled-only --field=name
+    twentysixteen
+    twentyseventeen
 
 ## Installing
 
