@@ -298,6 +298,44 @@ Feature: Manage WordPress plugins
       """
     And the return code should be 0
 
+  @require-wp-5.2
+  Scenario: Network activate all plugins when some are already active on a single site
+    Given a WP multisite install
+    And I run `wp plugin delete --all`
+
+    When I run `wp plugin install debug-bar`
+    And I run `wp plugin install wordpress-importer --activate`
+    Then STDOUT should contain:
+      """
+      Plugin 'wordpress-importer' activated.
+      """
+
+    When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name                | status |
+      | debug-bar           | inactive |
+      | wordpress-importer  | active |
+
+    When I run `wp plugin activate --all --network`
+    Then STDOUT should contain:
+      """
+      Plugin 'debug-bar' network activated.
+      """
+    And STDOUT should contain:
+      """
+      Plugin 'wordpress-importer' network activated.
+      """
+    And STDOUT should contain:
+      """
+      Success: Network activated 2 of 2 plugins.
+      """
+
+    When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name                | status         |
+      | debug-bar           | active-network |
+      | wordpress-importer  | active-network |
+
   Scenario: List plugins
     Given a WP install
 
@@ -369,6 +407,30 @@ Feature: Manage WordPress plugins
       | akismet            | active   | akismet/akismet.php                       |
       | wordpress-importer | inactive | wordpress-importer/wordpress-importer.php |
 
+    When I run `wp plugin list --status=active --status=inactive --fields=name,status,file`
+    Then STDOUT should be a table containing rows:
+      | name               | status   | file                                      |
+      | akismet            | active   | akismet/akismet.php                       |
+      | wordpress-importer | inactive | wordpress-importer/wordpress-importer.php |
+
+  Scenario: Filter plugin list by multiple names
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --ignore-requirements`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --name=akismet,wordpress-importer --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name               | status   |
+      | akismet            | inactive |
+      | wordpress-importer | inactive |
+
+    When I run `wp plugin list --name=akismet --name=wordpress-importer --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name               | status   |
+      | akismet            | inactive |
+      | wordpress-importer | inactive |
+
   @require-wp-5.2
   Scenario: Flag `--skip-update-check` skips update check when running `wp plugin list`
     Given a WP install
@@ -390,8 +452,12 @@ Feature: Manage WordPress plugins
       Success: Transient deleted.
       """
 
-    When I run `wp plugin list --fields=name,status,update --status=inactive --skip-update-check`
-    Then STDOUT should be a table containing rows:
+    When I run `wp plugin list --fields=name,status,update --status=inactive --skip-update-check --debug=http`
+    Then STDERR should not contain:
+      """
+      HTTP POST request to https://api.wordpress.org/plugins/update-check
+      """
+    And STDOUT should be a table containing rows:
       | name               | status   | update   |
       | wordpress-importer | inactive | none     |
 
@@ -750,6 +816,31 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name    | title             | description                                    |
       | test-mu | Test mu-plugin    | Test mu-plugin description                     |
+
+  Scenario: Listing mu-plugins should include plugins from subfolders
+    Given a WP install
+    And a wp-content/mu-plugins/test-mu-root.php file:
+      """
+      <?php
+      // Plugin Name: Test MU Root
+      // Description: Test mu-plugin in root
+      // Version: 1.0.0
+      """
+    And a wp-content/mu-plugins/subfolder-plugin/subfolder-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Subfolder MU Plugin
+       * Description: Test mu-plugin in subfolder
+       * Version: 2.0.0
+       */
+      """
+
+    When I run `wp plugin list --status=must-use --fields=name,title,version`
+    Then STDOUT should be a table containing rows:
+      | name              | title                 | version |
+      | test-mu-root      | Test MU Root          | 1.0.0   |
+      | subfolder-plugin  | Subfolder MU Plugin   | 2.0.0   |
 
   @require-wp-5.5
   Scenario: Listing plugins should include name and auto_update

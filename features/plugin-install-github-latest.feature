@@ -1,5 +1,6 @@
 Feature: Install WordPress plugins from GitHub
 
+  @github-api
   Scenario: Verify that providing a plugin releases/latest GitHub URL will get the latest ZIP
     Given a WP install
     When I run `wp plugin install https://github.com/danielbachhuber/one-time-login/releases/latest`
