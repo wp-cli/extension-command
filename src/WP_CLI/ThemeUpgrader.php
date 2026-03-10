@@ -14,8 +14,6 @@ class ThemeUpgrader extends \Theme_Upgrader {
 	private $changed_files = [];
 
 	public function install_package( $args = array() ) {
-		parent::upgrade_strings(); // Needed for the 'remove_old' string.
-
 		$track_files = function ( $will_invalidate, $filepath ) {
 			$this->changed_files[] = $filepath;
 			return $will_invalidate;

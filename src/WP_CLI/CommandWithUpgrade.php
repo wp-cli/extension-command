@@ -557,7 +557,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		if ( ! is_array( $result ) ) {
 			// This should never happen, but bulk_upgrade() can return false.
-			WP_CLI::error( 'Plugin upgrader is unable to connect to the filesystem.' );
+			WP_CLI::error( 'Unable to connect to the filesystem.' );
 		}
 
 		/**
