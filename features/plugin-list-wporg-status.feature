@@ -78,7 +78,7 @@ Feature: Check the status of plugins on WordPress.org
         "error": "not_found"
       }
       """
-    And that HTTP requests to https://plugins.trac.wordpress.org/log/never-wporg?limit=1&mode=stop_on_copy&format=rss will respond with:
+    And that HTTP requests to https://plugins.trac.wordpress.org/log/never-wporg/?limit=1&mode=stop_on_copy&format=rss will respond with:
       """
       HTTP/1.1 404
       Content-Type: application/rss+xml;charset=utf-8

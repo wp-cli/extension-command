@@ -58,7 +58,7 @@ Feature: Manage WordPress themes and plugins
     Then STDOUT should not be empty
     And save STDOUT as {UPDATE_VERSION}
 
-    When I run `wp <type> list`
+    When I run `wp <type> list --fields=name,status,update,version,update_version,auto_update`
     Then STDOUT should be a table containing rows:
       | name   | status   | update    | version   | update_version   | auto_update |
       | <item> | inactive | available | <version> | {UPDATE_VERSION} | off         |
@@ -213,7 +213,7 @@ Feature: Manage WordPress themes and plugins
       | theme  | Theme     | moina                   | Moina                   | 1.1.2   | https://wordpress.org/themes/download/moina.1.1.2.zip                  | {CONTENT_DIR}/moina/style.css                                     |
       | plugin | Plugin    | category-checklist-tree | Category Checklist Tree | 1.2     | https://downloads.wordpress.org/plugin/category-checklist-tree.1.2.zip | {CONTENT_DIR}/category-checklist-tree/category-checklist-tree.php |
 
-  @require-wp-4.5
+  @require-wp-4.5 @github-api
   Scenario Outline: Caches certain GitHub URLs
     Given a WP install
     And I run `wp plugin delete --all`

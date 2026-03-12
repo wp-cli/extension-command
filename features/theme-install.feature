@@ -158,3 +158,56 @@ Feature: Install WordPress themes
       """
       Error: No themes installed.
       """
+
+  Scenario: Install theme using WordPress.org directory URL
+    When I run `wp theme install https://wordpress.org/themes/twentytwelve/`
+    Then STDOUT should contain:
+      """
+      Detected WordPress.org themes directory URL, using slug: twentytwelve
+      """
+    And the return code should be 0
+
+    When I run `wp theme list --name=twentytwelve --field=status`
+    Then STDOUT should be:
+      """
+      inactive
+      """
+
+  Scenario: Install and activate theme using WordPress.org directory URL
+    When I run `wp theme install https://wordpress.org/themes/twentyeleven/ --activate`
+    Then STDOUT should contain:
+      """
+      Detected WordPress.org themes directory URL, using slug: twentyeleven
+      """
+    And the return code should be 0
+
+    When I run `wp theme list --name=twentyeleven --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """
+
+  Scenario: Install theme from a zip file with a custom --slug
+    Given a WP install
+
+    When I run `wp theme install https://downloads.wordpress.org/theme/twentytwelve.zip --slug=my-custom-theme`
+    Then STDOUT should contain:
+      """
+      Renamed 'twentytwelve' to 'my-custom-theme'.
+      """
+    And STDOUT should contain:
+      """
+      Theme installed successfully.
+      """
+    And the wp-content/themes/my-custom-theme directory should exist
+    And the return code should be 0
+
+  Scenario: Error when --slug is used with multiple themes
+    Given a WP install
+
+    When I try `wp theme install twentytwelve twentyeleven --slug=my-theme`
+    Then STDERR should contain:
+      """
+      Error: The --slug option can only be used when installing a single item.
+      """
+    And the return code should be 1

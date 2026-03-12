@@ -63,6 +63,7 @@ class Theme_Command extends CommandWithUpgrade {
 		'version',
 		'update_version',
 		'auto_update',
+		'type',
 	];
 
 	public function __construct() {
@@ -106,6 +107,101 @@ class Theme_Command extends CommandWithUpgrade {
 		}
 
 		parent::status( $args );
+	}
+
+	/**
+	 * Checks for theme updates without performing them.
+	 *
+	 * Lists the available theme updates. Similar to `wp core check-update`.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<theme>...]
+	 * : One or more themes to check for updates.
+	 *
+	 * [--all]
+	 * : If set, all themes will be checked for updates.
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each update.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to name,status,version,update_version.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check for theme updates
+	 *     $ wp theme check-update
+	 *     +------------+----------+---------+----------------+
+	 *     | name       | status   | version | update_version |
+	 *     +------------+----------+---------+----------------+
+	 *     | twentytwelve | inactive | 2.0     | 2.1            |
+	 *     +------------+----------+---------+----------------+
+	 *
+	 *     # List themes with available updates in JSON format
+	 *     $ wp theme check-update --format=json
+	 *     [{"name":"twentytwelve","status":"inactive","version":"2.0","update_version":"2.1"}]
+	 *
+	 * @subcommand check-update
+	 */
+	public function check_update( $args, $assoc_args ) {
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		$args = $this->check_optional_args_and_all( $args, $all );
+		if ( ! $args ) {
+			return;
+		}
+
+		// Force WordPress to check for updates.
+		call_user_func( $this->upgrade_refresh );
+
+		if ( $all ) {
+			// Get all themes
+			$items = $this->get_item_list();
+		} else {
+			// Get specific themes and their update info
+			$themes    = $this->fetcher->get_many( $args );
+			$all_items = $this->get_item_list();
+			$items     = [];
+			foreach ( $themes as $theme ) {
+				$stylesheet = $theme->get_stylesheet();
+				if ( isset( $all_items[ $stylesheet ] ) ) {
+					$items[ $stylesheet ] = $all_items[ $stylesheet ];
+				}
+			}
+		}
+
+		// Filter to only themes with available updates
+		$items_with_updates = array_filter(
+			$items,
+			function ( $item ) {
+				return 'available' === $item['update'];
+			}
+		);
+
+		if ( empty( $items_with_updates ) ) {
+			WP_CLI::success( 'All themes are up to date.' );
+			return;
+		}
+
+		// Set default fields for check-update output
+		if ( ! isset( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = 'name,status,version,update_version';
+		}
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_items( array_values( $items_with_updates ) );
 	}
 
 	/**
@@ -496,7 +592,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * ## OPTIONS
 	 *
 	 * <theme|zip|url>...
-	 * : One or more themes to install. Accepts a theme slug, the path to a local zip file, or a URL to a remote zip file.
+	 * : One or more themes to install. Accepts a theme slug, the path to a local zip file, a URL to a remote zip file, or a URL to a WordPress.org theme directory.
 	 *
 	 * [--version=<version>]
 	 * : If set, get that particular version from wordpress.org, instead of the
@@ -516,6 +612,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
+	 * [--slug=<slug>]
+	 * : Use this as the target directory name when installing from a zip file. Cannot be used when installing multiple themes.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Install the latest version from wordpress.org and activate
@@ -534,6 +633,16 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 *     # Install from a remote zip file
 	 *     $ wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+	 *
+	 *     # Install from a WordPress.org theme directory URL
+	 *     $ wp theme install https://wordpress.org/themes/twentysixteen/
+	 *     Detected WordPress.org themes directory URL, using slug: twentysixteen
+	 *     Installing Twenty Sixteen (1.2)
+	 *     Downloading install package from http://downloads.wordpress.org/theme/twentysixteen.1.2.zip...
+	 *     Unpacking the package...
+	 *     Installing the theme...
+	 *     Theme installed successfully.
+	 *     Success: Installed 1 of 1 themes.
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( count( $args ) > 1 && Utils\get_flag_value( $assoc_args, 'activate', false ) ) {
@@ -587,6 +696,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 *     +---------+----------------+
 	 */
 	public function get( $args, $assoc_args ) {
+		/**
+		 * @var \WP_Theme $theme
+		 */
 		$theme = $this->fetcher->get_check( $args[0] );
 
 		$errors = $theme->errors();
@@ -612,14 +724,22 @@ class Theme_Command extends CommandWithUpgrade {
 			'tags',
 			'theme_root',
 			'theme_root_uri',
+			'type',
 		];
 		$theme_obj  = new stdClass();
 		foreach ( $theme_vars as $var ) {
+			// @phpstan-ignore-next-line
 			$theme_obj->$var = $theme->$var;
 		}
 
 		$theme_obj->status      = $this->get_status( $theme );
 		$theme_obj->description = wordwrap( $theme_obj->description );
+
+		// Determine theme type (block or classic). is_block_theme() was added in WP 5.9.
+		$theme_obj->type = 'classic';
+		if ( method_exists( $theme, 'is_block_theme' ) && $theme->is_block_theme() ) {
+			$theme_obj->type = 'block';
+		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = $theme_vars;
@@ -668,6 +788,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 *
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+	 *
+	 * [--auto-update-indicated]
+	 * : Only update themes where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -718,6 +841,11 @@ class Theme_Command extends CommandWithUpgrade {
 	 */
 	public function update( $args, $assoc_args ) {
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		// Handle --auto-update-indicated flag if present.
+		if ( $this->handle_auto_update_indicated( $args, $assoc_args ) ) {
+			return;
+		}
 
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {
@@ -893,7 +1021,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 *   - yaml
 	 * ---
 	 *
-	 * [--status=<status>]
+	 * [--status=<status>...]
 	 * : Filter the output by theme status.
 	 * ---
 	 * options:
@@ -915,6 +1043,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * * version
 	 * * update_version
 	 * * auto_update
+	 * * type
 	 *
 	 * These fields are optionally available:
 	 *
@@ -922,14 +1051,15 @@ class Theme_Command extends CommandWithUpgrade {
 	 * * update_id
 	 * * title
 	 * * description
+	 * * auto_update_indicated
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # List inactive themes.
 	 *     $ wp theme list --status=inactive --format=csv
-	 *     name,status,update,version,update_version,auto_update
-	 *     twentyfourteen,inactive,none,3.8,,off
-	 *     twentysixteen,inactive,available,3.0,3.1,off
+	 *     name,status,update,version,update_version,auto_update,type
+	 *     twentyfourteen,inactive,none,3.8,,off,classic
+	 *     twentysixteen,inactive,available,3.0,3.1,off,classic
 	 *
 	 * @subcommand list
 	 */

@@ -58,7 +58,7 @@ trait ParseThemeNameInput {
 
 		if ( is_multisite() ) {
 			/**
-			 * @var array<string, array{enabled: string}>} $site_enabled
+			 * @var array<string, array{enabled: string}> $site_enabled
 			 */
 			$site_enabled = get_option( 'allowedthemes' );
 			if ( empty( $site_enabled ) ) {
@@ -66,7 +66,7 @@ trait ParseThemeNameInput {
 			}
 
 			/**
-			 * @var array<string, array{enabled: string}>} $network_enabled
+			 * @var array<string, array{enabled: string}> $network_enabled
 			 */
 			$network_enabled = get_site_option( 'allowedthemes' );
 			if ( empty( $network_enabled ) ) {
@@ -90,8 +90,9 @@ trait ParseThemeNameInput {
 		}
 
 		foreach ( wp_get_themes( [ 'errors' => null ] ) as $key => $theme ) {
-			$stylesheet  = $theme->get_stylesheet();
-			$update_info = ( isset( $all_update_info->response[ $stylesheet ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
+			$stylesheet            = $theme->get_stylesheet();
+			$update_info           = ( isset( $all_update_info->response[ $stylesheet ] ) && null !== $all_update_info->response[ $theme->get_stylesheet() ] ) ? (array) $all_update_info->response[ $theme->get_stylesheet() ] : null;
+			$auto_update_indicated = isset( $update_info ) && isset( $update_info['autoupdate'] ) ? (bool) $update_info['autoupdate'] : false;
 
 			// Unlike plugin update responses, the wordpress.org API does not seem to check and filter themes that don't meet
 			// WordPress version requirements into a separate no_updates array
@@ -131,6 +132,12 @@ trait ParseThemeNameInput {
 				$requires_php = ! empty( $theme->get( 'RequiresPHP' ) ) ? $theme->get( 'RequiresPHP' ) : '';
 			}
 
+			// Determine theme type (block or classic). is_block_theme() was added in WP 5.9.
+			$theme_type = 'classic';
+			if ( method_exists( $theme, 'is_block_theme' ) && $theme->is_block_theme() ) {
+				$theme_type = 'block';
+			}
+
 			$items[ $stylesheet ] = [
 				'name'                      => $key,
 				'status'                    => $this->get_status( $theme ),
@@ -143,9 +150,11 @@ trait ParseThemeNameInput {
 				'description'               => wordwrap( $theme->get( 'Description' ) ),
 				'author'                    => $theme->get( 'Author' ),
 				'auto_update'               => in_array( $stylesheet, $auto_updates, true ),
+				'auto_update_indicated'     => $auto_update_indicated,
 				'requires'                  => $requires,
 				'requires_php'              => $requires_php,
 				'update_unavailable_reason' => isset( $update_unavailable_reason ) ? $update_unavailable_reason : '',
+				'type'                      => $theme_type,
 			];
 
 			// Compare version and update information in theme list.

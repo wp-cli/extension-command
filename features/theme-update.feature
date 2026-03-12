@@ -3,12 +3,9 @@ Feature: Update WordPress themes
   Scenario: Updating a theme with no version in the WordPress.org directory shouldn't delete the original theme
     Given a WP install
 
-    When I run `wp scaffold underscores wpclitesttheme`
-    Then STDOUT should contain:
-      """
-      Success: Created theme
-      """
-    And the wp-content/themes/wpclitesttheme directory should exist
+    When I run `wp theme install twentytwelve --force`
+    And I run `wp scaffold child-theme wpclitesttheme --parent_theme=twentytwelve`
+    Then the wp-content/themes/wpclitesttheme directory should exist
 
     When I try `wp theme update wpclitesttheme --version=100.0.0`
     Then STDERR should contain:
@@ -156,4 +153,107 @@ Feature: Update WordPress themes
     Then STDOUT should be:
       """
       1.1.1
+      """
+
+  # Tests for --auto-update-indicated feature
+  # Note: These tests verify the flag handling and error cases.
+  # The actual update behavior when autoupdate is true from the server
+  # cannot be easily tested as it requires mocking WordPress.org API responses.
+  # The update functionality itself is handled by the existing update_many method.
+
+  Scenario: Show auto_update_indicated field in theme list
+    Given a WP install
+
+    When I run `wp theme install twentytwelve --version=3.0 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp theme list --fields=name,version,update,auto_update_indicated`
+    Then STDOUT should be a table containing rows:
+      | name         | version | update    | auto_update_indicated |
+      | twentytwelve | 3.0     | available | no                    |
+
+  Scenario: Using --auto-update-indicated flag when no themes have auto-update indicated
+    Given a WP install
+
+    When I run `wp theme install twentytwelve --version=3.0 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update --auto-update-indicated`
+    Then STDOUT should be:
+      """
+      Success: No themes with server-indicated automatic updates available.
+      """
+
+  Scenario: Error when using --version with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp theme update --auto-update-indicated --version=1.0.0`
+    Then STDERR should be:
+      """
+      Error: Cannot use --version with --auto-update-indicated. The version is determined by the server.
+      """
+    And the return code should be 1
+
+  Scenario: Error when using --minor with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp theme update --auto-update-indicated --minor`
+    Then STDERR should be:
+      """
+      Error: Cannot use --minor or --patch with --auto-update-indicated. The version is determined by the server.
+      """
+    And the return code should be 1
+
+  Scenario: Error when using --patch with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp theme update --auto-update-indicated --patch`
+    Then STDERR should be:
+      """
+      Error: Cannot use --minor or --patch with --auto-update-indicated. The version is determined by the server.
+      """
+    And the return code should be 1
+
+  Scenario: Error when specifying theme names with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp theme update twentytwelve --auto-update-indicated`
+    Then STDERR should be:
+      """
+      Error: Cannot specify theme names with --auto-update-indicated. This flag updates all themes with server-indicated automatic updates.
+      """
+    And the return code should be 1
+
+  Scenario: Preview updates with --auto-update-indicated and --dry-run
+    Given a WP install
+
+    When I run `wp theme install twentytwelve --version=3.0 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update --auto-update-indicated --dry-run`
+    Then STDOUT should be:
+      """
+      Success: No themes with server-indicated automatic updates available.
+      """
+
+  @require-wp-4.5
+  Scenario: Updating all themes should show the name of each theme as it is updated
+    Given a WP install
+    And I run `wp theme delete --all --force`
+
+    When I run `wp theme install moina --version=1.0.2`
+    Then STDOUT should not be empty
+
+    When I run `wp theme install twentytwelve --version=1.0`
+    Then STDOUT should not be empty
+
+    When I try `wp theme update --all`
+    Then STDOUT should contain:
+      """
+      Updating Moina...
+      """
+
+    And STDOUT should contain:
+      """
+      Success: Updated 2 of 2 themes.
       """
