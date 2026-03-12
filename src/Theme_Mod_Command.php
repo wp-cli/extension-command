@@ -140,7 +140,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 						$mod_list
 					),
 					function ( $item ) {
-						return ! empty( $item['value'] );
+						return $item['value'] !== '' && $item['value'] !== null;
 					}
 				);
 				break;
