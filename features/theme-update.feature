@@ -268,7 +268,7 @@ Feature: Update WordPress themes
     And I try `wp theme update twentytwelve`
     Then STDERR should contain:
       """
-      Warning: twentytwelve: Skipped update because a VCS checkout was detected.
+      Warning: twentytwelve: Skipped update because a VCS checkout was detected. Use --include-vcs to override.
       """
     And STDERR should contain:
       """
