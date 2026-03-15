@@ -840,6 +840,9 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * [--auto-update-indicated]
 	 * : Only update plugins where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
 	 *
+	 * [--include-vcs]
+	 * : Include plugins that are version-controlled with a VCS (e.g. git, svn, hg). Skipped by default.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp plugin update bbpress --version=dev

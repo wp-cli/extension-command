@@ -377,3 +377,36 @@ Feature: Update WordPress plugins
       """
       Success: Updated 2 of 2 plugins.
       """
+
+  @require-wp-5.2
+  Scenario: Skip plugin update when plugin directory is a VCS checkout
+    Given a WP install
+    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And I run `wp plugin path wordpress-importer --dir`
+    And save STDOUT as {PLUGIN_DIR}
+
+    When I run `mkdir {PLUGIN_DIR}/.git`
+    And I try `wp plugin update wordpress-importer`
+    Then STDERR should contain:
+      """
+      Warning: wordpress-importer: Skipped update because a VCS checkout was detected.
+      """
+    And STDERR should contain:
+      """
+      Error: No plugins updated.
+      """
+    And the return code should be 1
+
+  @require-wp-5.2
+  Scenario: Update plugin in VCS checkout when --include-vcs is set
+    Given a WP install
+    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And I run `wp plugin path wordpress-importer --dir`
+    And save STDOUT as {PLUGIN_DIR}
+
+    When I run `mkdir {PLUGIN_DIR}/.git`
+    And I run `wp plugin update wordpress-importer --include-vcs`
+    Then STDOUT should contain:
+      """
+      Success: Updated 1 of 1 plugins.
+      """
