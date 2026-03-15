@@ -389,7 +389,7 @@ Feature: Update WordPress plugins
     And I try `wp plugin update wordpress-importer`
     Then STDERR should contain:
       """
-      Warning: wordpress-importer: Skipped update because a VCS checkout was detected.
+      Warning: wordpress-importer: Skipped update because a VCS checkout was detected. Use --include-vcs to override.
       """
     And STDERR should contain:
       """
