@@ -792,6 +792,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 * [--auto-update-indicated]
 	 * : Only update themes where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
 	 *
+	 * [--include-vcs]
+	 * : Include themes that are version-controlled with a VCS (e.g. git, svn, hg). Skipped by default.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Update multiple themes

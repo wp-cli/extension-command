@@ -744,6 +744,30 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		}
 
+		// Skip VCS-controlled items unless --include-vcs is set.
+		if ( ! Utils\get_flag_value( $assoc_args, 'include-vcs', false ) && in_array( $this->item_type, [ 'plugin', 'theme' ], true ) ) {
+			if ( ! class_exists( 'WP_Automatic_Updater' ) ) {
+				if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-automatic-updater.php' ) ) {
+					require_once ABSPATH . 'wp-admin/includes/class-wp-automatic-updater.php';
+				} else {
+					require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+				}
+			}
+			$automatic_updater = new \WP_Automatic_Updater();
+			foreach ( $items_to_update as $item_key => $item_info ) {
+				if ( 'plugin' === $this->item_type ) {
+					$item_dir = WP_PLUGIN_DIR . '/' . dirname( $item_key );
+				} else {
+					$item_dir = get_theme_root( $item_key ) . '/' . $item_key;
+				}
+				if ( $automatic_updater->is_vcs_checkout( $item_dir ) ) {
+					WP_CLI::warning( "{$item_info['name']}: Skipped update because a VCS checkout was detected. Use --include-vcs to override." );
+					++$skipped;
+					unset( $items_to_update[ $item_key ] );
+				}
+			}
+		}
+
 		if ( Utils\get_flag_value( $assoc_args, 'dry-run' ) ) {
 			if ( empty( $items_to_update ) ) {
 				WP_CLI::log( "No {$this->item_type} updates available." );
