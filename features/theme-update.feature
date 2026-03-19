@@ -257,3 +257,34 @@ Feature: Update WordPress themes
       """
       Success: Updated 2 of 2 themes.
       """
+
+  Scenario: Skip theme update when theme directory is a VCS checkout
+    Given a WP install
+    And I run `wp theme install twentytwelve --version=3.0 --force`
+    And I run `wp theme path twentytwelve --dir`
+    And save STDOUT as {THEME_DIR}
+
+    When I run `mkdir {THEME_DIR}/.git`
+    And I try `wp theme update twentytwelve`
+    Then STDERR should contain:
+      """
+      Warning: twentytwelve: Skipped update because a VCS checkout was detected. Use --include-vcs to override.
+      """
+    And STDERR should contain:
+      """
+      Error: No themes updated.
+      """
+    And the return code should be 1
+
+  Scenario: Update theme in VCS checkout when --include-vcs is set
+    Given a WP install
+    And I run `wp theme install twentytwelve --version=3.0 --force`
+    And I run `wp theme path twentytwelve --dir`
+    And save STDOUT as {THEME_DIR}
+
+    When I run `mkdir {THEME_DIR}/.git`
+    And I run `wp theme update twentytwelve --include-vcs`
+    Then STDOUT should contain:
+      """
+      Success: Updated 1 of 1 themes.
+      """

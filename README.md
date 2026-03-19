@@ -858,7 +858,7 @@ wp plugin uninstall [<plugin>...] [--deactivate] [--skip-delete] [--all] [--excl
 Updates one or more plugins.
 
 ~~~
-wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure] [--auto-update-indicated]
+wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure] [--auto-update-indicated] [--include-vcs]
 ~~~
 
 **Alias:** `upgrade`
@@ -902,6 +902,9 @@ wp plugin update [<plugin>...] [--all] [--exclude=<name>] [--minor] [--patch] [-
 
 	[--auto-update-indicated]
 		Only update plugins where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
+
+	[--include-vcs]
+		Include plugins that are version-controlled with a VCS (e.g. git, svn, hg). Skipped by default.
 
 **EXAMPLES**
 
@@ -1813,7 +1816,7 @@ Lists the available theme updates. Similar to `wp core check-update`.
 Updates one or more themes.
 
 ~~~
-wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure] [--auto-update-indicated]
+wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patch] [--format=<format>] [--version=<version>] [--dry-run] [--insecure] [--auto-update-indicated] [--include-vcs]
 ~~~
 
 **Alias:** `upgrade`
@@ -1857,6 +1860,9 @@ wp theme update [<theme>...] [--all] [--exclude=<theme-names>] [--minor] [--patc
 
 	[--auto-update-indicated]
 		Only update themes where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
+
+	[--include-vcs]
+		Include themes that are version-controlled with a VCS (e.g. git, svn, hg). Skipped by default.
 
 **EXAMPLES**
 
