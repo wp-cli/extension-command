@@ -1,6 +1,6 @@
 <?php
 
-use \WP_CLI\Utils;
+use WP_CLI\Utils;
 
 /**
  * Sets, gets, and removes theme mods.
@@ -140,7 +140,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 						$mod_list
 					),
 					function ( $item ) {
-						return $item['value'] !== '' && $item['value'] !== null;
+						return '' !== $item['value'] && null !== $item['value'];
 					}
 				);
 				break;
