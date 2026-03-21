@@ -3,9 +3,8 @@
 use WP_CLI\CommandWithUpgrade;
 use WP_CLI\ParsePluginNameInput;
 use WP_CLI\Utils;
+use WP_CLI\Path;
 use WP_CLI\WpOrgApi;
-
-use function WP_CLI\Utils\normalize_path;
 
 /**
  * Manages plugins, including installs, activations, and updates.
@@ -1003,7 +1002,7 @@ class Plugin_Command extends CommandWithUpgrade {
 			];
 
 			if ( $this->check_headers['tested_up_to'] ) {
-				$plugin_readme = normalize_path( dirname( WP_PLUGIN_DIR . '/' . $file ) . '/readme.txt' );
+				$plugin_readme = Path::normalize( dirname( WP_PLUGIN_DIR . '/' . $file ) . '/readme.txt' );
 
 				if ( file_exists( $plugin_readme ) && is_readable( $plugin_readme ) ) {
 					$readme_obj = new SplFileObject( $plugin_readme );
@@ -2026,7 +2025,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * Gets the template path based on installation type.
 	 */
 	private static function get_template_path( $template ) {
-		$command_root  = Utils\phar_safe_path( dirname( __DIR__ ) );
+		$command_root  = Path::phar_safe( dirname( __DIR__ ) );
 		$template_path = "{$command_root}/templates/{$template}";
 
 		if ( ! file_exists( $template_path ) ) {
@@ -2044,7 +2043,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 */
 	private function get_details( $file ) {
 		$plugin_folder = get_plugins( '/' . plugin_basename( dirname( $file ) ) );
-		$plugin_file   = Utils\basename( $file );
+		$plugin_file   = Path::basename( $file );
 
 		return $plugin_folder[ $plugin_file ];
 	}

@@ -9,6 +9,7 @@ use WP_CLI;
 use WP_CLI\Fetchers;
 use WP_CLI\Loggers;
 use WP_CLI\Utils;
+use WP_CLI\Path;
 use WP_Error;
 
 /**
@@ -284,7 +285,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						 */
 						global $wp_filesystem;
 
-						$source_dir = Utils\basename( $source ); // `$source` is trailing-slashed path to the unzipped archive directory.
+						$source_dir = Path::basename( $source ); // `$source` is trailing-slashed path to the unzipped archive directory.
 						if ( $source_dir === $custom_slug ) {
 							return $source;
 						}
@@ -314,7 +315,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						 * @var string $path
 						 */
 						$path     = Utils\parse_url( $slug, PHP_URL_PATH );
-						$slug_dir = Utils\basename( $path, '.zip' );
+						$slug_dir = Path::basename( $path, '.zip' );
 
 						// Don't use the zip name if archive attached to release, as name likely to contain version tag/branch.
 						if ( preg_match( '#github\.com/[^/]+/([^/]+)/archive/#', $slug, $matches ) ) {
@@ -322,7 +323,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 							$slug_dir = $matches[1];
 						}
 
-						$source_dir = Utils\basename( $source ); // `$source` is trailing-slashed path to the unzipped archive directory, so basename returns the unslashed directory.
+						$source_dir = Path::basename( $source ); // `$source` is trailing-slashed path to the unzipped archive directory, so basename returns the unslashed directory.
 						if ( $source_dir === $slug_dir ) {
 							return $source;
 						}
@@ -430,10 +431,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// Extract and validate filename before downloading.
 		$url_path = (string) Utils\parse_url( $url, PHP_URL_PATH );
-		$filename = Utils\basename( $url_path );
+		$filename = Path::basename( $url_path );
 
 		// Validate the filename doesn't contain directory separators or relative path components.
-		// Note: Utils\basename() already strips directory components (including ".."), so this check
+		// Note: Path::basename() already strips directory components (including ".."), so this check
 		// is primarily a defense-in-depth safeguard in case its behavior changes or is bypassed.
 		if ( strpos( $filename, '/' ) !== false || strpos( $filename, '\\' ) !== false || strpos( $filename, '..' ) !== false ) {
 			return new WP_Error( 'invalid_filename', 'The filename contains invalid path components.' );
