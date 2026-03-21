@@ -635,33 +635,33 @@ search query.
 	[--fields=<fields>]
 		Ask for specific fields from the API. Defaults to name,slug,author_profile,rating. Acceptable values:
 
-    **name**: Plugin Name
-    **slug**: Plugin Slug
-    **version**: Current Version Number
-    **author**: Plugin Author
-    **author_profile**: Plugin Author Profile
-    **contributors**: Plugin Contributors
-    **requires**: Plugin Minimum Requirements
-    **tested**: Plugin Tested Up To
-    **compatibility**: Plugin Compatible With
-    **rating**: Plugin Rating in Percent and Total Number
-    **ratings**: Plugin Ratings for each star (1-5)
-    **num_ratings**: Number of Plugin Ratings
-    **homepage**: Plugin Author's Homepage
-    **description**: Plugin's Description
-    **short_description**: Plugin's Short Description
-    **sections**: Plugin Readme Sections: description, installation, FAQ, screenshots, other notes, and changelog
-    **downloaded**: Plugin Download Count
-    **last_updated**: Plugin's Last Update
-    **added**: Plugin's Date Added to wordpress.org Repository
-    **tags**: Plugin's Tags
-    **versions**: Plugin's Available Versions with D/L Link
-    **donate_link**: Plugin's Donation Link
-    **banners**: Plugin's Banner Image Link
-    **icons**: Plugin's Icon Image Link
-    **active_installs**: Plugin's Number of Active Installs
-    **contributors**: Plugin's List of Contributors
-    **url**: Plugin's URL on wordpress.org
+		**name**: Plugin Name
+		**slug**: Plugin Slug
+		**version**: Current Version Number
+		**author**: Plugin Author
+		**author_profile**: Plugin Author Profile
+		**contributors**: Plugin Contributors
+		**requires**: Plugin Minimum Requirements
+		**tested**: Plugin Tested Up To
+		**compatibility**: Plugin Compatible With
+		**rating**: Plugin Rating in Percent and Total Number
+		**ratings**: Plugin Ratings for each star (1-5)
+		**num_ratings**: Number of Plugin Ratings
+		**homepage**: Plugin Author's Homepage
+		**description**: Plugin's Description
+		**short_description**: Plugin's Short Description
+		**sections**: Plugin Readme Sections: description, installation, FAQ, screenshots, other notes, and changelog
+		**downloaded**: Plugin Download Count
+		**last_updated**: Plugin's Last Update
+		**added**: Plugin's Date Added to wordpress.org Repository
+		**tags**: Plugin's Tags
+		**versions**: Plugin's Available Versions with D/L Link
+		**donate_link**: Plugin's Donation Link
+		**banners**: Plugin's Banner Image Link
+		**icons**: Plugin's Icon Image Link
+		**active_installs**: Plugin's Number of Active Installs
+		**contributors**: Plugin's List of Contributors
+		**url**: Plugin's URL on wordpress.org
 
 	[--format=<format>]
 		Render output in a particular format.
@@ -1695,17 +1695,17 @@ search query.
 	[--fields=<fields>]
 		Ask for specific fields from the API. Defaults to name,slug,author,rating. Acceptable values:
 
-    **name**: Theme Name
-    **slug**: Theme Slug
-    **version**: Current Version Number
-    **author**: Theme Author
-    **preview_url**: Theme Preview URL
-    **screenshot_url**: Theme Screenshot URL
-    **rating**: Theme Rating
-    **num_ratings**: Number of Theme Ratings
-    **homepage**: Theme Author's Homepage
-    **description**: Theme Description
-    **url**: Theme's URL on wordpress.org
+		**name**: Theme Name
+		**slug**: Theme Slug
+		**version**: Current Version Number
+		**author**: Theme Author
+		**preview_url**: Theme Preview URL
+		**screenshot_url**: Theme Screenshot URL
+		**rating**: Theme Rating
+		**num_ratings**: Number of Theme Ratings
+		**homepage**: Theme Author's Homepage
+		**description**: Theme Description
+		**url**: Theme's URL on wordpress.org
 
 	[--format=<format>]
 		Render output in a particular format.
@@ -2118,6 +2118,10 @@ Once you’ve done a bit of searching and discovered there isn’t an open or fi
 Want to contribute a new feature? Please first [open a new issue](https://github.com/wp-cli/extension-command/issues/new) to discuss whether the feature is a good fit for the project.
 
 Once you've decided to commit the time to seeing your pull request through, [please follow our guidelines for creating a pull request](https://make.wordpress.org/cli/handbook/pull-requests/) to make sure it's a pleasant experience. See "[Setting up](https://make.wordpress.org/cli/handbook/pull-requests/#setting-up)" for details specific to working on this package locally.
+
+### License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Support
 
