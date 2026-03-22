@@ -56,9 +56,14 @@
             "plugin path",
             "plugin search",
             "plugin status",
+            "plugin check-update",
             "plugin toggle",
             "plugin uninstall",
             "plugin update",
+            "plugin auto-updates",
+            "plugin auto-updates disable",
+            "plugin auto-updates enable",
+            "plugin auto-updates status",
             "theme",
             "theme activate",
             "theme cache",
@@ -79,8 +84,13 @@
             "theme path",
             "theme search",
             "theme status",
+            "theme check-update",
             "theme update",
-            "theme mod list"
+            "theme mod list",
+            "theme auto-updates",
+            "theme auto-updates disable",
+            "theme auto-updates enable",
+            "theme auto-updates status"
         ]
     },
     "autoload": {

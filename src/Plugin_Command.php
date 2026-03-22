@@ -3,9 +3,8 @@
 use WP_CLI\CommandWithUpgrade;
 use WP_CLI\ParsePluginNameInput;
 use WP_CLI\Utils;
+use WP_CLI\Path;
 use WP_CLI\WpOrgApi;
-
-use function WP_CLI\Utils\normalize_path;
 
 /**
  * Manages plugins, including installs, activations, and updates.
@@ -113,6 +112,100 @@ class Plugin_Command extends CommandWithUpgrade {
 	 */
 	public function status( $args ) {
 		parent::status( $args );
+	}
+
+	/**
+	 * Checks for plugin updates without performing them.
+	 *
+	 * Lists the available plugin updates. Similar to `wp core check-update`.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<plugin>...]
+	 * : One or more plugins to check for updates.
+	 *
+	 * [--all]
+	 * : If set, all plugins will be checked for updates.
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each update.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to name,status,version,update_version.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check for plugin updates
+	 *     $ wp plugin check-update
+	 *     +-----------+--------+---------+----------------+
+	 *     | name      | status | version | update_version |
+	 *     +-----------+--------+---------+----------------+
+	 *     | akismet   | active | 4.1.0   | 4.1.1          |
+	 *     +-----------+--------+---------+----------------+
+	 *
+	 *     # List plugins with available updates in JSON format
+	 *     $ wp plugin check-update --format=json
+	 *     [{"name":"akismet","status":"active","version":"4.1.0","update_version":"4.1.1"}]
+	 *
+	 * @subcommand check-update
+	 */
+	public function check_update( $args, $assoc_args ) {
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		$args = $this->check_optional_args_and_all( $args, $all );
+		if ( ! $args ) {
+			return;
+		}
+
+		// Force WordPress to check for updates.
+		call_user_func( $this->upgrade_refresh );
+
+		if ( $all ) {
+			// Get all plugins
+			$items = $this->get_item_list();
+		} else {
+			// Get specific plugins and their update info
+			$plugins   = $this->fetcher->get_many( $args );
+			$all_items = $this->get_item_list();
+			$items     = [];
+			foreach ( $plugins as $plugin ) {
+				if ( isset( $all_items[ $plugin->file ] ) ) {
+					$items[ $plugin->file ] = $all_items[ $plugin->file ];
+				}
+			}
+		}
+
+		// Filter to only plugins with available updates
+		$items_with_updates = array_filter(
+			$items,
+			function ( $item ) {
+				return 'available' === $item['update'];
+			}
+		);
+
+		if ( empty( $items_with_updates ) ) {
+			WP_CLI::success( 'All plugins are up to date.' );
+			return;
+		}
+
+		// Set default fields for check-update output
+		if ( ! isset( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = 'name,status,version,update_version';
+		}
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_items( array_values( $items_with_updates ) );
 	}
 
 	/**
@@ -239,7 +332,12 @@ class Plugin_Command extends CommandWithUpgrade {
 	protected function get_all_items() {
 		$items = $this->get_item_list();
 
-		foreach ( get_mu_plugins() as $file => $mu_plugin ) {
+		// Get all mu-plugins including those in subfolders.
+		$mu_plugins_from_root = get_mu_plugins();
+		$all_mu_plugins       = get_plugins( '/../' . basename( WPMU_PLUGIN_DIR ) );
+		$mu_plugins           = array_replace( $all_mu_plugins, $mu_plugins_from_root );
+
+		foreach ( $mu_plugins as $file => $mu_plugin ) {
 			$mu_version = '';
 			if ( ! empty( $mu_plugin['Version'] ) ) {
 				$mu_version = $mu_plugin['Version'];
@@ -383,7 +481,9 @@ class Plugin_Command extends CommandWithUpgrade {
 		}
 		foreach ( $plugins as $plugin ) {
 			$status = $this->get_status( $plugin->file );
-			if ( $all && ! $force && in_array( $status, [ 'active', 'active-network' ], true ) ) {
+			// When using --all flag, skip plugins that are already in the target state.
+			$skip_statuses = $network_wide ? array( 'active-network' ) : array( 'active', 'active-network' );
+			if ( $all && ! $force && in_array( $status, $skip_statuses, true ) ) {
 				continue;
 			}
 			// Network-active is the highest level of activation status.
@@ -391,7 +491,8 @@ class Plugin_Command extends CommandWithUpgrade {
 				// If force flag is set, deactivate and reactivate to run activation hooks.
 				if ( $force ) {
 					deactivate_plugins( $plugin->file, false, true );
-				} else {
+				} elseif ( ! $this->chained_command ) {
+					// Only skip if not part of a chained command.
 					WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
 					continue;
 				}
@@ -401,7 +502,8 @@ class Plugin_Command extends CommandWithUpgrade {
 				// If force flag is set, deactivate and reactivate to run activation hooks.
 				if ( $force ) {
 					deactivate_plugins( $plugin->file, false, false );
-				} else {
+				} elseif ( ! $this->chained_command ) {
+					// Only skip if not part of a chained command.
 					WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
 					continue;
 				}
@@ -415,22 +517,30 @@ class Plugin_Command extends CommandWithUpgrade {
 			$result = activate_plugin( $plugin->file, '', $network_wide );
 
 			if ( is_wp_error( $result ) ) {
-				$message = $result->get_error_message();
-				$message = (string) preg_replace( '/<a\s[^>]+>.*<\/a>/im', '', $message );
-				$message = wp_strip_all_tags( $message );
-				$message = str_replace( 'Error: ', '', $message );
-				WP_CLI::warning( "Failed to activate plugin. {$message}" );
-				// If the error is due to unexpected output, display it for debugging
-				if ( 'unexpected_output' === $result->get_error_code() ) {
-					/**
-					 * @var string $output
-					 */
-					$output = $result->get_error_data();
-					if ( ! empty( $output ) ) {
-						WP_CLI::debug( "Unexpected output: {$output}", 'plugin' );
+				// When called from a chained command, treat 'already_active' as success.
+				// This handles race conditions where WordPress may have preserved activation
+				// status during the install process.
+				if ( $this->chained_command && 'plugin_already_active' === $result->get_error_code() ) {
+					$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
+					++$successes;
+				} else {
+					$message = $result->get_error_message();
+					$message = (string) preg_replace( '/<a\s[^>]+>.*<\/a>/im', '', $message );
+					$message = wp_strip_all_tags( $message );
+					$message = str_replace( 'Error: ', '', $message );
+					WP_CLI::warning( "Failed to activate plugin. {$message}" );
+					// If the error is due to unexpected output, display it for debugging
+					if ( 'unexpected_output' === $result->get_error_code() ) {
+						/**
+						 * @var string $output
+						 */
+						$output = $result->get_error_data();
+						if ( ! empty( $output ) ) {
+							WP_CLI::debug( "Unexpected output: {$output}", 'plugin' );
+						}
 					}
+					++$errors;
 				}
-				++$errors;
 			} else {
 				$this->active_output( $plugin->name, $plugin->file, $network_wide, 'activate' );
 				++$successes;
@@ -726,6 +836,12 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * [--insecure]
 	 * : Retry downloads without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
 	 *
+	 * [--auto-update-indicated]
+	 * : Only update plugins where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
+	 *
+	 * [--include-vcs]
+	 * : Include plugins that are version-controlled with a VCS (e.g. git, svn, hg). Skipped by default.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp plugin update bbpress --version=dev
@@ -777,6 +893,11 @@ class Plugin_Command extends CommandWithUpgrade {
 	public function update( $args, $assoc_args ) {
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
+		// Handle --auto-update-indicated flag if present.
+		if ( $this->handle_auto_update_indicated( $args, $assoc_args ) ) {
+			return;
+		}
+
 		$args = $this->check_optional_args_and_all( $args, $all );
 		if ( ! $args ) {
 			return;
@@ -825,8 +946,9 @@ class Plugin_Command extends CommandWithUpgrade {
 				$duplicate_names[ $name ] = array();
 			}
 
-			$requires     = isset( $update_info ) && isset( $update_info['requires'] ) ? $update_info['requires'] : null;
-			$requires_php = isset( $update_info ) && isset( $update_info['requires_php'] ) ? $update_info['requires_php'] : null;
+			$requires              = isset( $update_info ) && isset( $update_info['requires'] ) ? $update_info['requires'] : null;
+			$requires_php          = isset( $update_info ) && isset( $update_info['requires_php'] ) ? $update_info['requires_php'] : null;
+			$auto_update_indicated = isset( $update_info ) && isset( $update_info['autoupdate'] ) ? (bool) $update_info['autoupdate'] : false;
 
 			// If an update has requires_php set, check to see if the local version of PHP meets that requirement
 			// The plugins update API already filters out plugins that don't meet WordPress requirements, but does not
@@ -868,6 +990,7 @@ class Plugin_Command extends CommandWithUpgrade {
 				'description'               => wordwrap( $details['Description'] ),
 				'file'                      => $file,
 				'auto_update'               => in_array( $file, $auto_updates, true ),
+				'auto_update_indicated'     => $auto_update_indicated,
 				'author'                    => $details['Author'],
 				'tested_up_to'              => '',
 				'requires'                  => $requires,
@@ -879,7 +1002,7 @@ class Plugin_Command extends CommandWithUpgrade {
 			];
 
 			if ( $this->check_headers['tested_up_to'] ) {
-				$plugin_readme = normalize_path( dirname( WP_PLUGIN_DIR . '/' . $file ) . '/readme.txt' );
+				$plugin_readme = Path::normalize( dirname( WP_PLUGIN_DIR . '/' . $file ) . '/readme.txt' );
 
 				if ( file_exists( $plugin_readme ) && is_readable( $plugin_readme ) ) {
 					$readme_obj = new SplFileObject( $plugin_readme );
@@ -1023,7 +1146,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * ## OPTIONS
 	 *
 	 * <plugin|zip|url>...
-	 * : One or more plugins to install. Accepts a plugin slug, the path to a local zip file, a URL to a remote zip file, or a URL to a WordPress.org plugin directory.
+	 * : One or more plugins to install. Accepts a plugin slug, the path to a local zip file, a URL to a remote zip file or PHP file, or a URL to a WordPress.org plugin directory.
 	 *
 	 * [--version=<version>]
 	 * : If set, get that particular version from wordpress.org, instead of the
@@ -1048,6 +1171,9 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *
 	 * [--with-dependencies]
 	 * : If set, the command will also install all required dependencies of the plugin as specified in the 'Requires Plugins' header.
+	 *
+	 * [--slug=<slug>]
+	 * : Use this as the target directory name when installing from a zip file. Cannot be used when installing multiple plugins.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -1105,6 +1231,11 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *     Removing the old version of the plugin...
 	 *     Plugin updated successfully
 	 *     Success: Installed 1 of 1 plugins.
+	 *
+	 *     # Install from a remote PHP file
+	 *     $ wp plugin install https://example.com/my-plugin.php
+	 *     Installing My Plugin (1.0.0)
+	 *     Downloading plugin file from https://example.com/my-plugin.php...
 	 *
 	 *     # Install a plugin with all its dependencies
 	 *     $ wp plugin install my-plugin --with-dependencies
@@ -1748,7 +1879,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *   - yaml
 	 * ---
 	 *
-	 * [--status=<status>]
+	 * [--status=<status>...]
 	 * : Filter the output by plugin status.
 	 * ---
 	 * options:
@@ -1789,6 +1920,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * * requires_php
 	 * * wporg_status
 	 * * wporg_last_updated
+	 * * auto_update_indicated
 	 *
 	 * ## EXAMPLES
 	 *
@@ -1893,7 +2025,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * Gets the template path based on installation type.
 	 */
 	private static function get_template_path( $template ) {
-		$command_root  = Utils\phar_safe_path( dirname( __DIR__ ) );
+		$command_root  = Path::phar_safe( dirname( __DIR__ ) );
 		$template_path = "{$command_root}/templates/{$template}";
 
 		if ( ! file_exists( $template_path ) ) {
@@ -1911,7 +2043,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 */
 	private function get_details( $file ) {
 		$plugin_folder = get_plugins( '/' . plugin_basename( dirname( $file ) ) );
-		$plugin_file   = Utils\basename( $file );
+		$plugin_file   = Path::basename( $file );
 
 		return $plugin_folder[ $plugin_file ];
 	}

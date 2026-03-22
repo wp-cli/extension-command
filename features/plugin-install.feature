@@ -274,17 +274,115 @@ Feature: Install WordPress plugins
       Error: No plugins installed.
       """
 
+  Scenario: Install plugin from a single PHP file URL
+    Given a WP install
+
+    When I run `wp plugin install https://gist.githubusercontent.com/westonruter/dec7d190060732e29a09751ab99cc549/raw/d55866c2fc82ab16f8909ce73fc89986ab28d727/pwa-manifest-short-name.php --activate`
+    Then STDOUT should contain:
+      """
+      Installing
+      """
+    And STDOUT should contain:
+      """
+      Downloading plugin file from
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And STDOUT should contain:
+      """
+      Activating
+      """
+    And the wp-content/plugins/pwa-manifest-short-name.php file should exist
+
+    When I run `wp plugin list --field=name`
+    Then STDOUT should contain:
+      """
+      pwa-manifest-short-name
+      """
+
+    When I run `wp plugin list --name=pwa-manifest-short-name --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """
+
+  Scenario: Install plugin from a single PHP file URL with --force flag
+    Given a WP install
+
+    When I run `wp plugin install https://gist.githubusercontent.com/westonruter/dec7d190060732e29a09751ab99cc549/raw/d55866c2fc82ab16f8909ce73fc89986ab28d727/pwa-manifest-short-name.php`
+    Then STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the wp-content/plugins/pwa-manifest-short-name.php file should exist
+
+    When I try `wp plugin install https://gist.githubusercontent.com/westonruter/dec7d190060732e29a09751ab99cc549/raw/d55866c2fc82ab16f8909ce73fc89986ab28d727/pwa-manifest-short-name.php`
+    Then STDERR should contain:
+      """
+      Warning: Plugin already installed.
+      """
+    And STDERR should not contain:
+      """
+      plugin could not be found
+      """
+    And STDOUT should contain:
+      """
+      Success: Plugin already installed.
+      """
+
+    When I run `wp plugin install https://gist.githubusercontent.com/westonruter/dec7d190060732e29a09751ab99cc549/raw/d55866c2fc82ab16f8909ce73fc89986ab28d727/pwa-manifest-short-name.php --force`
+    Then STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the wp-content/plugins/pwa-manifest-short-name.php file should exist
+
+  @github-api
+  Scenario: Install plugin from a GitHub Gist page URL
+    Given a WP install
+
+    When I run `wp plugin install https://gist.github.com/westonruter/dec7d190060732e29a09751ab99cc549 --activate`
+    Then STDOUT should contain:
+      """
+      Gist resolved to raw file URL.
+      """
+    And STDOUT should contain:
+      """
+      Installing
+      """
+    And STDOUT should contain:
+      """
+      Downloading plugin file from
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And STDOUT should contain:
+      """
+      Activating
+      """
+    And the wp-content/plugins/pwa-manifest-short-name.php file should exist
+
+    When I run `wp plugin list --name=pwa-manifest-short-name --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """
+
   Scenario: Install plugin using WordPress.org directory URL
     Given a WP install
 
-    When I run `wp plugin install https://wordpress.org/plugins/hello-dolly/`
+    When I run `wp plugin install https://wordpress.org/plugins/debug-bar/`
     Then STDOUT should contain:
       """
-      Detected WordPress.org plugins directory URL, using slug: hello-dolly
+      Detected WordPress.org plugins directory URL, using slug: debug-bar
       """
     And the return code should be 0
 
-    When I run `wp plugin list --name=hello-dolly --field=status`
+    When I run `wp plugin list --name=debug-bar --field=status`
     Then STDOUT should be:
       """
       inactive
@@ -293,15 +391,115 @@ Feature: Install WordPress plugins
   Scenario: Install and activate plugin using WordPress.org directory URL
     Given a WP install
 
-    When I run `wp plugin install https://wordpress.org/plugins/hello-dolly/ --activate`
+    When I run `wp plugin install https://wordpress.org/plugins/debug-bar/ --activate`
     Then STDOUT should contain:
       """
-      Detected WordPress.org plugins directory URL, using slug: hello-dolly
+      Detected WordPress.org plugins directory URL, using slug: debug-bar
       """
     And the return code should be 0
 
-    When I run `wp plugin list --name=hello-dolly --field=status`
+    When I run `wp plugin list --name=debug-bar --field=status`
     Then STDOUT should be:
       """
       active
       """
+
+  Scenario: Install with --activate on already-active plugin should keep it activated
+    Given a WP install
+
+    When I run `wp plugin install debug-bar --activate`
+    Then STDOUT should contain:
+      """
+      Plugin 'debug-bar' activated.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=debug-bar --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """
+
+    When I try `wp plugin install debug-bar --activate`
+    Then STDERR should contain:
+      """
+      Warning: debug-bar: Plugin already installed.
+      """
+    And STDOUT should contain:
+      """
+      Activating 'debug-bar'...
+      """
+    And STDOUT should contain:
+      """
+      Plugin 'debug-bar' activated.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=debug-bar --field=status`
+    Then STDOUT should be:
+      """
+      active
+      """
+
+  Scenario: Install with --activate-network on already-network-active plugin should keep it activated
+    Given a WP multisite install
+
+    When I run `wp plugin install debug-bar --activate-network`
+    Then STDOUT should contain:
+      """
+      Plugin 'debug-bar' network activated.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=debug-bar --field=status`
+    Then STDOUT should be:
+      """
+      active-network
+      """
+
+    When I try `wp plugin install debug-bar --activate-network`
+    Then STDERR should contain:
+      """
+      Warning: debug-bar: Plugin already installed.
+      """
+    And STDOUT should contain:
+      """
+      Network-activating 'debug-bar'...
+      """
+    And STDOUT should contain:
+      """
+      Plugin 'debug-bar' network activated.
+      """
+    And the return code should be 0
+
+    When I run `wp plugin list --name=debug-bar --field=status`
+    Then STDOUT should be:
+      """
+      active-network
+      """
+
+  Scenario: Install plugin from a zip file with a custom --slug
+    Given a WP install
+
+    When I run `wp plugin install https://github.com/wp-cli-test/generic-example-plugin/archive/refs/heads/master.zip --slug=my-custom-plugin`
+    Then STDOUT should contain:
+      """
+      Renamed 'generic-example-plugin-master' to 'my-custom-plugin'.
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the wp-content/plugins/my-custom-plugin directory should exist
+    And the wp-content/plugins/generic-example-plugin-master directory should not exist
+    And the return code should be 0
+
+  Scenario: Error when --slug is used with multiple plugins
+    Given a WP install
+
+    When I try `wp plugin install hello-dolly akismet --slug=my-plugin`
+    Then STDERR should contain:
+      """
+      Error: The --slug option can only be used when installing a single item.
+      """
+    And the return code should be 1

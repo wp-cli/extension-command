@@ -268,6 +268,94 @@ Feature: Update WordPress plugins
       Success: Updated 1 of 1 plugins (1 skipped).
       """
 
+  # Tests for --auto-update-indicated feature
+  # Note: These tests verify the flag handling and error cases.
+  # The actual update behavior when autoupdate is true from the server
+  # cannot be easily tested as it requires mocking WordPress.org API responses.
+  # The update functionality itself is handled by the existing update_many method.
+
+  @require-wp-5.2
+  Scenario: Show auto_update_indicated field in plugin list
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --fields=name,version,update,auto_update_indicated`
+    Then STDOUT should be a table containing rows:
+      | name               | version | update    | auto_update_indicated |
+      | wordpress-importer | 0.5     | available | no                    |
+
+  @require-wp-5.2
+  Scenario: Using --auto-update-indicated flag when no plugins have auto-update indicated
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin update --auto-update-indicated`
+    Then STDOUT should be:
+      """
+      Success: No plugins with server-indicated automatic updates available.
+      """
+
+  @require-wp-5.2
+  Scenario: Error when using --version with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp plugin update --auto-update-indicated --version=1.0.0`
+    Then STDERR should be:
+      """
+      Error: Cannot use --version with --auto-update-indicated. The version is determined by the server.
+      """
+    And the return code should be 1
+
+  @require-wp-5.2
+  Scenario: Error when using --minor with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp plugin update --auto-update-indicated --minor`
+    Then STDERR should be:
+      """
+      Error: Cannot use --minor or --patch with --auto-update-indicated. The version is determined by the server.
+      """
+    And the return code should be 1
+
+  @require-wp-5.2
+  Scenario: Error when using --patch with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp plugin update --auto-update-indicated --patch`
+    Then STDERR should be:
+      """
+      Error: Cannot use --minor or --patch with --auto-update-indicated. The version is determined by the server.
+      """
+    And the return code should be 1
+
+  @require-wp-5.2
+  Scenario: Error when specifying plugin names with --auto-update-indicated
+    Given a WP install
+
+    When I try `wp plugin update akismet --auto-update-indicated`
+    Then STDERR should be:
+      """
+      Error: Cannot specify plugin names with --auto-update-indicated. This flag updates all plugins with server-indicated automatic updates.
+      """
+    And the return code should be 1
+
+  @require-wp-5.2
+  Scenario: Preview updates with --auto-update-indicated and --dry-run
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin update --auto-update-indicated --dry-run`
+    Then STDOUT should be:
+      """
+      Success: No plugins with server-indicated automatic updates available.
+      """
+
   @require-wp-5.2
   Scenario: Updating all plugins should show the name of each plugin as it is updated
     Given a WP install
@@ -288,4 +376,37 @@ Feature: Update WordPress plugins
     And STDOUT should contain:
       """
       Success: Updated 2 of 2 plugins.
+      """
+
+  @require-wp-5.2
+  Scenario: Skip plugin update when plugin directory is a VCS checkout
+    Given a WP install
+    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And I run `wp plugin path wordpress-importer --dir`
+    And save STDOUT as {PLUGIN_DIR}
+
+    When I run `mkdir {PLUGIN_DIR}/.git`
+    And I try `wp plugin update wordpress-importer`
+    Then STDERR should contain:
+      """
+      Warning: wordpress-importer: Skipped update because a VCS checkout was detected. Use --include-vcs to override.
+      """
+    And STDERR should contain:
+      """
+      Error: No plugins updated.
+      """
+    And the return code should be 1
+
+  @require-wp-5.2
+  Scenario: Update plugin in VCS checkout when --include-vcs is set
+    Given a WP install
+    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And I run `wp plugin path wordpress-importer --dir`
+    And save STDOUT as {PLUGIN_DIR}
+
+    When I run `mkdir {PLUGIN_DIR}/.git`
+    And I run `wp plugin update wordpress-importer --include-vcs`
+    Then STDOUT should contain:
+      """
+      Success: Updated 1 of 1 plugins.
       """
