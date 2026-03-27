@@ -172,7 +172,7 @@ Feature: Manage WordPress themes and plugins
     And the <file_to_check> file should not exist
 
     # Install <item> from a remote zip file (complex URL with GET parameters)
-    When I run `wp <type> install '<zip_file>?AWSAccessKeyId=123&Expires=456&Signature=abcdef'`
+    When I run `wp <type> install "<zip_file>?AWSAccessKeyId=123&Expires=456&Signature=abcdef"`
     Then STDOUT should contain:
       """
       <type_name> installed successfully.
