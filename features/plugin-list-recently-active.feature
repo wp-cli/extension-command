@@ -42,6 +42,8 @@ Feature: List recently active WordPress plugins
       | debug-bar    |
       | site-secrets |
 
+  # Skipped on Windows due to non-portable shell command substitution and newline discrepancies
+  @skip-windows
   Scenario: Use recently active plugin to activate plugins
     Given a WP install
 
@@ -116,6 +118,8 @@ Feature: List recently active WordPress plugins
       | debug-bar    |
       | site-secrets |
 
+  # Skipped on Windows due to non-portable shell command substitution and newline discrepancies
+  @skip-windows
   Scenario: For a MU site, use recently active plugin to activate plugins
     Given a WP multisite install
 
