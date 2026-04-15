@@ -388,7 +388,7 @@ Feature: Update WordPress plugins
     And I run `wp plugin path wordpress-importer --dir`
     And save STDOUT as {PLUGIN_DIR}
 
-    When I run `wp eval "mkdir(trim('{PLUGIN_DIR}') . '/.git', 0777, true);"`
+    When I run `wp eval "$git_dir = trim('{PLUGIN_DIR}') . '/.git'; if ( ! is_dir( $git_dir ) && ! mkdir( $git_dir, 0777, true ) && ! is_dir( $git_dir ) ) { fwrite( STDERR, 'Failed to create VCS marker directory.' ); exit(1); }"`
     And I try `wp plugin update wordpress-importer`
     Then STDERR should contain:
       """
@@ -407,7 +407,7 @@ Feature: Update WordPress plugins
     And I run `wp plugin path wordpress-importer --dir`
     And save STDOUT as {PLUGIN_DIR}
 
-    When I run `wp eval "mkdir(trim('{PLUGIN_DIR}') . '/.git', 0777, true);"`
+    When I run `wp eval "$git_dir = trim('{PLUGIN_DIR}') . '/.git'; if ( ! is_dir( $git_dir ) && ! mkdir( $git_dir, 0777, true ) && ! is_dir( $git_dir ) ) { fwrite( STDERR, 'Failed to create VCS marker directory.' ); exit(1); }"`
     And I run `wp plugin update wordpress-importer --include-vcs`
     Then STDOUT should contain:
       """
