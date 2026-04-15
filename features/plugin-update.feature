@@ -239,7 +239,8 @@ Feature: Update WordPress plugins
       """
     And the return code should be 0
 
-  @require-wp-5.2
+  # Skipped on Windows because of sed usage that would need to be refactored for compatibility.
+  @require-wp-5.2 @skip-windows
   Scenario: Updating all plugins with some of them having an invalid version shouldn't report an error
     Given a WP install
     And I run `wp plugin delete akismet`
@@ -250,9 +251,7 @@ Feature: Update WordPress plugins
     When I run `wp plugin install wordpress-importer --version=0.5`
     Then STDOUT should not be empty
 
-    When I run `wp eval "echo wp_normalize_path(WP_PLUGIN_DIR . '/health-check/health-check.php');"`
-    Then save STDOUT as {PLUGIN_FILE}
-    When I run `wp eval "$f = trim('{PLUGIN_FILE}'); file_put_contents(\$f, preg_replace('/Version: .*/', 'Version: 10000', file_get_contents(\$f)));"`
+    When I run `sed -i.bak 's/Version: .*/Version: 10000/' $(wp plugin path health-check)`
     Then STDOUT should be empty
     And the return code should be 0
 
