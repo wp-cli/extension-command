@@ -199,6 +199,8 @@ Feature: Update WordPress plugins
 
   # Akismet currently requires WordPress 5.8
   @require-wp-5.8
+  # Skipped on Windows because chmod does not reliably enforce unwritable files cross-platform
+  @skip-windows
   Scenario: Plugin updates that error should not report a success
     Given a WP install
     And I run `wp plugin install --force akismet --version=4.0`
@@ -248,7 +250,9 @@ Feature: Update WordPress plugins
     When I run `wp plugin install wordpress-importer --version=0.5`
     Then STDOUT should not be empty
 
-    When I run `sed -i.bak 's/Version: .*/Version: 10000/' $(wp plugin path health-check)`
+    When I run `wp plugin path health-check`
+    Then save STDOUT as {PLUGIN_FILE}
+    When I run `wp eval "$f = trim('{PLUGIN_FILE}'); file_put_contents(\$f, preg_replace('/Version: .*/', 'Version: 10000', file_get_contents(\$f)));"`
     Then STDOUT should be empty
     And the return code should be 0
 
@@ -385,7 +389,7 @@ Feature: Update WordPress plugins
     And I run `wp plugin path wordpress-importer --dir`
     And save STDOUT as {PLUGIN_DIR}
 
-    When I run `mkdir {PLUGIN_DIR}/.git`
+    When I run `wp eval "mkdir(trim('{PLUGIN_DIR}') . '/.git', 0777, true);"`
     And I try `wp plugin update wordpress-importer`
     Then STDERR should contain:
       """
@@ -404,7 +408,7 @@ Feature: Update WordPress plugins
     And I run `wp plugin path wordpress-importer --dir`
     And save STDOUT as {PLUGIN_DIR}
 
-    When I run `mkdir {PLUGIN_DIR}/.git`
+    When I run `wp eval "mkdir(trim('{PLUGIN_DIR}') . '/.git', 0777, true);"`
     And I run `wp plugin update wordpress-importer --include-vcs`
     Then STDOUT should contain:
       """
