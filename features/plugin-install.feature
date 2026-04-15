@@ -168,7 +168,7 @@ Feature: Install WordPress plugins
   Scenario: Paths aren't backslashed when destination folder already exists
     Given a WP install
 
-    When I run `pwd`
+    When I run `wp eval "echo str_replace('\\', '/', getcwd());"`
     Then save STDOUT as {WORKING_DIR}
 
     When I run `rm wp-content/plugins/akismet/akismet.php`
