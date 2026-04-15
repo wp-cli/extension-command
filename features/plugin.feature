@@ -356,13 +356,13 @@ Feature: Manage WordPress plugins
       Automattic
       """
 
-    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    When I run `wp eval "echo get_site_transient('update_plugins')->last_checked;"`
     Then save STDOUT as {LAST_UPDATED}
 
     When I run `wp plugin list --skip-update-check`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    When I run `wp eval "echo get_site_transient('update_plugins')->last_checked;"`
     Then STDOUT should be:
       """
       {LAST_UPDATED}
