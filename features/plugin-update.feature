@@ -250,7 +250,7 @@ Feature: Update WordPress plugins
     When I run `wp plugin install wordpress-importer --version=0.5`
     Then STDOUT should not be empty
 
-    When I run `wp plugin path health-check`
+    When I run `wp eval "echo wp_normalize_path(WP_PLUGIN_DIR . '/health-check/health-check.php');"`
     Then save STDOUT as {PLUGIN_FILE}
     When I run `wp eval "$f = trim('{PLUGIN_FILE}'); file_put_contents(\$f, preg_replace('/Version: .*/', 'Version: 10000', file_get_contents(\$f)));"`
     Then STDOUT should be empty

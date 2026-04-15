@@ -371,7 +371,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    When I run `wp eval "echo get_site_transient('update_plugins')->last_checked;"`
     Then STDOUT should not contain:
       """
       {LAST_UPDATED}
