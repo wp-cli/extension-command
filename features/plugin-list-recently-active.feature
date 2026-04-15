@@ -65,9 +65,7 @@ Feature: List recently active WordPress plugins
       Success: Deactivated 2 of 2 plugins.
       """
 
-    When I run `wp plugin list --recently-active --field=name`
-    Then save STDOUT as {RECENTLY_ACTIVE_PLUGINS}
-    When I run `wp plugin activate {RECENTLY_ACTIVE_PLUGINS}`
+    When I run `wp plugin activate $(wp plugin list --recently-active --field=name)`
     Then STDOUT should contain:
       """
       Plugin 'debug-bar' activated.
@@ -141,9 +139,7 @@ Feature: List recently active WordPress plugins
       Success: Network deactivated 2 of 2 plugins.
       """
 
-    When I run `wp plugin list --recently-active --field=name`
-    Then save STDOUT as {RECENTLY_ACTIVE_PLUGINS_MU}
-    When I run `wp plugin activate {RECENTLY_ACTIVE_PLUGINS_MU} --network`
+    When I run `wp plugin activate $(wp plugin list --recently-active --field=name) --network`
     Then STDOUT should contain:
       """
       Plugin 'site-secrets' network activated.
