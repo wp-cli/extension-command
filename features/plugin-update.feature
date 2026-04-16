@@ -198,9 +198,8 @@ Feature: Update WordPress plugins
       """
 
   # Akismet currently requires WordPress 5.8
-  @require-wp-5.8
   # Skipped on Windows because chmod does not reliably enforce unwritable files cross-platform
-  @skip-windows
+  @require-wp-5.8 @skip-windows
   Scenario: Plugin updates that error should not report a success
     Given a WP install
     And I run `wp plugin install --force akismet --version=4.0`
@@ -381,14 +380,15 @@ Feature: Update WordPress plugins
       Success: Updated 2 of 2 plugins.
       """
 
-  @require-wp-5.2
+  # Skipped on Windows because of mkdir usage that would need to be refactored for compatibility.
+  @require-wp-5.2 @skip-windows
   Scenario: Skip plugin update when plugin directory is a VCS checkout
     Given a WP install
     And I run `wp plugin install wordpress-importer --version=0.5 --force`
     And I run `wp plugin path wordpress-importer --dir`
     And save STDOUT as {PLUGIN_DIR}
 
-    When I run `wp eval "$git_dir = trim('{PLUGIN_DIR}') . '/.git'; if ( ! is_dir( $git_dir ) && ! mkdir( $git_dir, 0777, true ) && ! is_dir( $git_dir ) ) { fwrite( STDERR, 'Failed to create VCS marker directory.' ); exit(1); }"`
+    When I run `mkdir {PLUGIN_DIR}/.git`
     And I try `wp plugin update wordpress-importer`
     Then STDERR should contain:
       """
@@ -400,14 +400,15 @@ Feature: Update WordPress plugins
       """
     And the return code should be 1
 
-  @require-wp-5.2
+  # Skipped on Windows because of mkdir usage that would need to be refactored for compatibility.
+  @require-wp-5.2 @skip-windows
   Scenario: Update plugin in VCS checkout when --include-vcs is set
     Given a WP install
     And I run `wp plugin install wordpress-importer --version=0.5 --force`
     And I run `wp plugin path wordpress-importer --dir`
     And save STDOUT as {PLUGIN_DIR}
 
-    When I run `wp eval "$git_dir = trim('{PLUGIN_DIR}') . '/.git'; if ( ! is_dir( $git_dir ) && ! mkdir( $git_dir, 0777, true ) && ! is_dir( $git_dir ) ) { fwrite( STDERR, 'Failed to create VCS marker directory.' ); exit(1); }"`
+    When I run `mkdir {PLUGIN_DIR}/.git`
     And I run `wp plugin update wordpress-importer --include-vcs`
     Then STDOUT should contain:
       """
