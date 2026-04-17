@@ -356,13 +356,13 @@ Feature: Manage WordPress plugins
       Automattic
       """
 
-    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    When I run `wp eval "echo get_site_transient('update_plugins')->last_checked;"`
     Then save STDOUT as {LAST_UPDATED}
 
     When I run `wp plugin list --skip-update-check`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    When I run `wp eval "echo get_site_transient('update_plugins')->last_checked;"`
     Then STDOUT should be:
       """
       {LAST_UPDATED}
@@ -371,7 +371,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    When I run `wp eval "echo get_site_transient('update_plugins')->last_checked;"`
     Then STDOUT should not contain:
       """
       {LAST_UPDATED}
@@ -467,7 +467,7 @@ Feature: Manage WordPress plugins
     Given a WP install
 
     When I run `rm -rf wp-content/plugins`
-    And I run `if test -d wp-content/plugins; then echo "fail"; fi`
+    And I run `wp eval "if ( is_dir('wp-content/plugins') ) echo 'fail';"`
     Then STDOUT should be empty
 
     When I run `wp plugin install wordpress-importer --activate`
