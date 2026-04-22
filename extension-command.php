@@ -22,6 +22,7 @@ WP_CLI::add_command( 'plugin auto-updates', 'Plugin_AutoUpdates_Command', $wpcli
 WP_CLI::add_command( 'theme', 'Theme_Command' );
 WP_CLI::add_command( 'theme auto-updates', 'Theme_AutoUpdates_Command', $wpcli_extension_requires_wp_5_5 );
 WP_CLI::add_command( 'theme mod', 'Theme_Mod_Command' );
+WP_CLI::add_command( 'theme cache', 'Theme_Cache_Command' );
 
 // In admin context, WordPress hooks wp_update_plugins/wp_update_themes to
 // various actions, causing update checks to run even when --skip-update-check is passed.
