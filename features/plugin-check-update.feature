@@ -4,7 +4,7 @@ Feature: Check for plugin updates
   Scenario: Check for plugin updates with no updates available
     Given a WP install
 
-    # In case the bundled Akismet has newer version
+    # In case Akismet has a newer release than the bundled version
     When I run `wp plugin update --all`
     And I run `wp plugin install wordpress-importer --activate`
     Then STDOUT should not be empty
