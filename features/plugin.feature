@@ -481,10 +481,10 @@ Feature: Manage WordPress plugins
   Scenario: Plugin name with HTML entities
     Given a WP install
 
-    When I run `wp plugin install debug-bar-list-dependencies`
+    When I run `wp plugin install health-check`
     Then STDOUT should contain:
       """
-      Installing Debug Bar List Script & Style Dependencies
+      Installing Health Check & Troubleshooting
       """
 
   # Not running for SQLite because it involves another must-use plugin and a drop-in.
