@@ -41,14 +41,15 @@ class Plugin_Download_Command {
 	 * @param array{path?: string, version?: string, force?: bool, insecure?: bool} $assoc_args Associative arguments.
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$slug         = (string) $args[0];
+		$slug = (string) $args[0];
+		if ( '' === $slug ) {
+			WP_CLI::error( 'Please provide a plugin slug.' );
+		}
+
 		$insecure     = Utils\get_flag_value( $assoc_args, 'insecure', false );
 		$force        = Utils\get_flag_value( $assoc_args, 'force', false );
 		$requested    = Utils\get_flag_value( $assoc_args, 'version', null );
 		$download_dir = Utils\get_flag_value( $assoc_args, 'path', getcwd() );
-		if ( '' === $slug ) {
-			WP_CLI::error( 'Please provide a plugin slug.' );
-		}
 
 		if ( ! is_dir( $download_dir ) ) {
 			if ( ! @mkdir( $download_dir, 0755, true ) ) {
@@ -81,6 +82,22 @@ class Plugin_Download_Command {
 			} else {
 				$download_url = str_replace( $current_zip, $slug . '.' . $requested . '.zip', $download_url );
 				$version      = $requested;
+
+				try {
+					$head_response = Utils\http_request( 'HEAD', $download_url, null, [], [ 'insecure' => (bool) $insecure ] );
+				} catch ( Exception $exception ) {
+					WP_CLI::error( $exception->getMessage() );
+				}
+
+				if ( 200 !== (int) $head_response->status_code ) {
+					WP_CLI::error(
+						sprintf(
+							"Can't find the requested plugin's version %s in the WordPress.org plugin repository (HTTP code %d).",
+							$requested,
+							$head_response->status_code
+						)
+					);
+				}
 			}
 		}
 
@@ -98,7 +115,7 @@ class Plugin_Download_Command {
 		WP_CLI::log( "Downloading {$slug} ({$version})..." );
 
 		try {
-			Utils\http_request(
+			$response = Utils\http_request(
 				'GET',
 				$download_url,
 				null,
@@ -110,6 +127,13 @@ class Plugin_Download_Command {
 			);
 		} catch ( Exception $exception ) {
 			WP_CLI::error( $exception->getMessage() );
+		}
+
+		if ( 200 !== (int) $response->status_code ) {
+			if ( file_exists( $download_file ) ) {
+				unlink( $download_file );
+			}
+			WP_CLI::error( sprintf( 'Failed to download plugin package (HTTP code %d).', $response->status_code ) );
 		}
 
 		WP_CLI::success( "Downloaded plugin package to {$download_file}" );
