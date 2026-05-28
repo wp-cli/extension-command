@@ -24,7 +24,8 @@ Feature: Download WordPress.org extensions without loading WordPress
       """
       Success: Downloaded plugin package to
       """
-    And the /tmp/wp-cli-download-test-plugin/debug-bar file should exist
+    And save STDOUT 'Success: Downloaded plugin package to (.+)' as {DOWNLOADED_PLUGIN}
+    And the {DOWNLOADED_PLUGIN} file should exist
     And STDERR should be empty
 
   Scenario: Downloading a specific version of a plugin
@@ -107,7 +108,8 @@ Feature: Download WordPress.org extensions without loading WordPress
       """
       Success: Downloaded theme package to
       """
-    And the /tmp/wp-cli-download-test-theme/twentytwelve file should exist
+    And save STDOUT 'Success: Downloaded theme package to (.+)' as {DOWNLOADED_THEME}
+    And the {DOWNLOADED_THEME} file should exist
     And STDERR should be empty
 
   Scenario: Downloading a specific version of a theme
