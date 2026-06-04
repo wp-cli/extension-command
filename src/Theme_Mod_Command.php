@@ -138,19 +138,14 @@ class Theme_Mod_Command extends WP_CLI_Command {
 			case 'csv':
 			case 'yaml':
 			case 'json':
-				$mod_list = array_filter(
-					array_map(
-						static function ( $item ) use ( $separator ) {
-							return [
-								'key'   => str_replace( $separator, '.', $item['key'] ),
-								'value' => $item['value'],
-							];
-						},
-						$mod_list
-					),
-					function ( $item ) {
-						return '' !== $item['value'] && null !== $item['value'];
-					}
+				$mod_list = array_map(
+					static function ( $item ) use ( $separator ) {
+						return [
+							'key'   => str_replace( $separator, '.', $item['key'] ),
+							'value' => $item['value'],
+						];
+					},
+					$mod_list
 				);
 				break;
 		}
