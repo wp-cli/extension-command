@@ -380,25 +380,11 @@ Feature: Update WordPress plugins
       Success: Updated 2 of 2 plugins.
       """
 
-  @require-wp-5.2
+  @require-wp-5.2 @skip-windows
   Scenario: Failed plugin update keeps JSON output parseable
     Given a WP install
     And I run `wp plugin install wordpress-importer --version=0.5 --force`
-    And a wp-content/mu-plugins/bad-update-package.php file:
-      """
-      <?php
-      add_filter(
-        'site_transient_update_plugins',
-        function ( $transient ) {
-          if ( isset( $transient->response['wordpress-importer/wordpress-importer.php'] ) ) {
-            $transient->response['wordpress-importer/wordpress-importer.php']->package = 'https://example.invalid/wp-cli-nope.zip';
-          }
-
-          return $transient;
-        },
-        999
-      );
-      """
+    And I run `chmod -w wp-content/plugins/wordpress-importer`
 
     When I try `wp plugin update wordpress-importer --format=json`
     Then STDOUT should be JSON containing:
@@ -408,25 +394,13 @@ Feature: Update WordPress plugins
     And STDERR should be empty
     And the return code should be 1
 
-  @require-wp-5.2
+    When I run `chmod +w wp-content/plugins/wordpress-importer`
+
+  @require-wp-5.2 @skip-windows
   Scenario: Failed plugin update keeps CSV output parseable
     Given a WP install
     And I run `wp plugin install wordpress-importer --version=0.5 --force`
-    And a wp-content/mu-plugins/bad-update-package.php file:
-      """
-      <?php
-      add_filter(
-        'site_transient_update_plugins',
-        function ( $transient ) {
-          if ( isset( $transient->response['wordpress-importer/wordpress-importer.php'] ) ) {
-            $transient->response['wordpress-importer/wordpress-importer.php']->package = 'https://example.invalid/wp-cli-nope.zip';
-          }
-
-          return $transient;
-        },
-        999
-      );
-      """
+    And I run `chmod -w wp-content/plugins/wordpress-importer`
 
     When I try `wp plugin update wordpress-importer --format=csv`
     Then STDOUT should be CSV containing:
@@ -434,6 +408,8 @@ Feature: Update WordPress plugins
       | wordpress-importer | 0.5         | Error  |
     And STDERR should be empty
     And the return code should be 1
+
+    When I run `chmod +w wp-content/plugins/wordpress-importer`
 
   # Skipped on Windows because of mkdir usage that would need to be refactored for compatibility.
   @require-wp-5.2 @skip-windows
