@@ -11,7 +11,7 @@ use WP_CLI\WpOrgApi;
  * <slug>
  * : Slug of the plugin to download.
  *
- * [--path=<path>]
+ * [--target-path=<path>]
  * : Directory to store the downloaded zip file. Defaults to the current directory.
  *
  * [--version=<version>]
@@ -38,7 +38,7 @@ class Plugin_Download_Command {
 	 * Downloads a plugin zip package without loading WordPress.
 	 *
 	 * @param array{0: string}                                   $args       Positional arguments.
-	 * @param array{path?: string, version?: string, force?: bool, insecure?: bool} $assoc_args Associative arguments.
+	 * @param array{target-path?: string, version?: string, force?: bool, insecure?: bool} $assoc_args Associative arguments.
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$slug = (string) $args[0];
@@ -49,7 +49,7 @@ class Plugin_Download_Command {
 		$insecure     = Utils\get_flag_value( $assoc_args, 'insecure', false );
 		$force        = Utils\get_flag_value( $assoc_args, 'force', false );
 		$requested    = Utils\get_flag_value( $assoc_args, 'version', null );
-		$download_dir = Utils\get_flag_value( $assoc_args, 'path', getcwd() );
+		$download_dir = Utils\get_flag_value( $assoc_args, 'target-path', getcwd() );
 
 		if ( ! is_dir( $download_dir ) ) {
 			if ( ! @mkdir( $download_dir, 0755, true ) ) {
