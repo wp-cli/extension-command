@@ -93,17 +93,26 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		// This array will hold the list of theme mods in a format suitable for the WP CLI Formatter.
 		$mod_list = array();
 
-		// If specific mods are requested, filter out any that aren't requested.
-		$mods = ! empty( $args ) ? array_intersect_key( get_theme_mods(), array_flip( $args ) ) : get_theme_mods();
+		// If specific mods are requested, fetch only those, setting missing mods to null. Otherwise, fetch all mods.
+		$mods = array();
+		if ( ! empty( $args ) ) {
+			foreach ( $args as $mod ) {
+				$mods[ $mod ] = get_theme_mod( $mod, null );
+			}
+		} else {
+			$mods = get_theme_mods();
+		}
 
 		// Generate the list of items ready for output. We use an initial separator that we can replace later depending on format.
 		$separator = '\t';
-		array_walk(
-			$mods,
-			function ( $value, $key ) use ( &$mod_list, $separator ) {
-				$this->mod_to_string( $key, $value, $mod_list, $separator );
+		foreach ( $mods as $key => $value) {
+			// If mods were given, skip the others.
+			if ( ! empty( $args ) && ! in_array( $key, $args, true ) ) {
+				continue;
 			}
-		);
+
+			$this->mod_to_string( $key, $value, $mod_list, $separator );
+		}
 
 		// Take our Formatter-friendly list and adjust it according to the requested format.
 		switch ( Utils\get_flag_value( $assoc_args, 'format' ) ) {
