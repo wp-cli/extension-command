@@ -53,7 +53,7 @@
 
 	<!-- Exclude existing classes from the prefix rule as it would break BC to prefix them now. -->
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound">
-		<exclude-pattern>*/src/(Plugin_(AutoUpdates_)?|Theme_(Mod_|AutoUpdates_)?)Command\.php$</exclude-pattern>
+		<exclude-pattern>*/src/(Plugin_(AutoUpdates_)?|Theme_(Mod_|AutoUpdates_|Cache_)?)Command\.php$</exclude-pattern>
 	</rule>
 
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound">
