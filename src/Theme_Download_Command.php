@@ -5,37 +5,36 @@ use WP_CLI\WpOrgApi;
 
 /**
  * Downloads theme zip files from the WordPress.org repository.
- *
- * ## OPTIONS
- *
- * <slug>
- * : Slug of the theme to download.
- *
- * [--target-path=<path>]
- * : Directory to store the downloaded zip file. Defaults to the current directory.
- *
- * [--version=<version>]
- * : Version to download. Accepts a version number or `dev`.
- *
- * [--force]
- * : Overwrite destination file if it already exists.
- *
- * [--insecure]
- * : Retry download without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
- *
- * ## EXAMPLES
- *
- *     $ wp theme download twentytwelve
- *     Downloading twentytwelve (1.3)...
- *     Success: Downloaded theme package to /path/to/twentytwelve.1.3.zip
- *
- * @when before_wp_load
  */
-// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
 class Theme_Download_Command {
 
 	/**
 	 * Downloads a theme zip package without loading WordPress.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <slug>
+	 * : Slug of the theme to download.
+	 *
+	 * [--target-path=<path>]
+	 * : Directory to store the downloaded zip file. Defaults to the current directory.
+	 *
+	 * [--version=<version>]
+	 * : Version to download. Accepts a version number or `dev`.
+	 *
+	 * [--force]
+	 * : Overwrite destination file if it already exists.
+	 *
+	 * [--insecure]
+	 * : Retry download without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp theme download twentytwelve
+	 *     Downloading twentytwelve (1.3)...
+	 *     Success: Downloaded theme package to /path/to/twentytwelve.1.3.zip
+	 *
+	 * @when before_wp_load
 	 *
 	 * @param array{0: string}                                   $args       Positional arguments.
 	 * @param array{target-path?: string, version?: string, force?: bool, insecure?: bool} $assoc_args Associative arguments.

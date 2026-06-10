@@ -5,37 +5,36 @@ use WP_CLI\WpOrgApi;
 
 /**
  * Downloads plugin zip files from the WordPress.org repository.
- *
- * ## OPTIONS
- *
- * <slug>
- * : Slug of the plugin to download.
- *
- * [--target-path=<path>]
- * : Directory to store the downloaded zip file. Defaults to the current directory.
- *
- * [--version=<version>]
- * : Version to download. Accepts a version number or `dev`.
- *
- * [--force]
- * : Overwrite destination file if it already exists.
- *
- * [--insecure]
- * : Retry download without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
- *
- * ## EXAMPLES
- *
- *     $ wp plugin download bbpress
- *     Downloading bbpress (2.5.9)...
- *     Success: Downloaded plugin package to /path/to/bbpress.2.5.9.zip
- *
- * @when before_wp_load
  */
-// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
 class Plugin_Download_Command {
 
 	/**
 	 * Downloads a plugin zip package without loading WordPress.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <slug>
+	 * : Slug of the plugin to download.
+	 *
+	 * [--target-path=<path>]
+	 * : Directory to store the downloaded zip file. Defaults to the current directory.
+	 *
+	 * [--version=<version>]
+	 * : Version to download. Accepts a version number or `dev`.
+	 *
+	 * [--force]
+	 * : Overwrite destination file if it already exists.
+	 *
+	 * [--insecure]
+	 * : Retry download without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp plugin download bbpress
+	 *     Downloading bbpress (2.5.9)...
+	 *     Success: Downloaded plugin package to /path/to/bbpress.2.5.9.zip
+	 *
+	 * @when before_wp_load
 	 *
 	 * @param array{0: string}                                   $args       Positional arguments.
 	 * @param array{target-path?: string, version?: string, force?: bool, insecure?: bool} $assoc_args Associative arguments.

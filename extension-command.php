@@ -20,22 +20,10 @@ $wpcli_extension_requires_wp_5_5 = [
 ];
 
 WP_CLI::add_command( 'plugin', 'Plugin_Command' );
-WP_CLI::add_command(
-	'plugin download',
-	'Plugin_Download_Command',
-	[
-		'when' => 'before_wp_load',
-	]
-);
+WP_CLI::add_command( 'plugin download', 'Plugin_Download_Command' );
 WP_CLI::add_command( 'plugin auto-updates', 'Plugin_AutoUpdates_Command', $wpcli_extension_requires_wp_5_5 );
 WP_CLI::add_command( 'theme', 'Theme_Command' );
-WP_CLI::add_command(
-	'theme download',
-	'Theme_Download_Command',
-	[
-		'when' => 'before_wp_load',
-	]
-);
+WP_CLI::add_command( 'theme download', 'Theme_Download_Command' );
 WP_CLI::add_command( 'theme auto-updates', 'Theme_AutoUpdates_Command', $wpcli_extension_requires_wp_5_5 );
 WP_CLI::add_command( 'theme mod', 'Theme_Mod_Command' );
 
