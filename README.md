@@ -780,6 +780,39 @@ Lists the available plugin updates. Similar to `wp core check-update`.
 
 
 
+### wp plugin download
+
+Downloads a plugin zip package without loading WordPress.
+
+~~~
+wp plugin download <slug> [--target-path=<path>] [--version=<version>] [--force] [--insecure]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Slug of the plugin to download.
+
+	[--target-path=<path>]
+		Directory to store the downloaded zip file. Defaults to the current directory.
+
+	[--version=<version>]
+		Version to download. Accepts a version number or `dev`.
+
+	[--force]
+		Overwrite destination file if it already exists.
+
+	[--insecure]
+		Retry download without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+**EXAMPLES**
+
+    $ wp plugin download bbpress
+    Downloading bbpress (2.5.9)...
+    Success: Downloaded plugin package to /path/to/bbpress.2.5.9.zip
+
+
+
 ### wp plugin toggle
 
 Toggles a plugin's activation state.
@@ -1808,6 +1841,39 @@ Lists the available theme updates. Similar to `wp core check-update`.
     # List themes with available updates in JSON format
     $ wp theme check-update --format=json
     [{"name":"twentytwelve","status":"inactive","version":"2.0","update_version":"2.1"}]
+
+
+
+### wp theme download
+
+Downloads a theme zip package without loading WordPress.
+
+~~~
+wp theme download <slug> [--target-path=<path>] [--version=<version>] [--force] [--insecure]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Slug of the theme to download.
+
+	[--target-path=<path>]
+		Directory to store the downloaded zip file. Defaults to the current directory.
+
+	[--version=<version>]
+		Version to download. Accepts a version number or `dev`.
+
+	[--force]
+		Overwrite destination file if it already exists.
+
+	[--insecure]
+		Retry download without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+**EXAMPLES**
+
+    $ wp theme download twentytwelve
+    Downloading twentytwelve (1.3)...
+    Success: Downloaded theme package to /path/to/twentytwelve.1.3.zip
 
 
 
