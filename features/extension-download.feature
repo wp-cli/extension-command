@@ -31,10 +31,10 @@ Feature: Download WordPress.org extensions without loading WordPress
   Scenario: Downloading a specific version of a plugin
     Given an empty directory
 
-    When I run `wp plugin download debug-bar --version=1.4`
+    When I run `wp plugin download debug-bar --version=1.1`
     Then STDOUT should contain:
       """
-      Downloading debug-bar (1.4)
+      Downloading debug-bar (1.1)
       """
     And STDOUT should contain:
       """

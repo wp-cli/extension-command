@@ -63,7 +63,7 @@ class Plugin_Download_Command {
 		try {
 			$plugin_data = ( new WpOrgApi( [ 'insecure' => $insecure ] ) )->get_plugin_info( $slug );
 		} catch ( Exception $exception ) {
-			WP_CLI::error( $exception->getMessage() );
+			WP_CLI::error( "The '{$slug}' plugin could not be found. " . $exception->getMessage() );
 		}
 
 		if ( ! is_array( $plugin_data ) || empty( $plugin_data['download_link'] ) || empty( $plugin_data['version'] ) ) {

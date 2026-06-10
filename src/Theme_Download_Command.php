@@ -63,7 +63,7 @@ class Theme_Download_Command {
 		try {
 			$theme_data = ( new WpOrgApi( [ 'insecure' => $insecure ] ) )->get_theme_info( $slug );
 		} catch ( Exception $exception ) {
-			WP_CLI::error( $exception->getMessage() );
+			WP_CLI::error( "The '{$slug}' theme could not be found. " . $exception->getMessage() );
 		}
 
 		if ( ! is_array( $theme_data ) || empty( $theme_data['download_link'] ) || empty( $theme_data['version'] ) ) {
