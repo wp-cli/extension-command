@@ -41,7 +41,7 @@ class Plugin_Download_Command {
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$slug = (string) $args[0];
-		if ( '' === $slug ) {
+		if ( '' === trim( $slug ) ) {
 			WP_CLI::error( 'Please provide a plugin slug.' );
 		}
 
