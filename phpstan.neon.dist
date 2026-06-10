@@ -7,7 +7,6 @@ parameters:
     - vendor/wp-cli/wp-cli/php
   scanFiles:
     - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
-    - vendor/wp-cli/wp-cli/utils/phpstan/scan-files.php
   treatPhpDocTypesAsCertain: false
   ignoreErrors:
     - identifier: missingType.iterableValue
