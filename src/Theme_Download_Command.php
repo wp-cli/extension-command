@@ -48,7 +48,7 @@ class Theme_Download_Command {
 		$insecure     = Utils\get_flag_value( $assoc_args, 'insecure', false );
 		$force        = Utils\get_flag_value( $assoc_args, 'force', false );
 		$requested    = Utils\get_flag_value( $assoc_args, 'version', null );
-		$download_dir = Utils\get_flag_value( $assoc_args, 'target-path', getcwd() );
+		$download_dir = Utils\get_flag_value( $assoc_args, 'target-path', getcwd() ?: '.' );
 
 		if ( ! is_dir( $download_dir ) ) {
 			if ( ! @mkdir( $download_dir, 0755, true ) ) {
@@ -111,6 +111,13 @@ class Theme_Download_Command {
 			WP_CLI::error( "Destination file already exists: {$download_file}" );
 		}
 
+		$destination_file = $download_file;
+		$tmp_file         = $download_file;
+
+		if ( $force && file_exists( $destination_file ) ) {
+			$tmp_file = $destination_file . '.tmp.' . uniqid( '', true );
+		}
+
 		WP_CLI::log( "Downloading {$slug} ({$version})..." );
 
 		try {
@@ -120,21 +127,33 @@ class Theme_Download_Command {
 				null,
 				[],
 				[
-					'filename' => $download_file,
+					'filename' => $tmp_file,
 					'insecure' => (bool) $insecure,
 				]
 			);
 		} catch ( Exception $exception ) {
+			if ( file_exists( $tmp_file ) ) {
+				unlink( $tmp_file );
+			}
 			WP_CLI::error( $exception->getMessage() );
 		}
 
 		if ( 200 !== (int) $response->status_code ) {
-			if ( file_exists( $download_file ) ) {
-				unlink( $download_file );
+			if ( file_exists( $tmp_file ) ) {
+				unlink( $tmp_file );
 			}
 			WP_CLI::error( sprintf( 'Failed to download theme package (HTTP code %d).', $response->status_code ) );
 		}
 
-		WP_CLI::success( "Downloaded theme package to {$download_file}" );
+		if ( $tmp_file !== $destination_file ) {
+			if ( file_exists( $destination_file ) && ! @unlink( $destination_file ) ) {
+				WP_CLI::error( "Failed to remove existing destination file: {$destination_file}" );
+			}
+			if ( ! @rename( $tmp_file, $destination_file ) ) {
+				WP_CLI::error( "Failed to move downloaded file into place: {$destination_file}" );
+			}
+		}
+
+		WP_CLI::success( "Downloaded theme package to {$destination_file}" );
 	}
 }
