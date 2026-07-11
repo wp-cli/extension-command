@@ -1033,6 +1033,56 @@ Feature: Manage WordPress plugins
 
 
   @require-wp-4.0
+  Scenario: Do not report a WordPress requirement when the installed version already meets the update's requirement
+    Given a WP install
+    And a wp-content/plugins/example/example.php file:
+      """
+      <?php
+        /**
+        * Plugin Name: Example Plugin
+        * Version: 1.0.0
+        * Requires at least: 3.7
+        * Tested up to: 6.7
+      """
+    And that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
+
+      {
+        "plugins": [],
+        "translations": [],
+        "no_update": {
+          "example/example.php": {
+            "id": "w.org/plugins/example",
+            "slug": "example",
+            "plugin": "example/example.php",
+            "new_version": "2.0.0",
+
+            "requires": "4.0",
+            "requires_php": "5.6",
+            "requires_plugins": [],
+            "compatibility": []
+          }
+        }
+      }
+      """
+
+    When I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 4.0        | 5.6            |
+
+    When I try `wp plugin update example`
+    Then STDERR should contain:
+      """
+      Warning: example: Update file not provided. Contact author for more details
+      """
+    And STDERR should not contain:
+      """
+      This update requires WordPress version
+      """
+
+  @require-wp-4.0
   Scenario: Show plugin update as unavailable if it doesn't meet PHP requirements
     Given a WP install
     And a wp-content/plugins/example/example.php file:

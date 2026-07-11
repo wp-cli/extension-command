@@ -1049,7 +1049,7 @@ class Plugin_Command extends CommandWithUpgrade {
 					$items[ $file ]['requires']       = isset( $plugin_update_info->requires ) ? $plugin_update_info->requires : null;
 					$items[ $file ]['requires_php']   = isset( $plugin_update_info->requires_php ) ? $plugin_update_info->requires_php : null;
 
-					if ( isset( $plugin_update_info->requires ) && version_compare( $wp_version, $requires, '>=' ) ) {
+					if ( isset( $plugin_update_info->requires ) && version_compare( $wp_version, $plugin_update_info->requires, '<' ) ) {
 						$reason = "This update requires WordPress version $plugin_update_info->requires, but the version installed is $wp_version.";
 					} elseif ( ! isset( $plugin_update_info->package ) ) {
 						$reason = 'Update file not provided. Contact author for more details';
