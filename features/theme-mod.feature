@@ -114,6 +114,34 @@ Feature: Manage WordPress theme mods
         value: null
       """
 
+  Scenario: Getting theme mods keeps native value types for machine-readable formats
+    Given a WP install
+
+    When I run `wp eval 'set_theme_mod( "flag_off", false ); set_theme_mod( "flag_on", true ); set_theme_mod( "empty_thing", [] ); set_theme_mod( "nested", [ "child" => "x" ] );'`
+
+    # The table format is for humans, so types are shown as readable placeholders.
+    And I run `wp theme mod get --all`
+    Then STDOUT should be a table containing rows:
+      | key         | value         |
+      | flag_off    | [false]       |
+      | flag_on     | [true]        |
+      | empty_thing | [empty array] |
+
+    # Machine-readable formats keep the native value types.
+    When I run `wp theme mod get --all --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      [{"key":"flag_off","value":false},{"key":"flag_on","value":true},{"key":"empty_thing","value":[]},{"key":"nested","value":""},{"key":"nested.child","value":"x"}]
+      """
+
+    When I run `wp theme mod get --all --format=csv`
+    Then STDOUT should be CSV containing:
+      | key          | value |
+      | flag_off     | false |
+      | flag_on      | true  |
+      | empty_thing  | []    |
+      | nested.child | x     |
+
   Scenario: Setting theme mods
     Given a WP install
 
