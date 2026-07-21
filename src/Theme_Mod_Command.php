@@ -120,8 +120,10 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		}
 
 		// Take our Formatter-friendly list and adjust it according to the requested format.
-		switch ( Utils\get_flag_value( $assoc_args, 'format' ) ) {
-			// For tables we use a double space to indent child items.
+		$format = Utils\get_flag_value( $assoc_args, 'format', 'table' );
+		switch ( $format ) {
+			// For tables we use a double space to indent child items, and render
+			// types like booleans and empty arrays as readable placeholders.
 			case 'table':
 				$mod_list = array_map(
 					static function ( $item ) use ( $separator ) {
@@ -130,24 +132,39 @@ class Theme_Mod_Command extends WP_CLI_Command {
 						if ( ! empty( $parts ) ) {
 							$new_key = str_repeat( '  ', count( $parts ) ) . $new_key;
 						}
+
+						$value = $item['value'];
+						if ( is_bool( $value ) ) {
+							$value = $value ? '[true]' : '[false]';
+						} elseif ( is_array( $value ) ) {
+							$value = '[empty array]';
+						}
+
 						return [
 							'key'   => $new_key,
-							'value' => $item['value'],
+							'value' => $value,
 						];
 					},
 					$mod_list
 				);
 				break;
 
-			// For JSON, CSV, and YAML formats we use dot notation to show the hierarchy.
+			// For JSON, CSV, and YAML formats we use dot notation to show the
+			// hierarchy and keep the native value types. CSV is a flat format
+			// that cannot represent an array, so those are JSON-encoded.
 			case 'csv':
 			case 'yaml':
 			case 'json':
 				$mod_list = array_map(
-					static function ( $item ) use ( $separator ) {
+					static function ( $item ) use ( $separator, $format ) {
+						$value = $item['value'];
+						if ( 'csv' === $format && is_array( $value ) ) {
+							$value = (string) wp_json_encode( $value );
+						}
+
 						return [
 							'key'   => str_replace( $separator, '.', $item['key'] ),
-							'value' => $item['value'],
+							'value' => $value,
 						];
 					},
 					$mod_list
@@ -173,11 +190,13 @@ class Theme_Mod_Command extends WP_CLI_Command {
 			// Convert objects to arrays for easier handling.
 			$value = (array) $value;
 
-			// Explicitly handle empty arrays to ensure they are displayed.
+			// Explicitly handle empty arrays to ensure they are displayed. The
+			// value is kept native here and only rendered as a placeholder for
+			// the table format.
 			if ( empty( $value ) ) {
 				$mod_list[] = [
 					'key'   => $key,
-					'value' => '[empty array]',
+					'value' => [],
 				];
 				return;
 			}
@@ -192,11 +211,8 @@ class Theme_Mod_Command extends WP_CLI_Command {
 				$this->mod_to_string( $key . $separator . $child_key, $child_value, $mod_list, $separator );
 			}
 		} else {
-			// Explicitly handle boolean values to ensure they are displayed correctly.
-			if ( is_bool( $value ) ) {
-				$value = $value ? '[true]' : '[false]';
-			}
-
+			// Scalars (including booleans) are kept as their native type here.
+			// The table format renders booleans as readable placeholders later.
 			$mod_list[] = [
 				'key'   => $key,
 				'value' => $value,
