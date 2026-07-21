@@ -108,8 +108,9 @@ class Theme_Mod_Command extends WP_CLI_Command {
 			}
 		}
 
-		// Generate the list of items ready for output. We use an initial separator that we can replace later depending on format.
-		$separator = '\t';
+		// Generate the list of items ready for output. We use an actual tab as an
+		// initial separator that we can replace later depending on format.
+		$separator = "\t";
 		foreach ( $mods as $key => $value ) {
 			// If mods were given, skip the others.
 			if ( ! empty( $args ) && ! in_array( $key, $args, true ) ) {
