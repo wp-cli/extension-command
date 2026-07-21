@@ -101,6 +101,11 @@ class Theme_Mod_Command extends WP_CLI_Command {
 			}
 		} else {
 			$mods = get_theme_mods();
+
+			// A theme with no mods set returns false rather than an empty array.
+			if ( ! is_array( $mods ) ) {
+				$mods = [];
+			}
 		}
 
 		// Generate the list of items ready for output. We use an initial separator that we can replace later depending on format.
