@@ -315,6 +315,7 @@ Feature: Manage WordPress themes
     When I try `wp theme status myth`
     Then STDERR should be:
       """
+      Warning: The `theme status` command is deprecated. Use `wp theme list` or `wp theme get <theme>` instead.
       Error: Stylesheet is missing.
       """
     And STDOUT should be empty

@@ -75,13 +75,13 @@ Feature: Manage WordPress themes and plugins
       ["<item>"]
       """
 
-    When I run `wp <type> status`
+    When I try `wp <type> status`
     Then STDOUT should contain:
       """
       U = Update Available
       """
 
-    When I run `wp <type> status <item>`
+    When I try `wp <type> status <item>`
     Then STDOUT should contain:
       """
           Status: Inactive
@@ -104,7 +104,7 @@ Feature: Manage WordPress themes and plugins
       updated
       """
 
-    When I run `wp <type> status <item>`
+    When I try `wp <type> status <item>`
     Then STDOUT should not contain:
       """
       (Update available)
