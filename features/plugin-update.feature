@@ -60,7 +60,7 @@ Feature: Update WordPress plugins
       package from https://downloads.wordpress.org/plugin/wordpress-importer.0.5.zip...
       """
 
-    When I run `wp plugin status wordpress-importer`
+    When I try `wp plugin status wordpress-importer`
     Then STDOUT should contain:
       """
       Update available
@@ -72,7 +72,7 @@ Feature: Update WordPress plugins
       wordpress-importer
       """
 
-    When I run `wp plugin status wordpress-importer`
+    When I try `wp plugin status wordpress-importer`
     Then STDOUT should contain:
       """
       Update available

@@ -109,6 +109,8 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *         Version: 20160523.1
 	 *         Author: Otto42, pross
 	 *         Description: A simple and easy way to test your theme for all the latest WordPress standards and practices. A great theme development tool!
+	 *
+	 * @deprecated Use `wp plugin list` or `wp plugin get <plugin>` instead.
 	 */
 	public function status( $args ) {
 		parent::status( $args );

@@ -38,7 +38,7 @@ Feature: Manage WordPress plugins
 
     # Check that the inner-plugin is not picked up
     When I run `mv {PLUGIN_DIR}/plugin1 {PLUGIN_DIR}/Zombieland/`
-    And I run `wp plugin status Zombieland`
+    And I try `wp plugin status Zombieland`
     Then STDOUT should contain:
       """
       Plugin Zombieland details:
@@ -52,13 +52,13 @@ Feature: Manage WordPress plugins
     When I run `wp plugin activate Zombieland`
     Then STDOUT should not be empty
 
-    When I run `wp plugin status Zombieland`
+    When I try `wp plugin status Zombieland`
     Then STDOUT should contain:
       """
           Status: Active
       """
 
-    When I run `wp plugin status`
+    When I try `wp plugin status`
     Then STDOUT should not be empty
 
     When I run `wp plugin list --fields=name,status,update,version,update_version,auto_update`
@@ -198,7 +198,7 @@ Feature: Manage WordPress plugins
       Success: Activated 1 of 1 plugins.
       """
 
-    When I run `wp plugin status network-only`
+    When I try `wp plugin status network-only`
     Then STDOUT should contain:
       """
           Status: Active
@@ -220,7 +220,7 @@ Feature: Manage WordPress plugins
       Success: Activated 1 of 1 plugins.
       """
 
-    When I run `wp plugin status network-only`
+    When I try `wp plugin status network-only`
     Then STDOUT should contain:
       """
           Status: Network Active
