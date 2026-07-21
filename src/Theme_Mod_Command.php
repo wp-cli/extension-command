@@ -87,14 +87,14 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'all' ) ) {
-			$args = array();
+			$args = [];
 		}
 
 		// This array will hold the list of theme mods in a format suitable for the WP CLI Formatter.
-		$mod_list = array();
+		$mod_list = [];
 
 		// If specific mods are requested, fetch only those, setting missing mods to null. Otherwise, fetch all mods.
-		$mods = array();
+		$mods = [];
 		if ( ! empty( $args ) ) {
 			foreach ( $args as $mod ) {
 				$mods[ $mod ] = get_theme_mod( $mod, null );
@@ -175,18 +175,18 @@ class Theme_Mod_Command extends WP_CLI_Command {
 
 			// Explicitly handle empty arrays to ensure they are displayed.
 			if ( empty( $value ) ) {
-				$mod_list[] = array(
+				$mod_list[] = [
 					'key'   => $key,
 					'value' => '[empty array]',
-				);
+				];
 				return;
 			}
 
 			// Arrays get their own entry in the list to allow for sensible table output.
-			$mod_list[] = array(
+			$mod_list[] = [
 				'key'   => $key,
 				'value' => '',
-			);
+			];
 
 			foreach ( $value as $child_key => $child_value ) {
 				$this->mod_to_string( $key . $separator . $child_key, $child_value, $mod_list, $separator );
@@ -197,10 +197,10 @@ class Theme_Mod_Command extends WP_CLI_Command {
 				$value = $value ? '[true]' : '[false]';
 			}
 
-			$mod_list[] = array(
+			$mod_list[] = [
 				'key'   => $key,
 				'value' => $value,
-			);
+			];
 		}
 	}
 
