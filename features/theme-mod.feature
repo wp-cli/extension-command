@@ -116,8 +116,16 @@ Feature: Manage WordPress theme mods
 
   Scenario: Getting theme mods keeps native value types for machine-readable formats
     Given a WP install
+    And a set-mods.php file:
+      """
+      <?php
+      set_theme_mod( 'flag_off', false );
+      set_theme_mod( 'flag_on', true );
+      set_theme_mod( 'empty_thing', [] );
+      set_theme_mod( 'nested', [ 'child' => 'x' ] );
+      """
 
-    When I run `wp eval 'set_theme_mod( "flag_off", false ); set_theme_mod( "flag_on", true ); set_theme_mod( "empty_thing", [] ); set_theme_mod( "nested", [ "child" => "x" ] );'`
+    When I run `wp eval-file set-mods.php`
 
     # The table format is for humans, so types are shown as readable placeholders.
     And I run `wp theme mod get --all`
