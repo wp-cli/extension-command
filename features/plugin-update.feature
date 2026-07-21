@@ -198,7 +198,8 @@ Feature: Update WordPress plugins
       """
 
   # Akismet currently requires WordPress 5.8
-  @require-wp-5.8
+  # Skipped on Windows because chmod does not reliably enforce unwritable files cross-platform
+  @require-wp-5.8 @skip-windows
   Scenario: Plugin updates that error should not report a success
     Given a WP install
     And I run `wp plugin install --force akismet --version=4.0`
@@ -237,7 +238,8 @@ Feature: Update WordPress plugins
       """
     And the return code should be 0
 
-  @require-wp-5.2
+  # Skipped on Windows because of sed usage that would need to be refactored for compatibility.
+  @require-wp-5.2 @skip-windows
   Scenario: Updating all plugins with some of them having an invalid version shouldn't report an error
     Given a WP install
     And I run `wp plugin delete akismet`
@@ -378,7 +380,39 @@ Feature: Update WordPress plugins
       Success: Updated 2 of 2 plugins.
       """
 
-  @require-wp-5.2
+  @require-wp-5.2 @skip-windows
+  Scenario: Failed plugin update keeps JSON output parseable
+    Given a WP install
+    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And I run `chmod -w wp-content/plugins/wordpress-importer`
+
+    When I try `wp plugin update wordpress-importer --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      [{"name":"wordpress-importer","old_version":"0.5","status":"Error"}]
+      """
+    And STDERR should be empty
+    And the return code should be 1
+
+    When I run `chmod +w wp-content/plugins/wordpress-importer`
+
+  @require-wp-5.2 @skip-windows
+  Scenario: Failed plugin update keeps CSV output parseable
+    Given a WP install
+    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And I run `chmod -w wp-content/plugins/wordpress-importer`
+
+    When I try `wp plugin update wordpress-importer --format=csv`
+    Then STDOUT should be CSV containing:
+      | name               | old_version | status |
+      | wordpress-importer | 0.5         | Error  |
+    And STDERR should be empty
+    And the return code should be 1
+
+    When I run `chmod +w wp-content/plugins/wordpress-importer`
+
+  # Skipped on Windows because of mkdir usage that would need to be refactored for compatibility.
+  @require-wp-5.2 @skip-windows
   Scenario: Skip plugin update when plugin directory is a VCS checkout
     Given a WP install
     And I run `wp plugin install wordpress-importer --version=0.5 --force`
@@ -397,7 +431,8 @@ Feature: Update WordPress plugins
       """
     And the return code should be 1
 
-  @require-wp-5.2
+  # Skipped on Windows because of mkdir usage that would need to be refactored for compatibility.
+  @require-wp-5.2 @skip-windows
   Scenario: Update plugin in VCS checkout when --include-vcs is set
     Given a WP install
     And I run `wp plugin install wordpress-importer --version=0.5 --force`

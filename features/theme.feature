@@ -243,13 +243,13 @@ Feature: Manage WordPress themes
     When I run `wp theme list`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo get_site_transient("update_themes")->last_checked;'`
+    When I run `wp eval "echo get_site_transient( 'update_themes' )->last_checked;"`
     Then save STDOUT as {LAST_UPDATED}
 
     When I run `wp theme list --skip-update-check`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo get_site_transient("update_themes")->last_checked;'`
+    When I run `wp eval "echo get_site_transient( 'update_themes' )->last_checked;"`
     Then STDOUT should be:
       """
       {LAST_UPDATED}
@@ -258,7 +258,7 @@ Feature: Manage WordPress themes
     When I run `wp theme list`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo get_site_transient("update_themes")->last_checked;'`
+    When I run `wp eval "echo get_site_transient( 'update_themes' )->last_checked;"`
     Then STDOUT should not contain:
       """
       {LAST_UPDATED}
@@ -269,7 +269,7 @@ Feature: Manage WordPress themes
     And I run `wp theme delete --all --force`
 
     When I run `rm -rf wp-content/themes`
-    And I run `if test -d wp-content/themes; then echo "fail"; fi`
+    And I run `wp eval "if ( is_dir('wp-content/themes') ) echo 'fail';"`
     Then STDOUT should be empty
 
     When I run `wp theme install twentytwelve --activate`
@@ -283,7 +283,7 @@ Feature: Manage WordPress themes
   Scenario: Attempt to activate or fetch a broken theme
     Given a WP install
 
-    When I run `mkdir -pv wp-content/themes/myth`
+    When I run `wp eval "is_dir( 'wp-content/themes/myth' ) || mkdir( 'wp-content/themes/myth', 0777, true ) || exit( 1 );"`
     Then the wp-content/themes/myth directory should exist
 
     When I try `wp theme activate myth`

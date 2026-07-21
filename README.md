@@ -3,7 +3,7 @@ wp-cli/extension-command
 
 Manages plugins and themes, including installs, activations, and updates.
 
-[![Testing](https://github.com/wp-cli/extension-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/extension-command/actions/workflows/testing.yml)
+[![Testing](https://github.com/wp-cli/extension-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/extension-command/actions/workflows/testing.yml) [![Code Coverage](https://codecov.io/gh/wp-cli/extension-command/branch/main/graph/badge.svg)](https://codecov.io/gh/wp-cli/extension-command/tree/main)
 
 Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing) | [Support](#support)
 
@@ -635,33 +635,33 @@ search query.
 	[--fields=<fields>]
 		Ask for specific fields from the API. Defaults to name,slug,author_profile,rating. Acceptable values:
 
-    **name**: Plugin Name
-    **slug**: Plugin Slug
-    **version**: Current Version Number
-    **author**: Plugin Author
-    **author_profile**: Plugin Author Profile
-    **contributors**: Plugin Contributors
-    **requires**: Plugin Minimum Requirements
-    **tested**: Plugin Tested Up To
-    **compatibility**: Plugin Compatible With
-    **rating**: Plugin Rating in Percent and Total Number
-    **ratings**: Plugin Ratings for each star (1-5)
-    **num_ratings**: Number of Plugin Ratings
-    **homepage**: Plugin Author's Homepage
-    **description**: Plugin's Description
-    **short_description**: Plugin's Short Description
-    **sections**: Plugin Readme Sections: description, installation, FAQ, screenshots, other notes, and changelog
-    **downloaded**: Plugin Download Count
-    **last_updated**: Plugin's Last Update
-    **added**: Plugin's Date Added to wordpress.org Repository
-    **tags**: Plugin's Tags
-    **versions**: Plugin's Available Versions with D/L Link
-    **donate_link**: Plugin's Donation Link
-    **banners**: Plugin's Banner Image Link
-    **icons**: Plugin's Icon Image Link
-    **active_installs**: Plugin's Number of Active Installs
-    **contributors**: Plugin's List of Contributors
-    **url**: Plugin's URL on wordpress.org
+		**name**: Plugin Name
+		**slug**: Plugin Slug
+		**version**: Current Version Number
+		**author**: Plugin Author
+		**author_profile**: Plugin Author Profile
+		**contributors**: Plugin Contributors
+		**requires**: Plugin Minimum Requirements
+		**tested**: Plugin Tested Up To
+		**compatibility**: Plugin Compatible With
+		**rating**: Plugin Rating in Percent and Total Number
+		**ratings**: Plugin Ratings for each star (1-5)
+		**num_ratings**: Number of Plugin Ratings
+		**homepage**: Plugin Author's Homepage
+		**description**: Plugin's Description
+		**short_description**: Plugin's Short Description
+		**sections**: Plugin Readme Sections: description, installation, FAQ, screenshots, other notes, and changelog
+		**downloaded**: Plugin Download Count
+		**last_updated**: Plugin's Last Update
+		**added**: Plugin's Date Added to wordpress.org Repository
+		**tags**: Plugin's Tags
+		**versions**: Plugin's Available Versions with D/L Link
+		**donate_link**: Plugin's Donation Link
+		**banners**: Plugin's Banner Image Link
+		**icons**: Plugin's Icon Image Link
+		**active_installs**: Plugin's Number of Active Installs
+		**contributors**: Plugin's List of Contributors
+		**url**: Plugin's URL on wordpress.org
 
 	[--format=<format>]
 		Render output in a particular format.
@@ -777,6 +777,39 @@ Lists the available plugin updates. Similar to `wp core check-update`.
     # List plugins with available updates in JSON format
     $ wp plugin check-update --format=json
     [{"name":"akismet","status":"active","version":"4.1.0","update_version":"4.1.1"}]
+
+
+
+### wp plugin download
+
+Downloads a plugin zip package without loading WordPress.
+
+~~~
+wp plugin download <slug> [--target-path=<path>] [--version=<version>] [--force] [--insecure]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Slug of the plugin to download.
+
+	[--target-path=<path>]
+		Directory to store the downloaded zip file. Defaults to the current directory.
+
+	[--version=<version>]
+		Version to download. Accepts a version number or `dev`.
+
+	[--force]
+		Overwrite destination file if it already exists.
+
+	[--insecure]
+		Retry download without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+**EXAMPLES**
+
+    $ wp plugin download bbpress
+    Downloading bbpress (2.5.9)...
+    Success: Downloaded plugin package to /path/to/bbpress.2.5.9.zip
 
 
 
@@ -1695,17 +1728,17 @@ search query.
 	[--fields=<fields>]
 		Ask for specific fields from the API. Defaults to name,slug,author,rating. Acceptable values:
 
-    **name**: Theme Name
-    **slug**: Theme Slug
-    **version**: Current Version Number
-    **author**: Theme Author
-    **preview_url**: Theme Preview URL
-    **screenshot_url**: Theme Screenshot URL
-    **rating**: Theme Rating
-    **num_ratings**: Number of Theme Ratings
-    **homepage**: Theme Author's Homepage
-    **description**: Theme Description
-    **url**: Theme's URL on wordpress.org
+		**name**: Theme Name
+		**slug**: Theme Slug
+		**version**: Current Version Number
+		**author**: Theme Author
+		**preview_url**: Theme Preview URL
+		**screenshot_url**: Theme Screenshot URL
+		**rating**: Theme Rating
+		**num_ratings**: Number of Theme Ratings
+		**homepage**: Theme Author's Homepage
+		**description**: Theme Description
+		**url**: Theme's URL on wordpress.org
 
 	[--format=<format>]
 		Render output in a particular format.
@@ -1808,6 +1841,39 @@ Lists the available theme updates. Similar to `wp core check-update`.
     # List themes with available updates in JSON format
     $ wp theme check-update --format=json
     [{"name":"twentytwelve","status":"inactive","version":"2.0","update_version":"2.1"}]
+
+
+
+### wp theme download
+
+Downloads a theme zip package without loading WordPress.
+
+~~~
+wp theme download <slug> [--target-path=<path>] [--version=<version>] [--force] [--insecure]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Slug of the theme to download.
+
+	[--target-path=<path>]
+		Directory to store the downloaded zip file. Defaults to the current directory.
+
+	[--version=<version>]
+		Version to download. Accepts a version number or `dev`.
+
+	[--force]
+		Overwrite destination file if it already exists.
+
+	[--insecure]
+		Retry download without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+**EXAMPLES**
+
+    $ wp theme download twentytwelve
+    Downloading twentytwelve (1.3)...
+    Success: Downloaded theme package to /path/to/twentytwelve.1.3.zip
 
 
 
@@ -2119,9 +2185,13 @@ Want to contribute a new feature? Please first [open a new issue](https://github
 
 Once you've decided to commit the time to seeing your pull request through, [please follow our guidelines for creating a pull request](https://make.wordpress.org/cli/handbook/pull-requests/) to make sure it's a pleasant experience. See "[Setting up](https://make.wordpress.org/cli/handbook/pull-requests/#setting-up)" for details specific to working on this package locally.
 
+### License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 ## Support
 
-GitHub issues aren't for general support questions, but there are other venues you can try: https://wp-cli.org/#support
+GitHub issues aren't for general support questions. For support resources and next steps, see the WP-CLI Support page: https://make.wordpress.org/cli/handbook/support/
 
 
 *This README.md is generated dynamically from the project's codebase using `wp scaffold package-readme` ([doc](https://github.com/wp-cli/scaffold-package-command#wp-scaffold-package-readme)). To suggest changes, please submit a pull request against the corresponding part of the codebase.*
