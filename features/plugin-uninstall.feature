@@ -160,7 +160,7 @@ Feature: Uninstall a WordPress plugin
   Scenario: Uninstalling a plugin should remove its language pack
     Given a WP install
     And I run `wp plugin install wordpress-importer`
-    And I run `wp core language install fr_FR`
+    And I run `wp language core install fr_FR`
     And I run `wp site switch-language fr_FR`
 
     When I run `wp language plugin install wordpress-importer fr_FR`
