@@ -731,56 +731,58 @@ Feature: Manage WordPress plugins
       | db-error.php |       | Custom database error message. | db-error.php |
 
   @require-wp-4.0
-  Scenario: Validate installed plugin's version.
-    Given a WP installation
-    And I run `wp plugin uninstall --all`
-    And I run `wp plugin install hello-dolly --force`
-    And a wp-content/mu-plugins/test-plugin-update.php file:
+  Scenario Outline: Treat an older or empty no-update version as up to date
+    Given a WP install
+    And a wp-content/plugins/example/example.php file:
       """
       <?php
       /**
-       * Plugin Name: Test Plugin Update
-       * Description: Fakes installed plugin's data to verify plugin version mismatch
-       * Author: WP-CLI tests
+       * Plugin Name: Example Plugin
+       * Version: 2.0.0
        */
-
-      add_filter( 'site_transient_update_plugins', function( $value ) {
-          if ( ! is_object( $value ) ) {
-              return $value;
-          }
-
-          unset( $value->response['hello-dolly/hello.php'] );
-          $value->no_update['hello-dolly/hello.php']->new_version = '1.5';
-
-          return $value;
-      } );
-      ?>
       """
+    And that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
 
-    When I run `wp plugin list --name=hello-dolly  --field=version`
-    Then save STDOUT as {PLUGIN_VERSION}
-
-    When I run `wp plugin list --name=hello-dolly  --field=update_version`
-    Then save STDOUT as {UPDATE_VERSION}
+      {
+        "plugins": [],
+        "translations": [],
+        "no_update": {
+          "example/example.php": {
+            "id": "vendor.example/plugins/example",
+            "slug": "example",
+            "plugin": "example/example.php",
+            "new_version": "<upstream_version>",
+            "package": ""
+          }
+        }
+      }
+      """
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update                       | version          | update_version   | auto_update |
-      | hello-dolly        | inactive | version higher than expected | {PLUGIN_VERSION} | {UPDATE_VERSION} | off         |
+      | name    | status   | update | version | update_version | auto_update |
+      | example | inactive | none   | 2.0.0   |                | off         |
 
-    When I try `wp plugin update --all`
-    Then STDERR should be:
+    When I run `wp plugin update --all`
+    Then STDOUT should be:
       """
-      Warning: hello-dolly: version higher than expected.
-      Error: No plugins updated.
+      Success: Plugin already updated.
       """
+    And STDERR should be empty
 
-    When I try `wp plugin update hello-dolly`
-    Then STDERR should be:
+    When I run `wp plugin update example`
+    Then STDOUT should be:
       """
-      Warning: hello-dolly: version higher than expected.
-      Error: No plugins updated.
+      Success: Plugin already updated.
       """
+    And STDERR should be empty
+
+    Examples:
+      | upstream_version |
+      | 1.0.0            |
+      |                  |
 
   Scenario: Only valid status filters are accepted when listing plugins
     Given a WP install
