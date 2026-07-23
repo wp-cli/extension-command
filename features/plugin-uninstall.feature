@@ -186,7 +186,7 @@ Feature: Uninstall a WordPress plugin
   Scenario: Uninstalling a plugin should remove its update info
     Given a WP install
     And I run `wp plugin install wordpress-importer --version=0.6`
-    And I run `wp plugin status wordpress-importer`
+    And I try `wp plugin status wordpress-importer`
 
     And I run `wp transient get --network update_plugins`
     Then STDOUT should contain:
