@@ -359,7 +359,7 @@ Feature: Manage WordPress themes
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp network-meta get 1 allowedthemes`
+    When I try `wp network meta get 1 allowedthemes`
     Then STDOUT should not contain:
       """
       'moina-blog' => true
@@ -373,7 +373,7 @@ Feature: Manage WordPress themes
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp network-meta get 1 allowedthemes`
+    When I try `wp network meta get 1 allowedthemes`
     Then STDOUT should contain:
       """
       'moina-blog' => true
@@ -387,7 +387,7 @@ Feature: Manage WordPress themes
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp network-meta get 1 allowedthemes`
+    When I try `wp network meta get 1 allowedthemes`
     Then STDOUT should not contain:
       """
       'moina-blog' => true

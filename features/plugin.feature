@@ -5,7 +5,7 @@ Feature: Manage WordPress plugins
     And I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
 
-    When I run `wp plugin scaffold --skip-tests plugin1`
+    When I run `wp scaffold plugin --skip-tests plugin1`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/plugin1/plugin1.php file should exist
     And the {PLUGIN_DIR}/zombieland/phpunit.xml.dist file should not exist
@@ -22,7 +22,7 @@ Feature: Manage WordPress plugins
       {PLUGIN_DIR}/plugin1
       """
 
-    When I run `wp plugin scaffold Zombieland`
+    When I run `wp scaffold plugin Zombieland`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/Zombieland/Zombieland.php file should exist
     And the {PLUGIN_DIR}/Zombieland/phpunit.xml.dist file should exist
