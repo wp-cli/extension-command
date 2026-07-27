@@ -96,6 +96,8 @@ class Theme_Command extends CommandWithUpgrade {
 	 *          Status: Inactive
 	 *          Version: 1.2
 	 *          Author: the WordPress team
+	 *
+	 * @deprecated Use `wp theme list` or `wp theme get <theme>` instead.
 	 */
 	public function status( $args ) {
 		if ( isset( $args[0] ) ) {

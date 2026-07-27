@@ -8,7 +8,7 @@ Feature: List the status of plugins
       <?php
       """
 
-    When I run `wp plugin status`
+    When I try `wp plugin status`
     Then STDOUT should contain:
       """
       D db-error.php
@@ -17,4 +17,13 @@ Feature: List the status of plugins
       """
       D = Drop-In
       """
-    And STDERR should be empty
+
+  Scenario: Plugin status command is deprecated
+    Given a WP install
+
+    When I try `wp plugin status`
+    Then STDERR should contain:
+      """
+      Warning: The `plugin status` command is deprecated. Use `wp plugin list` or `wp plugin get <plugin>` instead.
+      """
+    And the return code should be 0

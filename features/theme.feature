@@ -1,5 +1,15 @@
 Feature: Manage WordPress themes
 
+  Scenario: Theme status command is deprecated
+    Given a WP install
+
+    When I try `wp theme status`
+    Then STDERR should contain:
+      """
+      Warning: The `theme status` command is deprecated. Use `wp theme list` or `wp theme get <theme>` instead.
+      """
+    And the return code should be 0
+
   Scenario: Installing and deleting theme
     Given a WP install
     And I run `wp theme delete --all --force`
@@ -8,7 +18,7 @@ Feature: Manage WordPress themes
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
 
-    When I run `wp theme status twentytwelve`
+    When I try `wp theme status twentytwelve`
     Then STDOUT should contain:
       """
       Theme twentytwelve details:
@@ -64,7 +74,7 @@ Feature: Manage WordPress themes
 
     When I run `wp theme install classic --activate`
     And I run `wp theme list --field=name --status=inactive | xargs wp theme delete`
-    And I run `wp theme status`
+    And I try `wp theme status`
     Then STDOUT should be:
       """
       1 installed theme:
@@ -155,7 +165,7 @@ Feature: Manage WordPress themes
       Success: Deleted
       """
 
-    When I run `wp theme status twentytwelve`
+    When I try `wp theme status twentytwelve`
     Then STDOUT should contain:
       """
       Update available
@@ -167,7 +177,7 @@ Feature: Manage WordPress themes
       twentytwelve
       """
 
-    When I run `wp theme status twentytwelve`
+    When I try `wp theme status twentytwelve`
     Then STDOUT should contain:
       """
       Update available
@@ -305,6 +315,7 @@ Feature: Manage WordPress themes
     When I try `wp theme status myth`
     Then STDERR should be:
       """
+      Warning: The `theme status` command is deprecated. Use `wp theme list` or `wp theme get <theme>` instead.
       Error: Stylesheet is missing.
       """
     And STDOUT should be empty
@@ -359,7 +370,7 @@ Feature: Manage WordPress themes
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp network-meta get 1 allowedthemes`
+    When I try `wp network meta get 1 allowedthemes`
     Then STDOUT should not contain:
       """
       'moina-blog' => true
@@ -373,7 +384,7 @@ Feature: Manage WordPress themes
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp network-meta get 1 allowedthemes`
+    When I try `wp network meta get 1 allowedthemes`
     Then STDOUT should contain:
       """
       'moina-blog' => true
@@ -387,7 +398,7 @@ Feature: Manage WordPress themes
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp network-meta get 1 allowedthemes`
+    When I try `wp network meta get 1 allowedthemes`
     Then STDOUT should not contain:
       """
       'moina-blog' => true
@@ -558,12 +569,15 @@ Feature: Manage WordPress themes
       This theme requires a parent theme. Checking if it is installed
       """
 
-    When I run `wp theme status moina`
+    When I try `wp theme status moina`
     Then STDOUT should contain:
       """
       Theme moina details:
       """
-    And STDERR should be empty
+    And STDERR should contain:
+      """
+      Warning: The `theme status` command is deprecated. Use `wp theme list` or `wp theme get <theme>` instead.
+      """
 
   Scenario: Get status field in theme detail
     Given a WP install

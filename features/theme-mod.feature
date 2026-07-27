@@ -7,6 +7,22 @@ Feature: Manage WordPress theme mods
     Then STDOUT should be a table containing rows:
       | key  | value   |
 
+    When I run `wp theme mod get --all --format=csv`
+    Then STDOUT should be CSV containing:
+      | key  | value   |
+
+    When I run `wp theme mod get --all --format=json`
+    Then STDOUT should be:
+      """
+      []
+      """
+
+    When I run `wp theme mod get --all --format=yaml`
+    Then STDOUT should be:
+      """
+      ---
+      """
+
     When I try `wp theme mod get`
     Then STDERR should contain:
       """
@@ -21,10 +37,50 @@ Feature: Manage WordPress theme mods
       | key               | value    |
       | background_color  | 123456   |
 
+    When I run `wp theme mod get --all --format=csv`
+    Then STDOUT should be CSV containing:
+      | key               | value    |
+      | background_color  | 123456   |
+
+
+    When I run `wp theme mod get --all --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      [{"key":"background_color","value":"123456"}]
+      """
+
+    When I run `wp theme mod get --all --format=yaml`
+    Then STDOUT should be YAML containing:
+      """
+      ---
+      --
+        key: background_color
+        value: "123456"
+      """
+
     When I run `wp theme mod get background_color --field=value`
     Then STDOUT should be:
       """
       123456
+      """
+
+    When I run `wp theme mod get background_color --field=value --format=csv`
+    Then STDOUT should be:
+      """
+      123456
+      """
+
+    When I run `wp theme mod get background_color --field=value --format=json`
+    Then STDOUT should be:
+      """
+      ["123456"]
+      """
+
+    When I run `wp theme mod get background_color --field=value --format=yaml`
+    Then STDOUT should be YAML containing:
+      """
+      ---
+      - "123456"
       """
 
     When I run `wp theme mod set background_color 123456`
@@ -33,6 +89,66 @@ Feature: Manage WordPress theme mods
       | key               | value    |
       | background_color  | 123456   |
       | header_textcolor  |          |
+
+    When I run `wp theme mod get background_color header_textcolor --format=csv`
+    Then STDOUT should be CSV containing:
+      | key               | value    |
+      | background_color  | 123456   |
+      | header_textcolor  |          |
+
+    When I run `wp theme mod get background_color header_textcolor --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      [{"key":"background_color","value":"123456"},{"key":"header_textcolor","value":null}]
+      """
+
+    When I run `wp theme mod get background_color header_textcolor --format=yaml`
+    Then STDOUT should be YAML containing:
+      """
+      ---
+      --
+        key: background_color
+        value: "123456"
+      --
+        key: header_textcolor
+        value: null
+      """
+
+  Scenario: Getting theme mods keeps native value types for machine-readable formats
+    Given a WP install
+    And a set-mods.php file:
+      """
+      <?php
+      set_theme_mod( 'flag_off', false );
+      set_theme_mod( 'flag_on', true );
+      set_theme_mod( 'empty_thing', [] );
+      set_theme_mod( 'nested', [ 'child' => 'x' ] );
+      """
+
+    When I run `wp eval-file set-mods.php`
+
+    # The table format is for humans, so types are shown as readable placeholders.
+    And I run `wp theme mod get --all`
+    Then STDOUT should be a table containing rows:
+      | key         | value         |
+      | flag_off    | [false]       |
+      | flag_on     | [true]        |
+      | empty_thing | [empty array] |
+
+    # Machine-readable formats keep the native value types.
+    When I run `wp theme mod get --all --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      [{"key":"flag_off","value":false},{"key":"flag_on","value":true},{"key":"empty_thing","value":[]},{"key":"nested","value":""},{"key":"nested.child","value":"x"}]
+      """
+
+    When I run `wp theme mod get --all --format=csv`
+    Then STDOUT should be CSV containing:
+      | key          | value |
+      | flag_off     | false |
+      | flag_on      | true  |
+      | empty_thing  | []    |
+      | nested.child | x     |
 
   Scenario: Setting theme mods
     Given a WP install

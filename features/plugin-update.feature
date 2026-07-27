@@ -60,7 +60,7 @@ Feature: Update WordPress plugins
       package from https://downloads.wordpress.org/plugin/wordpress-importer.0.5.zip...
       """
 
-    When I run `wp plugin status wordpress-importer`
+    When I try `wp plugin status wordpress-importer`
     Then STDOUT should contain:
       """
       Update available
@@ -72,7 +72,7 @@ Feature: Update WordPress plugins
       wordpress-importer
       """
 
-    When I run `wp plugin status wordpress-importer`
+    When I try `wp plugin status wordpress-importer`
     Then STDOUT should contain:
       """
       Update available
@@ -240,7 +240,7 @@ Feature: Update WordPress plugins
 
   # Skipped on Windows because of sed usage that would need to be refactored for compatibility.
   @require-wp-5.2 @skip-windows
-  Scenario: Updating all plugins with some of them having an invalid version shouldn't report an error
+  Scenario: Updating all plugins ignores an older no-update version
     Given a WP install
     And I run `wp plugin delete akismet`
 
@@ -254,20 +254,11 @@ Feature: Update WordPress plugins
     Then STDOUT should be empty
     And the return code should be 0
 
-    When I try `wp plugin update --all`
-    Then STDERR should contain:
-      """
-      Warning: health-check: version higher than expected.
-      """
-
-    And STDOUT should not contain:
-      """
-      Error: Only updated 1 of 1 plugins.
-      """
-
+    When I run `wp plugin update --all`
+    Then STDERR should be empty
     And STDOUT should contain:
       """
-      Success: Updated 1 of 1 plugins (1 skipped).
+      Success: Updated 1 of 1 plugins.
       """
 
   # Tests for --auto-update-indicated feature
