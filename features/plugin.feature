@@ -699,11 +699,13 @@ Feature: Manage WordPress plugins
        * Description: Hides the Site Secrets plugin on production sites
        * Author: WP-CLI tests
        */
-
-       add_filter( 'all_plugins', function( $all_plugins ) {
-          unset( $all_plugins['site-secrets/site-secrets.php'] );
-          return $all_plugins;
-       } );
+      add_filter(
+          'all_plugins',
+          function ( $all_plugins ) {
+              unset( $all_plugins['site-secrets/site-secrets.php'] );
+              return $all_plugins;
+          } 
+      );
       """
 
     When I run `wp plugin list --fields=name`
