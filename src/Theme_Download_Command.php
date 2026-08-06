@@ -70,6 +70,7 @@ class Theme_Download_Command {
 			WP_CLI::error( "The '{$slug}' theme could not be found." );
 		}
 
+		/** @var array{download_link: string, version: string} $theme_data */
 		$download_url = $theme_data['download_link'];
 		$version      = $theme_data['version'];
 
