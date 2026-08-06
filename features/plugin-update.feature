@@ -60,7 +60,7 @@ Feature: Update WordPress plugins
       package from https://downloads.wordpress.org/plugin/wordpress-importer.0.5.zip...
       """
 
-    When I run `wp plugin status wordpress-importer`
+    When I try `wp plugin status wordpress-importer`
     Then STDOUT should contain:
       """
       Update available
@@ -72,7 +72,7 @@ Feature: Update WordPress plugins
       wordpress-importer
       """
 
-    When I run `wp plugin status wordpress-importer`
+    When I try `wp plugin status wordpress-importer`
     Then STDOUT should contain:
       """
       Update available
@@ -198,7 +198,8 @@ Feature: Update WordPress plugins
       """
 
   # Akismet currently requires WordPress 5.8
-  @require-wp-5.8
+  # Skipped on Windows because chmod does not reliably enforce unwritable files cross-platform
+  @require-wp-5.8 @skip-windows
   Scenario: Plugin updates that error should not report a success
     Given a WP install
     And I run `wp plugin install --force akismet --version=4.0`
@@ -237,8 +238,9 @@ Feature: Update WordPress plugins
       """
     And the return code should be 0
 
-  @require-wp-5.2
-  Scenario: Updating all plugins with some of them having an invalid version shouldn't report an error
+  # Skipped on Windows because of sed usage that would need to be refactored for compatibility.
+  @require-wp-5.2 @skip-windows
+  Scenario: Updating all plugins ignores an older no-update version
     Given a WP install
     And I run `wp plugin delete akismet`
 
@@ -252,20 +254,11 @@ Feature: Update WordPress plugins
     Then STDOUT should be empty
     And the return code should be 0
 
-    When I try `wp plugin update --all`
-    Then STDERR should contain:
-      """
-      Warning: health-check: version higher than expected.
-      """
-
-    And STDOUT should not contain:
-      """
-      Error: Only updated 1 of 1 plugins.
-      """
-
+    When I run `wp plugin update --all`
+    Then STDERR should be empty
     And STDOUT should contain:
       """
-      Success: Updated 1 of 1 plugins (1 skipped).
+      Success: Updated 1 of 1 plugins.
       """
 
   # Tests for --auto-update-indicated feature
@@ -378,7 +371,39 @@ Feature: Update WordPress plugins
       Success: Updated 2 of 2 plugins.
       """
 
-  @require-wp-5.2
+  @require-wp-5.2 @skip-windows
+  Scenario: Failed plugin update keeps JSON output parseable
+    Given a WP install
+    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And I run `chmod -w wp-content/plugins/wordpress-importer`
+
+    When I try `wp plugin update wordpress-importer --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      [{"name":"wordpress-importer","old_version":"0.5","status":"Error"}]
+      """
+    And STDERR should be empty
+    And the return code should be 1
+
+    When I run `chmod +w wp-content/plugins/wordpress-importer`
+
+  @require-wp-5.2 @skip-windows
+  Scenario: Failed plugin update keeps CSV output parseable
+    Given a WP install
+    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And I run `chmod -w wp-content/plugins/wordpress-importer`
+
+    When I try `wp plugin update wordpress-importer --format=csv`
+    Then STDOUT should be CSV containing:
+      | name               | old_version | status |
+      | wordpress-importer | 0.5         | Error  |
+    And STDERR should be empty
+    And the return code should be 1
+
+    When I run `chmod +w wp-content/plugins/wordpress-importer`
+
+  # Skipped on Windows because of mkdir usage that would need to be refactored for compatibility.
+  @require-wp-5.2 @skip-windows
   Scenario: Skip plugin update when plugin directory is a VCS checkout
     Given a WP install
     And I run `wp plugin install wordpress-importer --version=0.5 --force`
@@ -397,7 +422,8 @@ Feature: Update WordPress plugins
       """
     And the return code should be 1
 
-  @require-wp-5.2
+  # Skipped on Windows because of mkdir usage that would need to be refactored for compatibility.
+  @require-wp-5.2 @skip-windows
   Scenario: Update plugin in VCS checkout when --include-vcs is set
     Given a WP install
     And I run `wp plugin install wordpress-importer --version=0.5 --force`

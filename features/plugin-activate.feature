@@ -43,11 +43,13 @@ Feature: Activate WordPress plugins
        * Description: Hides the Site Secrets plugin on production sites
        * Author: WP-CLI tests
        */
-
-       add_filter( 'all_plugins', function( $all_plugins ) {
-          unset( $all_plugins['site-secrets/site-secrets.php'] );
-          return $all_plugins;
-       } );
+      add_filter(
+          'all_plugins',
+          function ( $all_plugins ) {
+              unset( $all_plugins['site-secrets/site-secrets.php'] );
+              return $all_plugins;
+          } 
+      );
       """
 
     When I run `wp plugin activate --all`
@@ -70,12 +72,10 @@ Feature: Activate WordPress plugins
       """
       <?php
       // Plugin Name: Example Plugin
-
       function example_plugin_activate( bool $network_wide = false ) {
-        // Doesn't matter what we do here, we just need a function definition to check the type
-        return;
+      	// Doesn't matter what we do here, we just need a function definition to check the type
+      	return;
       }
-
       register_activation_hook( __FILE__, 'example_plugin_activate' );
       """
 
@@ -164,7 +164,7 @@ Feature: Activate WordPress plugins
        * Description: This plugin generates unexpected output during activation
        * Author: WP-CLI tests
        */
-      echo "Unexpected output from plugin activation";
+      echo 'Unexpected output from plugin activation';
       """
 
     When I try `wp plugin activate output-plugin --debug`
@@ -187,10 +187,13 @@ Feature: Activate WordPress plugins
        * Description: Test plugin for force activation
        * Author: WP-CLI tests
        */
-      
-      register_activation_hook( __FILE__, function() {
-        @file_put_contents( WP_CONTENT_DIR . '/activation-test.txt', 'Activation hook was run' );
-      });
+
+      register_activation_hook(
+          __FILE__,
+          function () {
+      		@file_put_contents( WP_CONTENT_DIR . '/activation-test.txt', 'Activation hook was run' );
+      	}
+      );
       """
     
     When I run `wp plugin activate force-test`

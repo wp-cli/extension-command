@@ -75,13 +75,13 @@ Feature: Manage WordPress themes and plugins
       ["<item>"]
       """
 
-    When I run `wp <type> status`
+    When I try `wp <type> status`
     Then STDOUT should contain:
       """
       U = Update Available
       """
 
-    When I run `wp <type> status <item>`
+    When I try `wp <type> status <item>`
     Then STDOUT should contain:
       """
           Status: Inactive
@@ -104,7 +104,7 @@ Feature: Manage WordPress themes and plugins
       updated
       """
 
-    When I run `wp <type> status <item>`
+    When I try `wp <type> status <item>`
     Then STDOUT should not contain:
       """
       (Update available)
@@ -172,7 +172,7 @@ Feature: Manage WordPress themes and plugins
     And the <file_to_check> file should not exist
 
     # Install <item> from a remote zip file (complex URL with GET parameters)
-    When I run `wp <type> install '<zip_file>?AWSAccessKeyId=123&Expires=456&Signature=abcdef'`
+    When I run `wp <type> install "<zip_file>?AWSAccessKeyId=123&Expires=456&Signature=abcdef"`
     Then STDOUT should contain:
       """
       <type_name> installed successfully.

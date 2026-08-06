@@ -264,7 +264,7 @@ Feature: Update WordPress themes
     And I run `wp theme path twentytwelve --dir`
     And save STDOUT as {THEME_DIR}
 
-    When I run `mkdir {THEME_DIR}/.git`
+    When I run `wp eval "is_dir( '{THEME_DIR}/.git' ) || mkdir( '{THEME_DIR}/.git', 0777, true ) || exit( 1 );"`
     And I try `wp theme update twentytwelve`
     Then STDERR should contain:
       """
@@ -282,7 +282,7 @@ Feature: Update WordPress themes
     And I run `wp theme path twentytwelve --dir`
     And save STDOUT as {THEME_DIR}
 
-    When I run `mkdir {THEME_DIR}/.git`
+    When I run `wp eval "is_dir( '{THEME_DIR}/.git' ) || mkdir( '{THEME_DIR}/.git', 0777, true ) || exit( 1 );"`
     And I run `wp theme update twentytwelve --include-vcs`
     Then STDOUT should contain:
       """

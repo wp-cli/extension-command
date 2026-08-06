@@ -109,6 +109,8 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *         Version: 20160523.1
 	 *         Author: Otto42, pross
 	 *         Description: A simple and easy way to test your theme for all the latest WordPress standards and practices. A great theme development tool!
+	 *
+	 * @deprecated Use `wp plugin list` or `wp plugin get <plugin>` instead.
 	 */
 	public function status( $args ) {
 		parent::status( $args );
@@ -1033,13 +1035,6 @@ class Plugin_Command extends CommandWithUpgrade {
 				// Get info for all plugins that don't have an update.
 				$plugin_update_info = isset( $all_update_info->no_update[ $file ] ) ? $all_update_info->no_update[ $file ] : null;
 
-				// Check if local version is newer than what is listed upstream.
-				if ( null !== $plugin_update_info && version_compare( $details['Version'], $plugin_update_info->new_version, '>' ) ) {
-					$items[ $file ]['update']       = static::INVALID_VERSION_MESSAGE;
-					$items[ $file ]['requires']     = isset( $plugin_update_info->requires ) ? $plugin_update_info->requires : null;
-					$items[ $file ]['requires_php'] = isset( $plugin_update_info->requires_php ) ? $plugin_update_info->requires_php : null;
-				}
-
 				// If there is a plugin in no_update with a newer version than the local copy, it is either because:
 				// A: the plugins update API has already filtered it because the local WordPress version is too low
 				// B: It is possibly a paid plugin that has an update which the user does not qualify for
@@ -1049,7 +1044,7 @@ class Plugin_Command extends CommandWithUpgrade {
 					$items[ $file ]['requires']       = isset( $plugin_update_info->requires ) ? $plugin_update_info->requires : null;
 					$items[ $file ]['requires_php']   = isset( $plugin_update_info->requires_php ) ? $plugin_update_info->requires_php : null;
 
-					if ( isset( $plugin_update_info->requires ) && version_compare( $wp_version, $requires, '>=' ) ) {
+					if ( isset( $plugin_update_info->requires ) && version_compare( $wp_version, $plugin_update_info->requires, '<' ) ) {
 						$reason = "This update requires WordPress version $plugin_update_info->requires, but the version installed is $wp_version.";
 					} elseif ( ! isset( $plugin_update_info->package ) ) {
 						$reason = 'Update file not provided. Contact author for more details';

@@ -880,6 +880,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$errors  = $skipped;
 			$skipped = null;
 		}
+		if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], [ 'json', 'csv' ], true ) && $errors ) {
+			WP_CLI::halt( 1 );
+		}
 		Utils\report_batch_operation_results( $this->item_type, 'update', $total_updated, $num_updated, $errors, $skipped );
 		if ( null !== $exclude ) {
 			WP_CLI::log( "Skipped updates for: $exclude" );

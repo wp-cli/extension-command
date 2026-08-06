@@ -3,7 +3,7 @@ wp-cli/extension-command
 
 Manages plugins and themes, including installs, activations, and updates.
 
-[![Testing](https://github.com/wp-cli/extension-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/extension-command/actions/workflows/testing.yml)
+[![Testing](https://github.com/wp-cli/extension-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/extension-command/actions/workflows/testing.yml) [![Code Coverage](https://codecov.io/gh/wp-cli/extension-command/branch/main/graph/badge.svg)](https://codecov.io/gh/wp-cli/extension-command/tree/main)
 
 Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing) | [Support](#support)
 
@@ -777,6 +777,39 @@ Lists the available plugin updates. Similar to `wp core check-update`.
     # List plugins with available updates in JSON format
     $ wp plugin check-update --format=json
     [{"name":"akismet","status":"active","version":"4.1.0","update_version":"4.1.1"}]
+
+
+
+### wp plugin download
+
+Downloads a plugin zip package without loading WordPress.
+
+~~~
+wp plugin download <slug> [--target-path=<path>] [--version=<version>] [--force] [--insecure]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Slug of the plugin to download.
+
+	[--target-path=<path>]
+		Directory to store the downloaded zip file. Defaults to the current directory.
+
+	[--version=<version>]
+		Version to download. Accepts a version number or `dev`.
+
+	[--force]
+		Overwrite destination file if it already exists.
+
+	[--insecure]
+		Retry download without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+**EXAMPLES**
+
+    $ wp plugin download bbpress
+    Downloading bbpress (2.5.9)...
+    Success: Downloaded plugin package to /path/to/bbpress.2.5.9.zip
 
 
 
@@ -1811,6 +1844,39 @@ Lists the available theme updates. Similar to `wp core check-update`.
 
 
 
+### wp theme download
+
+Downloads a theme zip package without loading WordPress.
+
+~~~
+wp theme download <slug> [--target-path=<path>] [--version=<version>] [--force] [--insecure]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Slug of the theme to download.
+
+	[--target-path=<path>]
+		Directory to store the downloaded zip file. Defaults to the current directory.
+
+	[--version=<version>]
+		Version to download. Accepts a version number or `dev`.
+
+	[--force]
+		Overwrite destination file if it already exists.
+
+	[--insecure]
+		Retry download without certificate validation if TLS handshake fails. Note: This makes the request vulnerable to a MITM attack.
+
+**EXAMPLES**
+
+    $ wp theme download twentytwelve
+    Downloading twentytwelve (1.3)...
+    Success: Downloaded theme package to /path/to/twentytwelve.1.3.zip
+
+
+
 ### wp theme update
 
 Updates one or more themes.
@@ -2125,7 +2191,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Support
 
-GitHub issues aren't for general support questions, but there are other venues you can try: https://wp-cli.org/#support
+GitHub issues aren't for general support questions. For support resources and next steps, see the WP-CLI Support page: https://make.wordpress.org/cli/handbook/support/
 
 
 *This README.md is generated dynamically from the project's codebase using `wp scaffold package-readme` ([doc](https://github.com/wp-cli/scaffold-package-command#wp-scaffold-package-readme)). To suggest changes, please submit a pull request against the corresponding part of the codebase.*
