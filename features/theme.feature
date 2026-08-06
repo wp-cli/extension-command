@@ -330,78 +330,78 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: Enabling and disabling a theme
     Given a WP multisite install
-    And I run `wp theme install moina`
-    And I run `wp theme install moina-blog`
+    And I run `wp theme install oceanly`
+    And I run `wp theme install oceanly-green`
 
     When I try `wp option get allowedthemes`
     Then the return code should be 1
     # STDERR may or may not be empty, depending on WP-CLI version.
     And STDOUT should be empty
 
-    When I run `wp theme enable moina-blog`
+    When I run `wp theme enable oceanly-green`
     Then STDOUT should contain:
       """
-      Success: Enabled the 'Moina Blog' theme.
+      Success: Enabled the 'Oceanly Green' theme.
       """
 
     When I run `wp option get allowedthemes`
     Then STDOUT should contain:
       """
-      'moina-blog' => true
+      'oceanly-green' => true
       """
 
-    When I run `wp theme disable moina-blog`
+    When I run `wp theme disable oceanly-green`
     Then STDOUT should contain:
       """
-      Success: Disabled the 'Moina Blog' theme.
+      Success: Disabled the 'Oceanly Green' theme.
       """
 
     When I run `wp option get allowedthemes`
     Then STDOUT should not contain:
       """
-      'moina-blog' => true
+      'oceanly-green' => true
       """
 
-    When I run `wp theme enable moina-blog --activate`
+    When I run `wp theme enable oceanly-green --activate`
     Then STDOUT should contain:
       """
-      Success: Enabled the 'Moina Blog' theme.
-      Success: Switched to 'Moina Blog' theme.
+      Success: Enabled the 'Oceanly Green' theme.
+      Success: Switched to 'Oceanly Green' theme.
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
     When I try `wp network meta get 1 allowedthemes`
     Then STDOUT should not contain:
       """
-      'moina-blog' => true
+      'oceanly-green' => true
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp theme enable moina-blog --network`
+    When I try `wp theme enable oceanly-green --network`
     Then STDOUT should contain:
       """
-      Success: Network enabled the 'Moina Blog' theme.
+      Success: Network enabled the 'Oceanly Green' theme.
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
     When I try `wp network meta get 1 allowedthemes`
     Then STDOUT should contain:
       """
-      'moina-blog' => true
+      'oceanly-green' => true
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp theme disable moina-blog --network`
+    When I try `wp theme disable oceanly-green --network`
     Then STDOUT should contain:
       """
-      Success: Network disabled the 'Moina Blog' theme.
+      Success: Network disabled the 'Oceanly Green' theme.
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
     When I try `wp network meta get 1 allowedthemes`
     Then STDOUT should not contain:
       """
-      'moina-blog' => true
+      'oceanly-green' => true
       """
 
   Scenario: Enabling and disabling a theme without multisite
@@ -426,13 +426,13 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: Install and attempt to activate a child theme without its parent
     Given a WP install
-    And I run `wp theme install moina-blog`
-    And I run `rm -rf wp-content/themes/moina`
+    And I run `wp theme install oceanly-green`
+    And I run `rm -rf wp-content/themes/oceanly`
 
-    When I try `wp theme activate moina-blog`
+    When I try `wp theme activate oceanly-green`
     Then STDERR should contain:
       """
-      Error: The parent theme is missing. Please install the "moina" parent theme.
+      Error: The parent theme is missing. Please install the "oceanly" parent theme.
       """
     And STDOUT should be empty
     And the return code should be 1
@@ -440,49 +440,49 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: List an active theme with its parent
     Given a WP install
-    And I run `wp theme install moina`
-    And I run `wp theme install --activate moina-blog`
+    And I run `wp theme install oceanly`
+    And I run `wp theme install --activate oceanly-green`
 
     # Hybrid_Registry throws warning for PHP 8+.
     When I try `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name          | status   |
-      | moina-blog    | active   |
-      | moina         | parent   |
+      | oceanly-green | active   |
+      | oceanly       | parent   |
 
   @require-wp-5.7
   Scenario: List broken themes (child theme without parent)
     Given a WP install
-    And I run `wp theme install moina`
-    And I run `wp theme install moina-blog`
+    And I run `wp theme install oceanly`
+    And I run `wp theme install oceanly-green`
     
     When I run `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name          | status   |
-      | moina-blog    | inactive |
-      | moina         | inactive |
+      | oceanly-green | inactive |
+      | oceanly       | inactive |
     
-    When I run `wp theme delete moina`
+    When I run `wp theme delete oceanly`
     Then STDOUT should contain:
       """
-      Deleted 'moina' theme.
+      Deleted 'oceanly' theme.
       """
     
     When I run `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name          | status   |
-      | moina-blog    | inactive |
+      | oceanly-green | inactive |
     
-    When I try `wp theme activate moina-blog`
+    When I try `wp theme activate oceanly-green`
     Then STDERR should contain:
       """
-      Error: The parent theme is missing. Please install the "moina" parent theme.
+      Error: The parent theme is missing. Please install the "oceanly" parent theme.
       """
     
-    When I try `wp theme install moina-blog`
+    When I try `wp theme install oceanly-green`
     Then STDERR should contain:
       """
-      Warning: moina-blog: Theme already installed.
+      Warning: oceanly-green: Theme already installed.
       """
 
   Scenario: When updating a theme --format should be the same when using --dry-run
@@ -555,24 +555,24 @@ Feature: Manage WordPress themes
   Scenario: Automatically install parent theme for a child theme
     Given a WP install
 
-    When I try `wp theme status moina`
+    When I try `wp theme status oceanly`
     Then STDERR should contain:
       """
-      Error: The 'moina' theme could not be found.
+      Error: The 'oceanly' theme could not be found.
       """
     And STDOUT should be empty
     And the return code should be 1
 
-    When I run `wp theme install moina-blog`
+    When I run `wp theme install oceanly-green`
     Then STDOUT should contain:
       """
       This theme requires a parent theme. Checking if it is installed
       """
 
-    When I try `wp theme status moina`
+    When I try `wp theme status oceanly`
     Then STDOUT should contain:
       """
-      Theme moina details:
+      Theme oceanly details:
       """
     And STDERR should contain:
       """
@@ -669,12 +669,12 @@ Feature: Manage WordPress themes
     Given a WP install
     And I run `wp theme delete --all --force`
     And I run `wp theme install twentytwelve`
-    And I run `wp theme install moina-blog --activate`
+    And I run `wp theme install oceanly-green --activate`
 
-    When I run `wp theme is-active moina-blog`
+    When I run `wp theme is-active oceanly-green`
     Then the return code should be 0
 
-    When I run `wp theme is-active moina`
+    When I run `wp theme is-active oceanly`
     Then the return code should be 0
 
     When I try `wp theme is-active twentytwelve`

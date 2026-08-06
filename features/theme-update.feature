@@ -50,7 +50,7 @@ Feature: Update WordPress themes
       """
 
     # One theme installed.
-    Given I run `wp theme install moina --version=1.0.2`
+    Given I run `wp theme install oceanly --version=1.0.0`
 
     When I try `wp theme update`
     Then the return code should be 1
@@ -241,7 +241,7 @@ Feature: Update WordPress themes
     Given a WP install
     And I run `wp theme delete --all --force`
 
-    When I run `wp theme install moina --version=1.0.2`
+    When I run `wp theme install oceanly --version=1.0.0`
     Then STDOUT should not be empty
 
     When I run `wp theme install twentytwelve --version=1.0`
@@ -250,7 +250,7 @@ Feature: Update WordPress themes
     When I try `wp theme update --all`
     Then STDOUT should contain:
       """
-      Updating Moina...
+      Updating Oceanly...
       """
 
     And STDOUT should contain:
