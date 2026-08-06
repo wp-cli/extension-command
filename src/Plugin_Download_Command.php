@@ -70,6 +70,7 @@ class Plugin_Download_Command {
 			WP_CLI::error( "The '{$slug}' plugin could not be found." );
 		}
 
+		/** @var array{download_link: string, version: string} $plugin_data */
 		$download_url = $plugin_data['download_link'];
 		$version      = $plugin_data['version'];
 
