@@ -210,7 +210,7 @@ Feature: Manage WordPress themes and plugins
 
     Examples:
       | type   | type_name | item                    | item_title              | version | zip_file                                                               | file_to_check                                                     |
-      | theme  | Theme     | oceanly                 | Oceanly                 | 1.0.0   | https://wordpress.org/themes/download/oceanly.1.0.0.zip                | {CONTENT_DIR}/oceanly/style.css                                   |
+      | theme  | Theme     | storefront              | Storefront              | 1.0.0   | https://wordpress.org/themes/download/storefront.1.0.0.zip             | {CONTENT_DIR}/storefront/style.css                                |
       | plugin | Plugin    | category-checklist-tree | Category Checklist Tree | 1.2     | https://downloads.wordpress.org/plugin/category-checklist-tree.1.2.zip | {CONTENT_DIR}/category-checklist-tree/category-checklist-tree.php |
 
   @require-wp-4.5 @github-api
