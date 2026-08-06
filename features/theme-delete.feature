@@ -58,16 +58,16 @@ Feature: Delete WordPress themes
 
   Scenario: Delete all installed themes when active theme has a parent
     Given a WP install
-    And I run `wp theme install moina-blog --activate`
+    And I run `wp theme install oceanly-green --activate`
 
     When I run `wp theme list --field=name`
     Then STDOUT should contain:
       """
-      moina-blog
-      moina
+      oceanly-green
+      oceanly
       """
 
-    When I try `wp theme delete moina-blog`
+    When I try `wp theme delete oceanly-green`
     Then STDERR should contain:
       """
       Can't delete the currently active theme
@@ -77,7 +77,7 @@ Feature: Delete WordPress themes
       Error: No themes deleted.
       """
 
-    When I try `wp theme delete moina`
+    When I try `wp theme delete oceanly`
     Then STDERR should contain:
       """
       Can't delete the parent of the currently active theme
@@ -96,8 +96,8 @@ Feature: Delete WordPress themes
     When I run `wp theme list --field=name`
     Then STDOUT should contain:
       """
-      moina-blog
-      moina
+      oceanly-green
+      oceanly
       """
 
     When I run `wp theme delete --all --force`
