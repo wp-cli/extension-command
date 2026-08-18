@@ -778,9 +778,15 @@ class Plugin_Command extends CommandWithUpgrade {
 
 		$status = install_plugin_install_status( $api );
 
-		if ( ! Utils\get_flag_value( $assoc_args, 'force' ) && 'install' !== $status['status'] ) {
-			// We know this will fail, so avoid a needless download of the package.
-			return new WP_Error( 'already_installed', 'Plugin already installed.' );
+		if ( ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
+			$is_installed = 'install' !== $status['status']
+				|| $this->is_plugin_installed( $slug )
+				|| $this->is_plugin_installed( $api->slug );
+
+			if ( $is_installed ) {
+				// We know this will fail, so avoid a needless download of the package.
+				return new WP_Error( 'already_installed', 'Plugin already installed.' );
+			}
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', html_entity_decode( $api->name, ENT_QUOTES ), $api->version ) );
@@ -796,6 +802,30 @@ class Plugin_Command extends CommandWithUpgrade {
 		restore_error_handler();
 
 		return $result;
+	}
+
+	/**
+	 * Checks whether a plugin with the given slug is already installed.
+	 *
+	 * `install_plugin_install_status()` reports an 'install' status for a plugin
+	 * that is already installed when the WordPress.org API does not provide any
+	 * update information for the installed version. This happens for example for
+	 * the Akismet plugin that is bundled with WordPress, whenever the bundled
+	 * version is outdated but no update is being offered for it.
+	 *
+	 * Checking the file system as well makes sure such a plugin is reported as
+	 * being already installed instead of the installation failing with a
+	 * "Destination folder already exists" error.
+	 *
+	 * @param string $slug Plugin slug.
+	 * @return bool Whether the plugin folder holds an installed plugin.
+	 */
+	private function is_plugin_installed( $slug ) {
+		if ( ! is_dir( WP_PLUGIN_DIR . '/' . $slug ) ) {
+			return false;
+		}
+
+		return count( get_plugins( '/' . $slug ) ) > 0;
 	}
 
 	/**
