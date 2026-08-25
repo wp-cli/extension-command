@@ -1124,10 +1124,17 @@ class Plugin_Command extends CommandWithUpgrade {
 				if ( $xml_pub_date ) {
 					$pub_date = strtotime( $xml_pub_date[0] ) ?: null;
 
-					// wp_date() was only introduced in WordPress 5.3.
-					$data['last_updated'] = function_exists( 'wp_date' )
-						? wp_date( 'Y-m-d', $pub_date )
-						: date_i18n( 'Y-m-d', $pub_date ?? false );
+					if ( function_exists( 'wp_date' ) ) {
+						$data['last_updated'] = wp_date( 'Y-m-d', $pub_date );
+					} else {
+						// wp_date() is WordPress 5.3+. get_date_from_gmt() renders in the site
+						// timezone the same way, without date_i18n()'s pre-5.3 contract of
+						// expecting a timestamp that already has the offset added to it.
+						$data['last_updated'] = get_date_from_gmt(
+							gmdate( 'Y-m-d H:i:s', $pub_date ?? time() ),
+							'Y-m-d'
+						);
+					}
 				}
 			}
 		}

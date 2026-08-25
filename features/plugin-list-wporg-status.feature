@@ -114,6 +114,7 @@ Feature: Check the status of plugins on WordPress.org
   @less-than-wp-5.3
   Scenario: The wp.org last updated date is still rendered on WordPress < 5.3
     Given a WP install
+    And I run `wp option update timezone_string Asia/Tokyo`
     And a wp-content/plugins/wporg-dated/wporg-dated.php file:
       """
       <?php
@@ -148,8 +149,11 @@ Feature: Check the status of plugins on WordPress.org
         </rss>
       """
 
-    # wp_date() only exists since WordPress 5.3, so this falls back to date_i18n().
+    # wp_date() only exists since WordPress 5.3, so this goes through the
+    # get_date_from_gmt() fallback. The pubDate above is 21:07 UTC, which is already
+    # the next day in Asia/Tokyo, so this also pins that the fallback renders in the
+    # site timezone rather than in UTC.
     When I run `wp plugin list --fields=name,wporg_last_updated`
     Then STDOUT should be a table containing rows:
       | name        | wporg_last_updated |
-      | wporg-dated | 2025-09-26         |
+      | wporg-dated | 2025-09-27         |
