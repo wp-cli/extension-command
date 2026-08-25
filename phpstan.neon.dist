@@ -14,3 +14,22 @@ parameters:
     - identifier: missingType.property
     - identifier: missingType.parameter
     - identifier: missingType.return
+
+    # johnbillion/wp-compat checks every WordPress symbol against the WordPress 4.9
+    # baseline that wp-cli-tests configures. It only recognizes function_exists() and
+    # method_exists() guards, so it cannot see the `wp_version_compare()` checks that
+    # gate the plugin dependency features, and reports those as errors.
+
+    # `wp plugin install --with-dependencies` aborts on WordPress < 6.5 in
+    # `Plugin_Command::install()`, before reaching `get_plugin_dependencies()`, and
+    # `wp plugin install-dependencies` does the same check in the command method itself.
+    -
+      identifier: WPCompat.methodNotAvailable
+      path: src/Plugin_Command.php
+
+    # WordPress 5.3 only formalized the already documented `...$arg` parameter of
+    # `do_action()` by adding it to the function signature. Additional arguments were
+    # collected through `func_get_args()` before that.
+    -
+      identifier: WPCompat.parameterNotAvailable.doaction.arg
+      path: src/Plugin_Command.php

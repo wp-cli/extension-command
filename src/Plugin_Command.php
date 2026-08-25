@@ -1122,7 +1122,12 @@ class Plugin_Command extends CommandWithUpgrade {
 			if ( false !== $xml ) {
 				$xml_pub_date = $xml->xpath( '//pubDate' );
 				if ( $xml_pub_date ) {
-					$data['last_updated'] = wp_date( 'Y-m-d', strtotime( $xml_pub_date[0] ) ?: null );
+					$pub_date = strtotime( $xml_pub_date[0] ) ?: null;
+
+					// wp_date() was only introduced in WordPress 5.3.
+					$data['last_updated'] = function_exists( 'wp_date' )
+						? wp_date( 'Y-m-d', $pub_date )
+						: date_i18n( 'Y-m-d', $pub_date ?? false );
 				}
 			}
 		}
