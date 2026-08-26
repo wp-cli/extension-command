@@ -165,6 +165,53 @@ Feature: Install WordPress plugins
       """
     And the return code should be 1
 
+  Scenario: Installed plugin is detected even without available update information
+    Given a WP install
+    # `install_plugin_install_status()` falls back to an "install" status if the
+    # WordPress.org API does not offer an update for an outdated plugin.
+    And a wp-content/mu-plugins/no-plugin-updates.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Hide Plugin Updates
+       * Description: Simulates the WordPress.org API not offering any plugin updates
+       * Author: WP-CLI tests
+       */
+      add_filter(
+          'site_transient_update_plugins',
+          function ( $updates ) {
+              if ( is_object( $updates ) ) {
+                  $updates->response = array();
+              }
+              return $updates;
+          },
+          PHP_INT_MAX
+      );
+      """
+    And a wp-content/plugins/debug-bar/debug-bar.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Debug Bar
+       * Version: 0.1
+       */
+      """
+
+    When I try `wp plugin install debug-bar`
+    Then STDOUT should be:
+      """
+      Success: Plugin already installed.
+      """
+    And STDERR should be:
+      """
+      Warning: debug-bar: Plugin already installed.
+      """
+    And STDERR should not contain:
+      """
+      Destination folder already exists
+      """
+    And the return code should be 0
+
   Scenario: Paths aren't backslashed when destination folder already exists
     Given a WP install
 
