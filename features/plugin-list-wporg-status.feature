@@ -110,3 +110,50 @@ Feature: Check the status of plugins on WordPress.org
       | wordpress-importer     | active          | 2025-09-26         |
       | no-longer-in-directory | closed          | 2017-11-13         |
       | never-wporg            |                 |                    |
+
+  @less-than-wp-5.3
+  Scenario: The wp.org last updated date is still rendered on WordPress < 5.3
+    Given a WP install
+    And I run `wp option update timezone_string Asia/Tokyo`
+    And a wp-content/plugins/wporg-dated/wporg-dated.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin with a WordPress.org release date
+       * Version:     1.0.0
+       */
+      """
+    And that HTTP requests to https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request%5Blocale%5D=en_US&request%5Bslug%5D=wporg-dated will respond with:
+      """
+      HTTP/1.1 200
+      Content-Type: application/json
+
+      {
+        "name": "Plugin with a WordPress.org release date",
+        "slug": "wporg-dated",
+        "last_updated": "2025-09-26 9:07pm GMT"
+      }
+      """
+    And that HTTP requests to https://plugins.trac.wordpress.org/log/wporg-dated/?limit=1&mode=stop_on_copy&format=rss will respond with:
+      """
+      HTTP/1.1 200
+      Content-Type: application/rss+xml;charset=utf-8
+
+      <?xml version="1.0"?>
+        <rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+          <channel>
+            <item>
+              <pubDate>Fri, 26 Sep 2025 21:07:26 GMT</pubDate>
+            </item>
+        </channel>
+        </rss>
+      """
+
+    # wp_date() only exists since WordPress 5.3, so this goes through the
+    # get_date_from_gmt() fallback. The pubDate above is 21:07 UTC, which is already
+    # the next day in Asia/Tokyo, so this also pins that the fallback renders in the
+    # site timezone rather than in UTC.
+    When I run `wp plugin list --fields=name,wporg_last_updated`
+    Then STDOUT should be a table containing rows:
+      | name        | wporg_last_updated |
+      | wporg-dated | 2025-09-27         |
