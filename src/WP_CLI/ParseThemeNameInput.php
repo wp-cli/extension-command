@@ -138,6 +138,8 @@ trait ParseThemeNameInput {
 				$theme_type = 'block';
 			}
 
+			$description = $theme->get( 'Description' );
+
 			$items[ $stylesheet ] = [
 				'name'                      => $key,
 				'status'                    => $this->get_status( $theme ),
@@ -147,7 +149,7 @@ trait ParseThemeNameInput {
 				'version'                   => $theme->get( 'Version' ),
 				'update_id'                 => $stylesheet,
 				'title'                     => $theme->get( 'Name' ),
-				'description'               => wordwrap( $theme->get( 'Description' ) ),
+				'description'               => false !== $description ? wordwrap( $description ) : '',
 				'author'                    => $theme->get( 'Author' ),
 				'auto_update'               => in_array( $stylesheet, $auto_updates, true ),
 				'auto_update_indicated'     => $auto_update_indicated,
