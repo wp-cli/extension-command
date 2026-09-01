@@ -19,6 +19,7 @@ class PluginUpgrader extends \Plugin_Upgrader {
 			return $will_invalidate;
 		};
 
+		// @phpstan-ignore WPCompat.filterNotAvailable.wpopcacheinvalidatefile
 		add_filter( 'wp_opcache_invalidate_file', $track_files, 10, 2 );
 
 		$result = parent::install_package( $args );
