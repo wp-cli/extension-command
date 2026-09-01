@@ -50,7 +50,7 @@ Feature: Update WordPress themes
       """
 
     # One theme installed.
-    Given I run `wp theme install moina --version=1.0.2`
+    Given I run `wp theme install storefront --version=1.0.0`
 
     When I try `wp theme update`
     Then the return code should be 1
@@ -241,7 +241,7 @@ Feature: Update WordPress themes
     Given a WP install
     And I run `wp theme delete --all --force`
 
-    When I run `wp theme install moina --version=1.0.2`
+    When I run `wp theme install storefront --version=1.0.0`
     Then STDOUT should not be empty
 
     When I run `wp theme install twentytwelve --version=1.0`
@@ -250,10 +250,41 @@ Feature: Update WordPress themes
     When I try `wp theme update --all`
     Then STDOUT should contain:
       """
-      Updating Moina...
+      Updating Storefront...
       """
 
     And STDOUT should contain:
       """
       Success: Updated 2 of 2 themes.
+      """
+
+  Scenario: Skip theme update when theme directory is a VCS checkout
+    Given a WP install
+    And I run `wp theme install twentytwelve --version=3.0 --force`
+    And I run `wp theme path twentytwelve --dir`
+    And save STDOUT as {THEME_DIR}
+
+    When I run `wp eval "is_dir( '{THEME_DIR}/.git' ) || mkdir( '{THEME_DIR}/.git', 0777, true ) || exit( 1 );"`
+    And I try `wp theme update twentytwelve`
+    Then STDERR should contain:
+      """
+      Warning: twentytwelve: Skipped update because a VCS checkout was detected. Use --include-vcs to override.
+      """
+    And STDERR should contain:
+      """
+      Error: No themes updated.
+      """
+    And the return code should be 1
+
+  Scenario: Update theme in VCS checkout when --include-vcs is set
+    Given a WP install
+    And I run `wp theme install twentytwelve --version=3.0 --force`
+    And I run `wp theme path twentytwelve --dir`
+    And save STDOUT as {THEME_DIR}
+
+    When I run `wp eval "is_dir( '{THEME_DIR}/.git' ) || mkdir( '{THEME_DIR}/.git', 0777, true ) || exit( 1 );"`
+    And I run `wp theme update twentytwelve --include-vcs`
+    Then STDOUT should contain:
+      """
+      Success: Updated 1 of 1 themes.
       """

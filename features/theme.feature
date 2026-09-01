@@ -1,5 +1,15 @@
 Feature: Manage WordPress themes
 
+  Scenario: Theme status command is deprecated
+    Given a WP install
+
+    When I try `wp theme status`
+    Then STDERR should contain:
+      """
+      Warning: The `theme status` command is deprecated. Use `wp theme list` or `wp theme get <theme>` instead.
+      """
+    And the return code should be 0
+
   Scenario: Installing and deleting theme
     Given a WP install
     And I run `wp theme delete --all --force`
@@ -8,7 +18,7 @@ Feature: Manage WordPress themes
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
 
-    When I run `wp theme status twentytwelve`
+    When I try `wp theme status twentytwelve`
     Then STDOUT should contain:
       """
       Theme twentytwelve details:
@@ -64,7 +74,7 @@ Feature: Manage WordPress themes
 
     When I run `wp theme install classic --activate`
     And I run `wp theme list --field=name --status=inactive | xargs wp theme delete`
-    And I run `wp theme status`
+    And I try `wp theme status`
     Then STDOUT should be:
       """
       1 installed theme:
@@ -155,7 +165,7 @@ Feature: Manage WordPress themes
       Success: Deleted
       """
 
-    When I run `wp theme status twentytwelve`
+    When I try `wp theme status twentytwelve`
     Then STDOUT should contain:
       """
       Update available
@@ -167,7 +177,7 @@ Feature: Manage WordPress themes
       twentytwelve
       """
 
-    When I run `wp theme status twentytwelve`
+    When I try `wp theme status twentytwelve`
     Then STDOUT should contain:
       """
       Update available
@@ -243,13 +253,13 @@ Feature: Manage WordPress themes
     When I run `wp theme list`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo get_site_transient("update_themes")->last_checked;'`
+    When I run `wp eval "echo get_site_transient( 'update_themes' )->last_checked;"`
     Then save STDOUT as {LAST_UPDATED}
 
     When I run `wp theme list --skip-update-check`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo get_site_transient("update_themes")->last_checked;'`
+    When I run `wp eval "echo get_site_transient( 'update_themes' )->last_checked;"`
     Then STDOUT should be:
       """
       {LAST_UPDATED}
@@ -258,7 +268,7 @@ Feature: Manage WordPress themes
     When I run `wp theme list`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo get_site_transient("update_themes")->last_checked;'`
+    When I run `wp eval "echo get_site_transient( 'update_themes' )->last_checked;"`
     Then STDOUT should not contain:
       """
       {LAST_UPDATED}
@@ -269,7 +279,7 @@ Feature: Manage WordPress themes
     And I run `wp theme delete --all --force`
 
     When I run `rm -rf wp-content/themes`
-    And I run `if test -d wp-content/themes; then echo "fail"; fi`
+    And I run `wp eval "if ( is_dir('wp-content/themes') ) echo 'fail';"`
     Then STDOUT should be empty
 
     When I run `wp theme install twentytwelve --activate`
@@ -283,7 +293,7 @@ Feature: Manage WordPress themes
   Scenario: Attempt to activate or fetch a broken theme
     Given a WP install
 
-    When I run `mkdir -pv wp-content/themes/myth`
+    When I run `wp eval "is_dir( 'wp-content/themes/myth' ) || mkdir( 'wp-content/themes/myth', 0777, true ) || exit( 1 );"`
     Then the wp-content/themes/myth directory should exist
 
     When I try `wp theme activate myth`
@@ -305,6 +315,7 @@ Feature: Manage WordPress themes
     When I try `wp theme status myth`
     Then STDERR should be:
       """
+      Warning: The `theme status` command is deprecated. Use `wp theme list` or `wp theme get <theme>` instead.
       Error: Stylesheet is missing.
       """
     And STDOUT should be empty
@@ -319,78 +330,78 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: Enabling and disabling a theme
     Given a WP multisite install
-    And I run `wp theme install moina`
-    And I run `wp theme install moina-blog`
+    And I run `wp theme install oceanly`
+    And I run `wp theme install oceanly-green`
 
     When I try `wp option get allowedthemes`
     Then the return code should be 1
     # STDERR may or may not be empty, depending on WP-CLI version.
     And STDOUT should be empty
 
-    When I run `wp theme enable moina-blog`
+    When I run `wp theme enable oceanly-green`
     Then STDOUT should contain:
       """
-      Success: Enabled the 'Moina Blog' theme.
+      Success: Enabled the 'Oceanly Green' theme.
       """
 
     When I run `wp option get allowedthemes`
     Then STDOUT should contain:
       """
-      'moina-blog' => true
+      'oceanly-green' => true
       """
 
-    When I run `wp theme disable moina-blog`
+    When I run `wp theme disable oceanly-green`
     Then STDOUT should contain:
       """
-      Success: Disabled the 'Moina Blog' theme.
+      Success: Disabled the 'Oceanly Green' theme.
       """
 
     When I run `wp option get allowedthemes`
     Then STDOUT should not contain:
       """
-      'moina-blog' => true
+      'oceanly-green' => true
       """
 
-    When I run `wp theme enable moina-blog --activate`
+    When I run `wp theme enable oceanly-green --activate`
     Then STDOUT should contain:
       """
-      Success: Enabled the 'Moina Blog' theme.
-      Success: Switched to 'Moina Blog' theme.
+      Success: Enabled the 'Oceanly Green' theme.
+      Success: Switched to 'Oceanly Green' theme.
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp network-meta get 1 allowedthemes`
+    When I try `wp network meta get 1 allowedthemes`
     Then STDOUT should not contain:
       """
-      'moina-blog' => true
+      'oceanly-green' => true
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp theme enable moina-blog --network`
+    When I try `wp theme enable oceanly-green --network`
     Then STDOUT should contain:
       """
-      Success: Network enabled the 'Moina Blog' theme.
+      Success: Network enabled the 'Oceanly Green' theme.
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp network-meta get 1 allowedthemes`
+    When I try `wp network meta get 1 allowedthemes`
     Then STDOUT should contain:
       """
-      'moina-blog' => true
+      'oceanly-green' => true
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp theme disable moina-blog --network`
+    When I try `wp theme disable oceanly-green --network`
     Then STDOUT should contain:
       """
-      Success: Network disabled the 'Moina Blog' theme.
+      Success: Network disabled the 'Oceanly Green' theme.
       """
 
     # Hybrid_Registry throws warning for PHP 8+.
-    When I try `wp network-meta get 1 allowedthemes`
+    When I try `wp network meta get 1 allowedthemes`
     Then STDOUT should not contain:
       """
-      'moina-blog' => true
+      'oceanly-green' => true
       """
 
   Scenario: Enabling and disabling a theme without multisite
@@ -415,13 +426,13 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: Install and attempt to activate a child theme without its parent
     Given a WP install
-    And I run `wp theme install moina-blog`
-    And I run `rm -rf wp-content/themes/moina`
+    And I run `wp theme install oceanly-green`
+    And I run `rm -rf wp-content/themes/oceanly`
 
-    When I try `wp theme activate moina-blog`
+    When I try `wp theme activate oceanly-green`
     Then STDERR should contain:
       """
-      Error: The parent theme is missing. Please install the "moina" parent theme.
+      Error: The parent theme is missing. Please install the "oceanly" parent theme.
       """
     And STDOUT should be empty
     And the return code should be 1
@@ -429,49 +440,49 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: List an active theme with its parent
     Given a WP install
-    And I run `wp theme install moina`
-    And I run `wp theme install --activate moina-blog`
+    And I run `wp theme install oceanly`
+    And I run `wp theme install --activate oceanly-green`
 
     # Hybrid_Registry throws warning for PHP 8+.
     When I try `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name          | status   |
-      | moina-blog    | active   |
-      | moina         | parent   |
+      | oceanly-green | active   |
+      | oceanly       | parent   |
 
   @require-wp-5.7
   Scenario: List broken themes (child theme without parent)
     Given a WP install
-    And I run `wp theme install moina`
-    And I run `wp theme install moina-blog`
+    And I run `wp theme install oceanly`
+    And I run `wp theme install oceanly-green`
     
     When I run `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name          | status   |
-      | moina-blog    | inactive |
-      | moina         | inactive |
+      | oceanly-green | inactive |
+      | oceanly       | inactive |
     
-    When I run `wp theme delete moina`
+    When I run `wp theme delete oceanly`
     Then STDOUT should contain:
       """
-      Deleted 'moina' theme.
+      Deleted 'oceanly' theme.
       """
     
     When I run `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name          | status   |
-      | moina-blog    | inactive |
+      | oceanly-green | inactive |
     
-    When I try `wp theme activate moina-blog`
+    When I try `wp theme activate oceanly-green`
     Then STDERR should contain:
       """
-      Error: The parent theme is missing. Please install the "moina" parent theme.
+      Error: The parent theme is missing. Please install the "oceanly" parent theme.
       """
     
-    When I try `wp theme install moina-blog`
+    When I try `wp theme install oceanly-green`
     Then STDERR should contain:
       """
-      Warning: moina-blog: Theme already installed.
+      Warning: oceanly-green: Theme already installed.
       """
 
   Scenario: When updating a theme --format should be the same when using --dry-run
@@ -544,26 +555,29 @@ Feature: Manage WordPress themes
   Scenario: Automatically install parent theme for a child theme
     Given a WP install
 
-    When I try `wp theme status moina`
+    When I try `wp theme status oceanly`
     Then STDERR should contain:
       """
-      Error: The 'moina' theme could not be found.
+      Error: The 'oceanly' theme could not be found.
       """
     And STDOUT should be empty
     And the return code should be 1
 
-    When I run `wp theme install moina-blog`
+    When I run `wp theme install oceanly-green`
     Then STDOUT should contain:
       """
       This theme requires a parent theme. Checking if it is installed
       """
 
-    When I run `wp theme status moina`
+    When I try `wp theme status oceanly`
     Then STDOUT should contain:
       """
-      Theme moina details:
+      Theme oceanly details:
       """
-    And STDERR should be empty
+    And STDERR should contain:
+      """
+      Warning: The `theme status` command is deprecated. Use `wp theme list` or `wp theme get <theme>` instead.
+      """
 
   Scenario: Get status field in theme detail
     Given a WP install
@@ -655,12 +669,12 @@ Feature: Manage WordPress themes
     Given a WP install
     And I run `wp theme delete --all --force`
     And I run `wp theme install twentytwelve`
-    And I run `wp theme install moina-blog --activate`
+    And I run `wp theme install oceanly-green --activate`
 
-    When I run `wp theme is-active moina-blog`
+    When I run `wp theme is-active oceanly-green`
     Then the return code should be 0
 
-    When I run `wp theme is-active moina`
+    When I run `wp theme is-active oceanly`
     Then the return code should be 0
 
     When I try `wp theme is-active twentytwelve`

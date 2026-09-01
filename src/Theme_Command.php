@@ -3,6 +3,7 @@
 use WP_CLI\CommandWithUpgrade;
 use WP_CLI\ParseThemeNameInput;
 use WP_CLI\Utils;
+use WP_CLI\Path;
 
 /**
  * Manages themes, including installs, activations, and updates.
@@ -95,6 +96,8 @@ class Theme_Command extends CommandWithUpgrade {
 	 *          Status: Inactive
 	 *          Version: 1.2
 	 *          Author: the WordPress team
+	 *
+	 * @deprecated Use `wp theme list` or `wp theme get <theme>` instead.
 	 */
 	public function status( $args ) {
 		if ( isset( $args[0] ) ) {
@@ -792,6 +795,9 @@ class Theme_Command extends CommandWithUpgrade {
 	 * [--auto-update-indicated]
 	 * : Only update themes where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
 	 *
+	 * [--include-vcs]
+	 * : Include themes that are version-controlled with a VCS (e.g. git, svn, hg). Skipped by default.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Update multiple themes
@@ -1071,7 +1077,7 @@ class Theme_Command extends CommandWithUpgrade {
 	 * Gets the template path based on installation type.
 	 */
 	private static function get_template_path( $template ) {
-		$command_root  = Utils\phar_safe_path( dirname( __DIR__ ) );
+		$command_root  = Path::phar_safe( dirname( __DIR__ ) );
 		$template_path = "{$command_root}/templates/{$template}";
 
 		if ( ! file_exists( $template_path ) ) {

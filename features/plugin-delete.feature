@@ -65,6 +65,7 @@ Feature: Delete WordPress plugins
       """
     And the return code should be 0
 
+  @skip-windows
   Scenario: Reports a failure for a plugin that can't be deleted
     Given a WP install
 

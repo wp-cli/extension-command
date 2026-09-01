@@ -3,9 +3,8 @@
 use WP_CLI\CommandWithUpgrade;
 use WP_CLI\ParsePluginNameInput;
 use WP_CLI\Utils;
+use WP_CLI\Path;
 use WP_CLI\WpOrgApi;
-
-use function WP_CLI\Utils\normalize_path;
 
 /**
  * Manages plugins, including installs, activations, and updates.
@@ -110,6 +109,8 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *         Version: 20160523.1
 	 *         Author: Otto42, pross
 	 *         Description: A simple and easy way to test your theme for all the latest WordPress standards and practices. A great theme development tool!
+	 *
+	 * @deprecated Use `wp plugin list` or `wp plugin get <plugin>` instead.
 	 */
 	public function status( $args ) {
 		parent::status( $args );
@@ -777,9 +778,15 @@ class Plugin_Command extends CommandWithUpgrade {
 
 		$status = install_plugin_install_status( $api );
 
-		if ( ! Utils\get_flag_value( $assoc_args, 'force' ) && 'install' !== $status['status'] ) {
-			// We know this will fail, so avoid a needless download of the package.
-			return new WP_Error( 'already_installed', 'Plugin already installed.' );
+		if ( ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
+			$is_installed = 'install' !== $status['status']
+				|| $this->is_plugin_installed( $slug )
+				|| $this->is_plugin_installed( $api->slug );
+
+			if ( $is_installed ) {
+				// We know this will fail, so avoid a needless download of the package.
+				return new WP_Error( 'already_installed', 'Plugin already installed.' );
+			}
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', html_entity_decode( $api->name, ENT_QUOTES ), $api->version ) );
@@ -795,6 +802,30 @@ class Plugin_Command extends CommandWithUpgrade {
 		restore_error_handler();
 
 		return $result;
+	}
+
+	/**
+	 * Checks whether a plugin with the given slug is already installed.
+	 *
+	 * `install_plugin_install_status()` reports an 'install' status for a plugin
+	 * that is already installed when the WordPress.org API does not provide any
+	 * update information for the installed version. This happens for example for
+	 * the Akismet plugin that is bundled with WordPress, whenever the bundled
+	 * version is outdated but no update is being offered for it.
+	 *
+	 * Checking the file system as well makes sure such a plugin is reported as
+	 * being already installed instead of the installation failing with a
+	 * "Destination folder already exists" error.
+	 *
+	 * @param string $slug Plugin slug.
+	 * @return bool Whether the plugin folder holds an installed plugin.
+	 */
+	private function is_plugin_installed( $slug ) {
+		if ( ! is_dir( WP_PLUGIN_DIR . '/' . $slug ) ) {
+			return false;
+		}
+
+		return count( get_plugins( '/' . $slug ) ) > 0;
 	}
 
 	/**
@@ -839,6 +870,9 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *
 	 * [--auto-update-indicated]
 	 * : Only update plugins where the server response indicates an automatic update. Updates to the version indicated by the server, not necessarily the latest version. Cannot be used with `--version`, `--minor`, or `--patch`.
+	 *
+	 * [--include-vcs]
+	 * : Include plugins that are version-controlled with a VCS (e.g. git, svn, hg). Skipped by default.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -1000,7 +1034,7 @@ class Plugin_Command extends CommandWithUpgrade {
 			];
 
 			if ( $this->check_headers['tested_up_to'] ) {
-				$plugin_readme = normalize_path( dirname( WP_PLUGIN_DIR . '/' . $file ) . '/readme.txt' );
+				$plugin_readme = Path::normalize( dirname( WP_PLUGIN_DIR . '/' . $file ) . '/readme.txt' );
 
 				if ( file_exists( $plugin_readme ) && is_readable( $plugin_readme ) ) {
 					$readme_obj = new SplFileObject( $plugin_readme );
@@ -1031,13 +1065,6 @@ class Plugin_Command extends CommandWithUpgrade {
 				// Get info for all plugins that don't have an update.
 				$plugin_update_info = isset( $all_update_info->no_update[ $file ] ) ? $all_update_info->no_update[ $file ] : null;
 
-				// Check if local version is newer than what is listed upstream.
-				if ( null !== $plugin_update_info && version_compare( $details['Version'], $plugin_update_info->new_version, '>' ) ) {
-					$items[ $file ]['update']       = static::INVALID_VERSION_MESSAGE;
-					$items[ $file ]['requires']     = isset( $plugin_update_info->requires ) ? $plugin_update_info->requires : null;
-					$items[ $file ]['requires_php'] = isset( $plugin_update_info->requires_php ) ? $plugin_update_info->requires_php : null;
-				}
-
 				// If there is a plugin in no_update with a newer version than the local copy, it is either because:
 				// A: the plugins update API has already filtered it because the local WordPress version is too low
 				// B: It is possibly a paid plugin that has an update which the user does not qualify for
@@ -1047,7 +1074,7 @@ class Plugin_Command extends CommandWithUpgrade {
 					$items[ $file ]['requires']       = isset( $plugin_update_info->requires ) ? $plugin_update_info->requires : null;
 					$items[ $file ]['requires_php']   = isset( $plugin_update_info->requires_php ) ? $plugin_update_info->requires_php : null;
 
-					if ( isset( $plugin_update_info->requires ) && version_compare( $wp_version, $requires, '>=' ) ) {
+					if ( isset( $plugin_update_info->requires ) && version_compare( $wp_version, $plugin_update_info->requires, '<' ) ) {
 						$reason = "This update requires WordPress version $plugin_update_info->requires, but the version installed is $wp_version.";
 					} elseif ( ! isset( $plugin_update_info->package ) ) {
 						$reason = 'Update file not provided. Contact author for more details';
@@ -1125,7 +1152,19 @@ class Plugin_Command extends CommandWithUpgrade {
 			if ( false !== $xml ) {
 				$xml_pub_date = $xml->xpath( '//pubDate' );
 				if ( $xml_pub_date ) {
-					$data['last_updated'] = wp_date( 'Y-m-d', strtotime( $xml_pub_date[0] ) ?: null );
+					$pub_date = strtotime( $xml_pub_date[0] ) ?: null;
+
+					if ( function_exists( 'wp_date' ) ) {
+						$data['last_updated'] = wp_date( 'Y-m-d', $pub_date );
+					} else {
+						// wp_date() is WordPress 5.3+. get_date_from_gmt() renders in the site
+						// timezone the same way, without date_i18n()'s pre-5.3 contract of
+						// expecting a timestamp that already has the offset added to it.
+						$data['last_updated'] = get_date_from_gmt(
+							gmdate( 'Y-m-d H:i:s', $pub_date ?? time() ),
+							'Y-m-d'
+						);
+					}
 				}
 			}
 		}
@@ -2023,7 +2062,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 * Gets the template path based on installation type.
 	 */
 	private static function get_template_path( $template ) {
-		$command_root  = Utils\phar_safe_path( dirname( __DIR__ ) );
+		$command_root  = Path::phar_safe( dirname( __DIR__ ) );
 		$template_path = "{$command_root}/templates/{$template}";
 
 		if ( ! file_exists( $template_path ) ) {
@@ -2041,7 +2080,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 */
 	private function get_details( $file ) {
 		$plugin_folder = get_plugins( '/' . plugin_basename( dirname( $file ) ) );
-		$plugin_file   = Utils\basename( $file );
+		$plugin_file   = Path::basename( $file );
 
 		return $plugin_folder[ $plugin_file ];
 	}

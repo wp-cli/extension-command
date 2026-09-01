@@ -5,7 +5,7 @@ Feature: Manage WordPress plugins
     And I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
 
-    When I run `wp plugin scaffold --skip-tests plugin1`
+    When I run `wp scaffold plugin --skip-tests plugin1`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/plugin1/plugin1.php file should exist
     And the {PLUGIN_DIR}/zombieland/phpunit.xml.dist file should not exist
@@ -22,7 +22,7 @@ Feature: Manage WordPress plugins
       {PLUGIN_DIR}/plugin1
       """
 
-    When I run `wp plugin scaffold Zombieland`
+    When I run `wp scaffold plugin Zombieland`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/Zombieland/Zombieland.php file should exist
     And the {PLUGIN_DIR}/Zombieland/phpunit.xml.dist file should exist
@@ -38,7 +38,7 @@ Feature: Manage WordPress plugins
 
     # Check that the inner-plugin is not picked up
     When I run `mv {PLUGIN_DIR}/plugin1 {PLUGIN_DIR}/Zombieland/`
-    And I run `wp plugin status Zombieland`
+    And I try `wp plugin status Zombieland`
     Then STDOUT should contain:
       """
       Plugin Zombieland details:
@@ -52,13 +52,13 @@ Feature: Manage WordPress plugins
     When I run `wp plugin activate Zombieland`
     Then STDOUT should not be empty
 
-    When I run `wp plugin status Zombieland`
+    When I try `wp plugin status Zombieland`
     Then STDOUT should contain:
       """
           Status: Active
       """
 
-    When I run `wp plugin status`
+    When I try `wp plugin status`
     Then STDOUT should not be empty
 
     When I run `wp plugin list --fields=name,status,update,version,update_version,auto_update`
@@ -198,7 +198,7 @@ Feature: Manage WordPress plugins
       Success: Activated 1 of 1 plugins.
       """
 
-    When I run `wp plugin status network-only`
+    When I try `wp plugin status network-only`
     Then STDOUT should contain:
       """
           Status: Active
@@ -220,7 +220,7 @@ Feature: Manage WordPress plugins
       Success: Activated 1 of 1 plugins.
       """
 
-    When I run `wp plugin status network-only`
+    When I try `wp plugin status network-only`
     Then STDOUT should contain:
       """
           Status: Network Active
@@ -356,13 +356,13 @@ Feature: Manage WordPress plugins
       Automattic
       """
 
-    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    When I run `wp eval "echo get_site_transient('update_plugins')->last_checked;"`
     Then save STDOUT as {LAST_UPDATED}
 
     When I run `wp plugin list --skip-update-check`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    When I run `wp eval "echo get_site_transient('update_plugins')->last_checked;"`
     Then STDOUT should be:
       """
       {LAST_UPDATED}
@@ -371,7 +371,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list`
     Then STDOUT should not be empty
 
-    When I run `wp eval 'echo get_site_transient("update_plugins")->last_checked;'`
+    When I run `wp eval "echo get_site_transient('update_plugins')->last_checked;"`
     Then STDOUT should not contain:
       """
       {LAST_UPDATED}
@@ -467,7 +467,7 @@ Feature: Manage WordPress plugins
     Given a WP install
 
     When I run `rm -rf wp-content/plugins`
-    And I run `if test -d wp-content/plugins; then echo "fail"; fi`
+    And I run `wp eval "if ( is_dir('wp-content/plugins') ) echo 'fail';"`
     Then STDOUT should be empty
 
     When I run `wp plugin install wordpress-importer --activate`
@@ -481,10 +481,10 @@ Feature: Manage WordPress plugins
   Scenario: Plugin name with HTML entities
     Given a WP install
 
-    When I run `wp plugin install debug-bar-list-dependencies`
+    When I run `wp plugin install health-check`
     Then STDOUT should contain:
       """
-      Installing Debug Bar List Script & Style Dependencies
+      Installing Health Check & Troubleshooting
       """
 
   # Not running for SQLite because it involves another must-use plugin and a drop-in.
@@ -699,11 +699,13 @@ Feature: Manage WordPress plugins
        * Description: Hides the Site Secrets plugin on production sites
        * Author: WP-CLI tests
        */
-
-       add_filter( 'all_plugins', function( $all_plugins ) {
-          unset( $all_plugins['site-secrets/site-secrets.php'] );
-          return $all_plugins;
-       } );
+      add_filter(
+          'all_plugins',
+          function ( $all_plugins ) {
+              unset( $all_plugins['site-secrets/site-secrets.php'] );
+              return $all_plugins;
+          } 
+      );
       """
 
     When I run `wp plugin list --fields=name`
@@ -731,56 +733,58 @@ Feature: Manage WordPress plugins
       | db-error.php |       | Custom database error message. | db-error.php |
 
   @require-wp-4.0
-  Scenario: Validate installed plugin's version.
-    Given a WP installation
-    And I run `wp plugin uninstall --all`
-    And I run `wp plugin install hello-dolly --force`
-    And a wp-content/mu-plugins/test-plugin-update.php file:
+  Scenario Outline: Treat an older or empty no-update version as up to date
+    Given a WP install
+    And a wp-content/plugins/example/example.php file:
       """
       <?php
       /**
-       * Plugin Name: Test Plugin Update
-       * Description: Fakes installed plugin's data to verify plugin version mismatch
-       * Author: WP-CLI tests
+       * Plugin Name: Example Plugin
+       * Version: 2.0.0
        */
-
-      add_filter( 'site_transient_update_plugins', function( $value ) {
-          if ( ! is_object( $value ) ) {
-              return $value;
-          }
-
-          unset( $value->response['hello-dolly/hello.php'] );
-          $value->no_update['hello-dolly/hello.php']->new_version = '1.5';
-
-          return $value;
-      } );
-      ?>
       """
+    And that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
 
-    When I run `wp plugin list --name=hello-dolly  --field=version`
-    Then save STDOUT as {PLUGIN_VERSION}
-
-    When I run `wp plugin list --name=hello-dolly  --field=update_version`
-    Then save STDOUT as {UPDATE_VERSION}
+      {
+        "plugins": [],
+        "translations": [],
+        "no_update": {
+          "example/example.php": {
+            "id": "vendor.example/plugins/example",
+            "slug": "example",
+            "plugin": "example/example.php",
+            "new_version": "<upstream_version>",
+            "package": ""
+          }
+        }
+      }
+      """
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name               | status   | update                       | version          | update_version   | auto_update |
-      | hello-dolly        | inactive | version higher than expected | {PLUGIN_VERSION} | {UPDATE_VERSION} | off         |
+      | name    | status   | update | version | update_version | auto_update |
+      | example | inactive | none   | 2.0.0   |                | off         |
 
-    When I try `wp plugin update --all`
-    Then STDERR should be:
+    When I run `wp plugin update --all`
+    Then STDOUT should be:
       """
-      Warning: hello-dolly: version higher than expected.
-      Error: No plugins updated.
+      Success: Plugin already updated.
       """
+    And STDERR should be empty
 
-    When I try `wp plugin update hello-dolly`
-    Then STDERR should be:
+    When I run `wp plugin update example`
+    Then STDOUT should be:
       """
-      Warning: hello-dolly: version higher than expected.
-      Error: No plugins updated.
+      Success: Plugin already updated.
       """
+    And STDERR should be empty
+
+    Examples:
+      | upstream_version |
+      | 1.0.0            |
+      |                  |
 
   Scenario: Only valid status filters are accepted when listing plugins
     Given a WP install
@@ -1031,6 +1035,56 @@ Feature: Manage WordPress plugins
       Warning: example: Update file not provided. Contact author for more details
       """
 
+
+  @require-wp-4.0
+  Scenario: Do not report a WordPress requirement when the installed version already meets the update's requirement
+    Given a WP install
+    And a wp-content/plugins/example/example.php file:
+      """
+      <?php
+        /**
+        * Plugin Name: Example Plugin
+        * Version: 1.0.0
+        * Requires at least: 3.7
+        * Tested up to: 6.7
+      """
+    And that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
+
+      {
+        "plugins": [],
+        "translations": [],
+        "no_update": {
+          "example/example.php": {
+            "id": "w.org/plugins/example",
+            "slug": "example",
+            "plugin": "example/example.php",
+            "new_version": "2.0.0",
+
+            "requires": "4.0",
+            "requires_php": "5.6",
+            "requires_plugins": [],
+            "compatibility": []
+          }
+        }
+      }
+      """
+
+    When I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name            | status   | update       | version  | update_version   | auto_update | requires   | requires_php   |
+      | example         | inactive | unavailable  | 1.0.0    | 2.0.0            | off         | 4.0        | 5.6            |
+
+    When I try `wp plugin update example`
+    Then STDERR should contain:
+      """
+      Warning: example: Update file not provided. Contact author for more details
+      """
+    And STDERR should not contain:
+      """
+      This update requires WordPress version
+      """
 
   @require-wp-4.0
   Scenario: Show plugin update as unavailable if it doesn't meet PHP requirements

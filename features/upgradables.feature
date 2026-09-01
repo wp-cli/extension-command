@@ -75,13 +75,13 @@ Feature: Manage WordPress themes and plugins
       ["<item>"]
       """
 
-    When I run `wp <type> status`
+    When I try `wp <type> status`
     Then STDOUT should contain:
       """
       U = Update Available
       """
 
-    When I run `wp <type> status <item>`
+    When I try `wp <type> status <item>`
     Then STDOUT should contain:
       """
           Status: Inactive
@@ -104,7 +104,7 @@ Feature: Manage WordPress themes and plugins
       updated
       """
 
-    When I run `wp <type> status <item>`
+    When I try `wp <type> status <item>`
     Then STDOUT should not contain:
       """
       (Update available)
@@ -172,7 +172,7 @@ Feature: Manage WordPress themes and plugins
     And the <file_to_check> file should not exist
 
     # Install <item> from a remote zip file (complex URL with GET parameters)
-    When I run `wp <type> install '<zip_file>?AWSAccessKeyId=123&Expires=456&Signature=abcdef'`
+    When I run `wp <type> install "<zip_file>?AWSAccessKeyId=123&Expires=456&Signature=abcdef"`
     Then STDOUT should contain:
       """
       <type_name> installed successfully.
@@ -210,7 +210,7 @@ Feature: Manage WordPress themes and plugins
 
     Examples:
       | type   | type_name | item                    | item_title              | version | zip_file                                                               | file_to_check                                                     |
-      | theme  | Theme     | moina                   | Moina                   | 1.1.2   | https://wordpress.org/themes/download/moina.1.1.2.zip                  | {CONTENT_DIR}/moina/style.css                                     |
+      | theme  | Theme     | storefront              | Storefront              | 1.0.0   | https://wordpress.org/themes/download/storefront.1.0.0.zip             | {CONTENT_DIR}/storefront/style.css                                |
       | plugin | Plugin    | category-checklist-tree | Category Checklist Tree | 1.2     | https://downloads.wordpress.org/plugin/category-checklist-tree.1.2.zip | {CONTENT_DIR}/category-checklist-tree/category-checklist-tree.php |
 
   @require-wp-4.5 @github-api

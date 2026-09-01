@@ -169,6 +169,8 @@ class Plugin_AutoUpdates_Command {
 			$auto_updates = [];
 		}
 
+		/** @var array<string> $auto_updates */
+
 		$count     = 0;
 		$successes = 0;
 

@@ -7,9 +7,34 @@ parameters:
     - vendor/wp-cli/wp-cli/php
   scanFiles:
     - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+    - tests/phpstan/scan-files.php
   treatPhpDocTypesAsCertain: false
   ignoreErrors:
     - identifier: missingType.iterableValue
     - identifier: missingType.property
     - identifier: missingType.parameter
     - identifier: missingType.return
+
+    # johnbillion/wp-compat checks every WordPress symbol against the WordPress 4.9
+    # baseline that wp-cli-tests configures. It only recognizes function_exists() and
+    # method_exists() guards, so it cannot see the `wp_version_compare()` checks that
+    # gate the plugin dependency features, and reports those as errors.
+    #
+    # The entries below match on the message as well as the identifier, so that a call to
+    # something introduced later than the version each feature is gated on still gets
+    # reported rather than swallowed by a file-wide ignore.
+
+    # `wp plugin install --with-dependencies` aborts on WordPress < 6.5 in
+    # `Plugin_Command::install()`, before reaching `get_plugin_dependencies()`, and
+    # `wp plugin install-dependencies` does the same check in the command method itself.
+    -
+      identifier: WPCompat.methodNotAvailable
+      message: '#^WP_Plugin_Dependencies::(get_dependencies|initialize)\(\) is only available since WordPress version 6\.5\.0\.$#'
+      path: src/Plugin_Command.php
+
+    # WordPress 5.3 only formalized the already documented `...$arg` parameter of
+    # `do_action()` by adding it to the function signature. Additional arguments were
+    # collected through `func_get_args()` before that.
+    -
+      identifier: WPCompat.parameterNotAvailable.doaction.arg
+      path: src/Plugin_Command.php
