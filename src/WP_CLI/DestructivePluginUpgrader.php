@@ -5,7 +5,7 @@ namespace WP_CLI;
 /**
  * A plugin upgrader class that clears the destination directory.
  */
-class DestructivePluginUpgrader extends \Plugin_Upgrader {
+class DestructivePluginUpgrader extends PluginUpgrader {
 
 	public function install_package( $args = array() ) {
 		parent::upgrade_strings(); // Needed for the 'remove_old' string.
