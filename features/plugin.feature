@@ -704,7 +704,7 @@ Feature: Manage WordPress plugins
           function ( $all_plugins ) {
               unset( $all_plugins['site-secrets/site-secrets.php'] );
               return $all_plugins;
-          } 
+          }
       );
       """
 

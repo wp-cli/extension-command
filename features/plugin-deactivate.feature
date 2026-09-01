@@ -51,7 +51,7 @@ Feature: Deactivate WordPress plugins
           function ( $all_plugins ) {
               unset( $all_plugins['akismet/akismet.php'] );
               return $all_plugins;
-          } 
+          }
       );
       """
 
