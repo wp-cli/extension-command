@@ -1132,7 +1132,7 @@ class Plugin_Command extends CommandWithUpgrade {
 				// that instead of also scraping the trac log, which is rate-limited and
 				// otherwise unnecessary here.
 				if ( ! empty( $plugin_data['last_updated'] ) ) {
-					$data['last_updated'] = $this->format_wporg_last_updated( strtotime( $plugin_data['last_updated'] ) ?: null );
+					$data['last_updated'] = $this->format_wporg_last_updated( strtotime( (string) $plugin_data['last_updated'] ) ?: null );
 					return $data;
 				}
 			}
@@ -1172,7 +1172,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	 *
 	 * @param int|null $pub_date Unix timestamp, or null if it could not be parsed.
 	 *
-	 * @return string
+	 * @return string|false
 	 */
 	private function format_wporg_last_updated( $pub_date ) {
 		if ( function_exists( 'wp_date' ) ) {
