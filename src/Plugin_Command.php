@@ -1132,8 +1132,8 @@ class Plugin_Command extends CommandWithUpgrade {
 				// that instead of also scraping the trac log, which is rate-limited and
 				// otherwise unnecessary here. If the value can't be parsed, fall through
 				// to the trac log below rather than defaulting to today's date.
-				if ( ! empty( $plugin_data['last_updated'] ) ) {
-					$pub_date = strtotime( (string) $plugin_data['last_updated'] );
+				if ( ! empty( $plugin_data['last_updated'] ) && is_string( $plugin_data['last_updated'] ) ) {
+					$pub_date = strtotime( $plugin_data['last_updated'] );
 					if ( false !== $pub_date ) {
 						$data['last_updated'] = $this->format_wporg_last_updated( $pub_date );
 						return $data;
@@ -1163,7 +1163,7 @@ class Plugin_Command extends CommandWithUpgrade {
 			if ( false !== $xml ) {
 				$xml_pub_date = $xml->xpath( '//pubDate' );
 				if ( $xml_pub_date ) {
-					$pub_date = strtotime( (string) $xml_pub_date[0] );
+					$pub_date = strtotime( $xml_pub_date[0] );
 					if ( false !== $pub_date ) {
 						$data['last_updated'] = $this->format_wporg_last_updated( $pub_date );
 					}
