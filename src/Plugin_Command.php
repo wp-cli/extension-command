@@ -1130,10 +1130,14 @@ class Plugin_Command extends CommandWithUpgrade {
 				}
 				// The plugins API already reports when the plugin was last updated, so use
 				// that instead of also scraping the trac log, which is rate-limited and
-				// otherwise unnecessary here.
+				// otherwise unnecessary here. If the value can't be parsed, fall through
+				// to the trac log below rather than defaulting to today's date.
 				if ( ! empty( $plugin_data['last_updated'] ) ) {
-					$data['last_updated'] = $this->format_wporg_last_updated( strtotime( (string) $plugin_data['last_updated'] ) ?: null );
-					return $data;
+					$pub_date = strtotime( (string) $plugin_data['last_updated'] );
+					if ( false !== $pub_date ) {
+						$data['last_updated'] = $this->format_wporg_last_updated( $pub_date );
+						return $data;
+					}
 				}
 			}
 			// Just because the plugin is not in the api, does not mean it was never on .org.
