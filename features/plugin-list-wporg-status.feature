@@ -111,6 +111,72 @@ Feature: Check the status of plugins on WordPress.org
       | no-longer-in-directory | closed          | 2017-11-13         |
       | never-wporg            |                 |                    |
 
+  @require-wp-5.2
+  Scenario: The wp.org last updated date for an active plugin does not depend on a second, rate-limited request
+    Given a WP install
+    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And that HTTP requests to https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request%5Blocale%5D=en_US&request%5Bslug%5D=wordpress-importer will respond with:
+      """
+      HTTP/1.1 200
+      Content-Type: application/json
+
+      {
+        "name": "WordPress Importer",
+        "slug": "wordpress-importer",
+        "last_updated": "2025-09-26 9:07pm GMT"
+      }
+      """
+    # plugins.trac.wordpress.org is known to rate-limit this scrape (HTTP 429), with no
+    # pubDate in the response body. wporg_last_updated must still resolve correctly for an
+    # active plugin, because the date is meant to come from the plugin-info API response
+    # above, not from a second request to trac.
+    And that HTTP requests to https://plugins.trac.wordpress.org/log/wordpress-importer/?limit=1&mode=stop_on_copy&format=rss will respond with:
+      """
+      HTTP/1.1 429
+      Content-Type: text/html
+
+      <html><body>429 Too Many Requests</body></html>
+      """
+
+    When I run `wp plugin list --fields=name,wporg_status,wporg_last_updated`
+    Then STDOUT should be a table containing rows:
+      | name               | wporg_status | wporg_last_updated |
+      | wordpress-importer | active       | 2025-09-26         |
+
+  @require-wp-5.2
+  Scenario: The wp.org last updated date falls back to the trac log when the plugin-info API omits it
+    Given a WP install
+    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And that HTTP requests to https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request%5Blocale%5D=en_US&request%5Bslug%5D=wordpress-importer will respond with:
+      """
+      HTTP/1.1 200
+      Content-Type: application/json
+
+      {
+        "name": "WordPress Importer",
+        "slug": "wordpress-importer"
+      }
+      """
+    And that HTTP requests to https://plugins.trac.wordpress.org/log/wordpress-importer/?limit=1&mode=stop_on_copy&format=rss will respond with:
+      """
+      HTTP/1.1 200
+      Content-Type: application/rss+xml;charset=utf-8
+
+      <?xml version="1.0"?>
+        <rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+          <channel>
+            <item>
+              <pubDate>Fri, 26 Sep 2025 21:07:26 GMT</pubDate>
+            </item>
+        </channel>
+        </rss>
+      """
+
+    When I run `wp plugin list --fields=name,wporg_status,wporg_last_updated`
+    Then STDOUT should be a table containing rows:
+      | name               | wporg_status | wporg_last_updated |
+      | wordpress-importer | active       | 2025-09-26         |
+
   @less-than-wp-5.3
   Scenario: The wp.org last updated date is still rendered on WordPress < 5.3
     Given a WP install

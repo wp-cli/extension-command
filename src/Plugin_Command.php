@@ -1128,6 +1128,17 @@ class Plugin_Command extends CommandWithUpgrade {
 				if ( ! $this->check_wporg['last_updated'] ) {
 					return $data; // The plugin is active on .org, but we don't need the date.
 				}
+				// The plugins API already reports when the plugin was last updated, so use
+				// that instead of also scraping the trac log, which is rate-limited and
+				// otherwise unnecessary here. If the value can't be parsed, fall through
+				// to the trac log below rather than defaulting to today's date.
+				if ( ! empty( $plugin_data['last_updated'] ) && is_string( $plugin_data['last_updated'] ) ) {
+					$pub_date = strtotime( $plugin_data['last_updated'] );
+					if ( false !== $pub_date ) {
+						$data['last_updated'] = $this->format_wporg_last_updated( $pub_date );
+						return $data;
+					}
+				}
 			}
 			// Just because the plugin is not in the api, does not mean it was never on .org.
 		}
@@ -1152,24 +1163,36 @@ class Plugin_Command extends CommandWithUpgrade {
 			if ( false !== $xml ) {
 				$xml_pub_date = $xml->xpath( '//pubDate' );
 				if ( $xml_pub_date ) {
-					$pub_date = strtotime( $xml_pub_date[0] ) ?: null;
-
-					if ( function_exists( 'wp_date' ) ) {
-						$data['last_updated'] = wp_date( 'Y-m-d', $pub_date );
-					} else {
-						// wp_date() is WordPress 5.3+. get_date_from_gmt() renders in the site
-						// timezone the same way, without date_i18n()'s pre-5.3 contract of
-						// expecting a timestamp that already has the offset added to it.
-						$data['last_updated'] = get_date_from_gmt(
-							gmdate( 'Y-m-d H:i:s', $pub_date ?? time() ),
-							'Y-m-d'
-						);
+					$pub_date = strtotime( $xml_pub_date[0] );
+					if ( false !== $pub_date ) {
+						$data['last_updated'] = $this->format_wporg_last_updated( $pub_date );
 					}
 				}
 			}
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Formats a wp.org publish date as a `Y-m-d` string in the site's configured timezone.
+	 *
+	 * @param int $pub_date Unix timestamp.
+	 *
+	 * @return string|false
+	 */
+	private function format_wporg_last_updated( $pub_date ) {
+		if ( function_exists( 'wp_date' ) ) {
+			return wp_date( 'Y-m-d', $pub_date );
+		}
+
+		// wp_date() is WordPress 5.3+. get_date_from_gmt() renders in the site
+		// timezone the same way, without date_i18n()'s pre-5.3 contract of
+		// expecting a timestamp that already has the offset added to it.
+		return get_date_from_gmt(
+			gmdate( 'Y-m-d H:i:s', $pub_date ),
+			'Y-m-d'
+		);
 	}
 
 	protected function filter_item_list( $items, $args ) {
