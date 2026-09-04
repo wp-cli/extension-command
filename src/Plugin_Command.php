@@ -1128,6 +1128,13 @@ class Plugin_Command extends CommandWithUpgrade {
 				if ( ! $this->check_wporg['last_updated'] ) {
 					return $data; // The plugin is active on .org, but we don't need the date.
 				}
+				// The plugins API already reports when the plugin was last updated, so use
+				// that instead of also scraping the trac log, which is rate-limited and
+				// otherwise unnecessary here.
+				if ( ! empty( $plugin_data['last_updated'] ) ) {
+					$data['last_updated'] = $this->format_wporg_last_updated( strtotime( $plugin_data['last_updated'] ) ?: null );
+					return $data;
+				}
 			}
 			// Just because the plugin is not in the api, does not mean it was never on .org.
 		}
@@ -1152,24 +1159,33 @@ class Plugin_Command extends CommandWithUpgrade {
 			if ( false !== $xml ) {
 				$xml_pub_date = $xml->xpath( '//pubDate' );
 				if ( $xml_pub_date ) {
-					$pub_date = strtotime( $xml_pub_date[0] ) ?: null;
-
-					if ( function_exists( 'wp_date' ) ) {
-						$data['last_updated'] = wp_date( 'Y-m-d', $pub_date );
-					} else {
-						// wp_date() is WordPress 5.3+. get_date_from_gmt() renders in the site
-						// timezone the same way, without date_i18n()'s pre-5.3 contract of
-						// expecting a timestamp that already has the offset added to it.
-						$data['last_updated'] = get_date_from_gmt(
-							gmdate( 'Y-m-d H:i:s', $pub_date ?? time() ),
-							'Y-m-d'
-						);
-					}
+					$data['last_updated'] = $this->format_wporg_last_updated( strtotime( $xml_pub_date[0] ) ?: null );
 				}
 			}
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Formats a wp.org publish date as a `Y-m-d` string in the site's configured timezone.
+	 *
+	 * @param int|null $pub_date Unix timestamp, or null if it could not be parsed.
+	 *
+	 * @return string
+	 */
+	private function format_wporg_last_updated( $pub_date ) {
+		if ( function_exists( 'wp_date' ) ) {
+			return wp_date( 'Y-m-d', $pub_date );
+		}
+
+		// wp_date() is WordPress 5.3+. get_date_from_gmt() renders in the site
+		// timezone the same way, without date_i18n()'s pre-5.3 contract of
+		// expecting a timestamp that already has the offset added to it.
+		return get_date_from_gmt(
+			gmdate( 'Y-m-d H:i:s', $pub_date ?? time() ),
+			'Y-m-d'
+		);
 	}
 
 	protected function filter_item_list( $items, $args ) {
