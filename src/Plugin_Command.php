@@ -1163,7 +1163,10 @@ class Plugin_Command extends CommandWithUpgrade {
 			if ( false !== $xml ) {
 				$xml_pub_date = $xml->xpath( '//pubDate' );
 				if ( $xml_pub_date ) {
-					$data['last_updated'] = $this->format_wporg_last_updated( strtotime( $xml_pub_date[0] ) ?: null );
+					$pub_date = strtotime( (string) $xml_pub_date[0] );
+					if ( false !== $pub_date ) {
+						$data['last_updated'] = $this->format_wporg_last_updated( $pub_date );
+					}
 				}
 			}
 		}
@@ -1174,7 +1177,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	/**
 	 * Formats a wp.org publish date as a `Y-m-d` string in the site's configured timezone.
 	 *
-	 * @param int|null $pub_date Unix timestamp, or null if it could not be parsed.
+	 * @param int $pub_date Unix timestamp.
 	 *
 	 * @return string|false
 	 */
@@ -1187,7 +1190,7 @@ class Plugin_Command extends CommandWithUpgrade {
 		// timezone the same way, without date_i18n()'s pre-5.3 contract of
 		// expecting a timestamp that already has the offset added to it.
 		return get_date_from_gmt(
-			gmdate( 'Y-m-d H:i:s', $pub_date ?? time() ),
+			gmdate( 'Y-m-d H:i:s', $pub_date ),
 			'Y-m-d'
 		);
 	}
