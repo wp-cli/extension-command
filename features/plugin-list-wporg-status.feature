@@ -207,7 +207,7 @@ Feature: Check the status of plugins on WordPress.org
         </rss>
       """
 
-    # An unparseable API date must not be rendered as today's date, nor stop the
+    # An unparsable API date must not be rendered as today's date, nor stop the
     # trac log from being consulted as the fallback source of the date.
     When I run `wp plugin list --fields=name,wporg_status,wporg_last_updated`
     Then STDOUT should be a table containing rows:
