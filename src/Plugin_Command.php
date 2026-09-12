@@ -1124,9 +1124,14 @@ class Plugin_Command extends CommandWithUpgrade {
 				$plugin_data = false;
 			}
 			if ( $plugin_data ) {
-				$data['status'] = 'active';
+				if ( ! empty( $plugin_data['closed'] ) || ( isset( $plugin_data['error'] ) && 'closed' === $plugin_data['error'] ) ) {
+					$data['status'] = 'closed';
+				} else {
+					$data['status'] = 'active';
+				}
+
 				if ( ! $this->check_wporg['last_updated'] ) {
-					return $data; // The plugin is active on .org, but we don't need the date.
+					return $data; // The plugin is active or closed on .org, but we don't need the date.
 				}
 			}
 			// Just because the plugin is not in the api, does not mean it was never on .org.
