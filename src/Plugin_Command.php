@@ -987,6 +987,9 @@ class Plugin_Command extends CommandWithUpgrade {
 			// filter out plugins based on PHP requirements -- so we must do that here
 			$compatible_php = empty( $requires_php ) || version_compare( PHP_VERSION, $requires_php, '>=' );
 
+			// Reset for each plugin so a previous plugin's reason does not leak into this row.
+			$update_unavailable_reason = '';
+
 			if ( ! $compatible_php ) {
 				$update = 'unavailable';
 
@@ -1030,7 +1033,7 @@ class Plugin_Command extends CommandWithUpgrade {
 				'wporg_status'              => $wporg_info['status'],
 				'wporg_last_updated'        => $wporg_info['last_updated'],
 				'recently_active'           => in_array( $file, array_keys( $recently_active ), true ),
-				'update_unavailable_reason' => isset( $update_unavailable_reason ) ? $update_unavailable_reason : '',
+				'update_unavailable_reason' => $update_unavailable_reason,
 			];
 
 			if ( $this->check_headers['tested_up_to'] ) {

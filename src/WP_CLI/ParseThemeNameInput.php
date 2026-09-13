@@ -103,6 +103,9 @@ trait ParseThemeNameInput {
 			$compatible_php = empty( $requires_php ) || version_compare( PHP_VERSION, $requires_php, '>=' );
 			$compatible_wp  = empty( $requires ) || version_compare( $wp_version, $requires, '>=' );
 
+			// Reset for each theme so a previous theme's reason does not leak into this row.
+			$update_unavailable_reason = '';
+
 			if ( ! $compatible_php ) {
 				$update = 'unavailable';
 
@@ -155,7 +158,7 @@ trait ParseThemeNameInput {
 				'auto_update_indicated'     => $auto_update_indicated,
 				'requires'                  => $requires,
 				'requires_php'              => $requires_php,
-				'update_unavailable_reason' => isset( $update_unavailable_reason ) ? $update_unavailable_reason : '',
+				'update_unavailable_reason' => $update_unavailable_reason,
 				'type'                      => $theme_type,
 			];
 
