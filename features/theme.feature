@@ -792,6 +792,64 @@ Feature: Manage WordPress themes
       Warning: example: This update requires PHP version 100
       """
 
+  Scenario: The unavailable reason of one theme does not leak into other themes
+    Given a WP install
+    And a wp-content/themes/aaa-example/style.css file:
+      """
+      /*
+      Theme Name: aaa-example
+      Version: 1.0.0
+      */
+      """
+    And a wp-content/themes/aaa-example/index.php file:
+      """
+      <?php
+      // Silence is golden.
+      """
+    And a wp-content/themes/zzz-example/style.css file:
+      """
+      /*
+      Theme Name: zzz-example
+      Version: 1.0.0
+      */
+      """
+    And a wp-content/themes/zzz-example/index.php file:
+      """
+      <?php
+      // Silence is golden.
+      """
+    And that HTTP requests to https://api.wordpress.org/themes/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
+
+      {
+        "themes": {
+          "aaa-example": {
+            "theme": "aaa-example",
+            "new_version": "2.0.0",
+            "requires": "3.7",
+            "requires_php": "100"
+          }
+      },
+        "translations": [],
+        "no_update": []
+      }
+      """
+
+    When I run `wp theme list --fields=name,update,update_unavailable_reason --format=csv`
+    Then STDOUT should contain:
+      """
+      aaa-example,unavailable,"This update requires PHP version 100
+      """
+    And STDOUT should contain:
+      """
+      zzz-example,none,
+      """
+    And STDOUT should not contain:
+      """
+      zzz-example,none,"
+      """
+
   @require-wp-5.9
   Scenario: Check theme type field for block themes
     Given a WP install
