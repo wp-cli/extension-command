@@ -1127,9 +1127,14 @@ class Plugin_Command extends CommandWithUpgrade {
 				$plugin_data = false;
 			}
 			if ( $plugin_data ) {
-				$data['status'] = 'active';
+				if ( ! empty( $plugin_data['closed'] ) || ( isset( $plugin_data['error'] ) && 'closed' === $plugin_data['error'] ) ) {
+					$data['status'] = 'closed';
+				} else {
+					$data['status'] = 'active';
+				}
+
 				if ( ! $this->check_wporg['last_updated'] ) {
-					return $data; // The plugin is active on .org, but we don't need the date.
+					return $data; // The plugin is active or closed on .org, but we don't need the date.
 				}
 				// The plugins API already reports when the plugin was last updated, so use
 				// that instead of also scraping the trac log, which is rate-limited and

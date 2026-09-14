@@ -30,14 +30,14 @@ Feature: Check the status of plugins on WordPress.org
       Content-Type: application/json
 
       {
-        error: "closed",
-        name: "No Longer in Directory",
-        slug: "no-longer-in-directory",
-        description: "This plugin has been closed as of October 2, 2018 and is not available for download. This closure is permanent. Reason: Guideline Violation.",
-        closed: true,
-        closed_date: "2018-10-02",
-        reason: "guideline-violation",
-        reason_text: "Guideline Violation"
+        "error": "closed",
+        "name": "No Longer in Directory",
+        "slug": "no-longer-in-directory",
+        "description": "This plugin has been closed as of October 2, 2018 and is not available for download. This closure is permanent. Reason: Guideline Violation.",
+        "closed": true,
+        "closed_date": "2018-10-02",
+        "reason": "guideline-violation",
+        "reason_text": "Guideline Violation"
       }
       """
     And that HTTP requests to https://plugins.trac.wordpress.org/log/wordpress-importer/?limit=1&mode=stop_on_copy&format=rss will respond with:
