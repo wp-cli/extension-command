@@ -69,6 +69,76 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	/**
+	 * Gets the skip flags in effect that can prevent the update mechanism of a plugin or theme from running.
+	 *
+	 * Plugins are affected by `--skip-plugins`. Themes are affected by `--skip-themes` and by `--skip-plugins`,
+	 * as theme updates are often provided by a companion plugin.
+	 *
+	 * @param string $item_type Either 'plugin' or 'theme'.
+	 * @return string[] Flags in effect, e.g. `[ '--skip-plugins' ]`.
+	 */
+	public static function get_skip_flags_in_effect( $item_type ) {
+		$flags = [ 'skip-plugins' ];
+
+		if ( 'theme' === $item_type ) {
+			$flags[] = 'skip-themes';
+		}
+
+		$in_effect = [];
+		foreach ( $flags as $flag ) {
+			if ( WP_CLI::get_config( $flag ) ) {
+				$in_effect[] = "--{$flag}";
+			}
+		}
+
+		return $in_effect;
+	}
+
+	/**
+	 * Prevents update data stored while plugins or themes are skipped from outliving the current process.
+	 *
+	 * Update data fetched while `--skip-plugins` or `--skip-themes` is in effect lacks the entries that the
+	 * skipped plugins or themes would have added for themselves. Later WP-CLI runs, cron and wp-admin would
+	 * otherwise consider those plugins or themes up to date until the transient expires.
+	 *
+	 * Meant to run before WordPress loads, so that update checks WordPress performs on its own are covered too.
+	 *
+	 * @return void
+	 */
+	public static function discard_update_data_stored_while_skipping() {
+		$transients = [
+			'plugin' => 'update_plugins',
+			'theme'  => 'update_themes',
+		];
+
+		foreach ( $transients as $item_type => $transient ) {
+			if ( ! self::get_skip_flags_in_effect( $item_type ) ) {
+				continue;
+			}
+
+			WP_CLI::add_wp_hook(
+				"set_site_transient_{$transient}",
+				static function () use ( $transient ) {
+					static $scheduled = false;
+
+					if ( $scheduled ) {
+						return;
+					}
+
+					$scheduled = true;
+
+					register_shutdown_function(
+						static function () use ( $transient ) {
+							WP_CLI::debug( "Discarding the '{$transient}' transient, as it was stored while skipping plugins or themes.", 'extension-command' );
+							delete_site_transient( $transient );
+						}
+					);
+				}
+			);
+		}
+	}
+
+	/**
 	 * @return class-string<\WP_Upgrader>
 	 */
 	abstract protected function get_upgrader_class( $force );
@@ -742,6 +812,28 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				WP_CLI::warning( "{$item_info['name']}: {$item_info['update_unavailable_reason']}" );
 				++$skipped;
 				unset( $items_to_update[ $item_key ] );
+			}
+		}
+
+		// While a plugin's or theme's own update mechanism might not have run, an item missing from both
+		// `response` and `no_update` cannot be assumed to be up to date.
+		$skip_flags = self::get_skip_flags_in_effect( $this->item_type );
+		if ( $skip_flags ) {
+			$update_info = $this->get_update_info();
+			$flags_text  = implode( ' and ', $skip_flags ) . ( count( $skip_flags ) > 1 ? ' are' : ' is' ) . ' in effect';
+
+			foreach ( $items as $item_info ) {
+				if ( 'none' !== $item_info['update'] ) {
+					continue;
+				}
+
+				$update_id = $item_info['update_id'];
+				if ( isset( $update_info->response[ $update_id ] ) || isset( $update_info->no_update[ $update_id ] ) ) {
+					continue;
+				}
+
+				WP_CLI::warning( "{$item_info['name']}: Could not determine whether an update is available. The {$this->item_type}'s own update mechanism might not have run because {$flags_text}." );
+				++$skipped;
 			}
 		}
 

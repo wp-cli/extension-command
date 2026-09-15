@@ -288,3 +288,94 @@ Feature: Update WordPress themes
       """
       Success: Updated 1 of 1 themes.
       """
+
+  Scenario: Updating a theme whose own update mechanism is skipped with --skip-themes
+    Given a WP install
+    And a wp-content/themes/premium-theme-simulation/style.css file:
+      """
+      /*
+      Theme Name: Premium Theme Simulation
+      Description: Mimics a premium theme whose license does not allow downloading the update.
+      Version: 1.0.0
+      */
+      """
+    And a wp-content/themes/premium-theme-simulation/index.php file:
+      """
+      <?php
+      """
+    And a wp-content/themes/premium-theme-simulation/functions.php file:
+      """
+      <?php
+      add_filter(
+          'pre_set_site_transient_update_themes',
+          function ( $transient ) {
+              if ( ! is_object( $transient ) ) {
+                  $transient = new stdClass();
+              }
+
+              $transient->response['premium-theme-simulation'] = [
+                  'theme'       => 'premium-theme-simulation',
+                  'new_version' => '2.0.0',
+                  'url'         => '',
+                  'package'     => '',
+              ];
+
+              return $transient;
+          }
+      );
+      """
+    And I run `wp theme activate premium-theme-simulation`
+
+    # Update data fetched while themes are skipped must not be reused by later runs.
+    When I run `wp theme list --skip-themes --fields=name,update`
+    Then STDOUT should be a table containing rows:
+      | name                     | update |
+      | premium-theme-simulation | none   |
+
+    When I try `wp theme update premium-theme-simulation`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDOUT should end with a table containing rows:
+      | name                     | old_version | new_version | status |
+      | premium-theme-simulation | 1.0.0       | 2.0.0       | Error  |
+    And STDERR should contain:
+      """
+      Error: No themes updated (1 failed).
+      """
+    And the return code should be 1
+
+    # The update data was fetched with the theme's update mechanism, so the update is still attempted.
+    When I try `wp theme update premium-theme-simulation --skip-themes`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDERR should contain:
+      """
+      Error: No themes updated (1 failed).
+      """
+    And the return code should be 1
+
+    # Update data was refreshed without the theme's update mechanism, which must not be mistaken for being up to date.
+    When I try `wp theme update premium-theme-simulation --skip-themes`
+    Then STDERR should be:
+      """
+      Warning: premium-theme-simulation: Could not determine whether an update is available. The theme's own update mechanism might not have run because --skip-themes is in effect.
+      Error: No themes updated.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    # Update data fetched while themes were skipped is not reused once themes are loaded again.
+    When I try `wp theme update premium-theme-simulation`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDERR should contain:
+      """
+      Error: No themes updated (1 failed).
+      """
+    And the return code should be 1

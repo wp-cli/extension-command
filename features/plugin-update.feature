@@ -436,3 +436,97 @@ Feature: Update WordPress plugins
       """
       Success: Updated 1 of 1 plugins.
       """
+
+  Scenario: Updating a plugin whose own update mechanism is skipped with --skip-plugins
+    Given a WP install
+    And a wp-content/plugins/premium-updater-simulation/premium-updater-simulation.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Premium Updater Simulation
+       * Description: Mimics a premium plugin whose license does not allow downloading the update.
+       * Version: 1.0.0
+       */
+
+      add_filter(
+          'pre_set_site_transient_update_plugins',
+          function ( $transient ) {
+              if ( ! is_object( $transient ) ) {
+                  $transient = new stdClass();
+              }
+
+              $transient->response['premium-updater-simulation/premium-updater-simulation.php'] = (object) [
+                  'id'          => 'premium-updater-simulation/premium-updater-simulation.php',
+                  'slug'        => 'premium-updater-simulation',
+                  'plugin'      => 'premium-updater-simulation/premium-updater-simulation.php',
+                  'new_version' => '2.0.0',
+                  'url'         => '',
+                  'package'     => '',
+              ];
+
+              return $transient;
+          }
+      );
+      """
+    And I run `wp plugin activate premium-updater-simulation`
+
+    # Update data fetched while plugins are skipped must not be reused by later runs.
+    When I run `wp plugin list --skip-plugins --fields=name,update`
+    Then STDOUT should be a table containing rows:
+      | name                       | update |
+      | premium-updater-simulation | none   |
+
+    When I try `wp plugin update premium-updater-simulation`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDOUT should end with a table containing rows:
+      | name                       | old_version | new_version | status |
+      | premium-updater-simulation | 1.0.0       | 2.0.0       | Error  |
+    And STDERR should contain:
+      """
+      Error: No plugins updated (1 failed).
+      """
+    And the return code should be 1
+
+    # The update data was fetched with the plugin's update mechanism, so the update is still attempted.
+    When I try `wp plugin update premium-updater-simulation --skip-plugins`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDERR should contain:
+      """
+      Error: No plugins updated (1 failed).
+      """
+    And the return code should be 1
+
+    # Update data was refreshed without the plugin's update mechanism, which must not be mistaken for being up to date.
+    When I try `wp plugin update premium-updater-simulation --skip-plugins`
+    Then STDERR should be:
+      """
+      Warning: premium-updater-simulation: Could not determine whether an update is available. The plugin's own update mechanism might not have run because --skip-plugins is in effect.
+      Error: No plugins updated.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    # Plugins that WordPress.org reported on are not affected.
+    When I try `wp plugin update --all --skip-plugins --dry-run`
+    Then STDERR should be:
+      """
+      Warning: premium-updater-simulation: Could not determine whether an update is available. The plugin's own update mechanism might not have run because --skip-plugins is in effect.
+      """
+
+    # Update data fetched while plugins were skipped is not reused once plugins are loaded again.
+    When I try `wp plugin update premium-updater-simulation`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDERR should contain:
+      """
+      Error: No plugins updated (1 failed).
+      """
+    And the return code should be 1
