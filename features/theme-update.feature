@@ -346,20 +346,9 @@ Feature: Update WordPress themes
       """
     And the return code should be 1
 
-    # The update data was fetched with the theme's update mechanism, so the update is still attempted.
-    When I try `wp theme update premium-theme-simulation --skip-themes`
-    Then STDERR should contain:
-      """
-      Warning: Update package not available.
-      """
-    And STDERR should contain:
-      """
-      Error: No themes updated (1 failed).
-      """
-    And the return code should be 1
-
-    # Update data was refreshed without the theme's update mechanism, which must not be mistaken for being up to date.
-    When I try `wp theme update premium-theme-simulation --skip-themes`
+    # Once the update data is refreshed without the theme's update mechanism, the theme must not be mistaken for being up to date.
+    When I try `wp transient delete update_themes --network`
+    And I try `wp theme update premium-theme-simulation --skip-themes`
     Then STDERR should be:
       """
       Warning: premium-theme-simulation: Could not determine whether an update is available. The theme's own update mechanism might not have run because --skip-themes is in effect.
@@ -370,6 +359,90 @@ Feature: Update WordPress themes
 
     # Update data fetched while themes were skipped is not reused once themes are loaded again.
     When I try `wp theme update premium-theme-simulation`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDERR should contain:
+      """
+      Error: No themes updated (1 failed).
+      """
+    And the return code should be 1
+
+  Scenario: Updating a theme whose update mechanism lives in a skipped companion plugin
+    Given a WP install
+    And a wp-content/themes/premium-theme-simulation/style.css file:
+      """
+      /*
+      Theme Name: Premium Theme Simulation
+      Description: Mimics a premium theme whose updates are provided by a companion plugin.
+      Version: 1.0.0
+      */
+      """
+    And a wp-content/themes/premium-theme-simulation/index.php file:
+      """
+      <?php
+      """
+    And a wp-content/plugins/premium-theme-updater/premium-theme-updater.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Premium Theme Updater
+       * Description: Mimics a companion plugin providing updates for a premium theme.
+       * Version: 1.0.0
+       */
+
+      add_filter(
+          'pre_set_site_transient_update_themes',
+          function ( $transient ) {
+              if ( ! is_object( $transient ) ) {
+                  $transient = new stdClass();
+              }
+
+              $transient->response['premium-theme-simulation'] = [
+                  'theme'       => 'premium-theme-simulation',
+                  'new_version' => '2.0.0',
+                  'url'         => '',
+                  'package'     => '',
+              ];
+
+              return $transient;
+          }
+      );
+      """
+    And I run `wp plugin activate premium-theme-updater`
+    And I try `wp transient delete update_themes --network`
+
+    When I try `wp theme update premium-theme-simulation`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDERR should contain:
+      """
+      Error: No themes updated (1 failed).
+      """
+    And the return code should be 1
+
+    When I try `wp transient delete update_themes --network`
+    And I try `wp theme update premium-theme-simulation --skip-plugins`
+    Then STDERR should be:
+      """
+      Warning: premium-theme-simulation: Could not determine whether an update is available. The theme's own update mechanism might not have run because --skip-plugins is in effect.
+      Error: No themes updated.
+      """
+    And the return code should be 1
+
+    When I try `wp theme update premium-theme-simulation --skip-plugins --skip-themes`
+    Then STDERR should be:
+      """
+      Warning: premium-theme-simulation: Could not determine whether an update is available. The theme's own update mechanism might not have run because --skip-plugins and --skip-themes are in effect.
+      Error: No themes updated.
+      """
+    And the return code should be 1
+
+    # Skipping only unrelated themes leaves the companion plugin running.
+    When I try `wp theme update premium-theme-simulation --skip-themes=twentytwentyfive`
     Then STDERR should contain:
       """
       Warning: Update package not available.

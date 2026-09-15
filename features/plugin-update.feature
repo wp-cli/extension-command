@@ -490,20 +490,9 @@ Feature: Update WordPress plugins
       """
     And the return code should be 1
 
-    # The update data was fetched with the plugin's update mechanism, so the update is still attempted.
-    When I try `wp plugin update premium-updater-simulation --skip-plugins`
-    Then STDERR should contain:
-      """
-      Warning: Update package not available.
-      """
-    And STDERR should contain:
-      """
-      Error: No plugins updated (1 failed).
-      """
-    And the return code should be 1
-
-    # Update data was refreshed without the plugin's update mechanism, which must not be mistaken for being up to date.
-    When I try `wp plugin update premium-updater-simulation --skip-plugins`
+    # Once the update data is refreshed without the plugin's update mechanism, the plugin must not be mistaken for being up to date.
+    When I try `wp transient delete update_plugins --network`
+    And I try `wp plugin update premium-updater-simulation --skip-plugins`
     Then STDERR should be:
       """
       Warning: premium-updater-simulation: Could not determine whether an update is available. The plugin's own update mechanism might not have run because --skip-plugins is in effect.
@@ -519,8 +508,25 @@ Feature: Update WordPress plugins
       Warning: premium-updater-simulation: Could not determine whether an update is available. The plugin's own update mechanism might not have run because --skip-plugins is in effect.
       """
 
+    # Excluded plugins are not warned about.
+    When I try `wp plugin update --all --skip-plugins --exclude=premium-updater-simulation --dry-run`
+    Then STDERR should be empty
+
     # Update data fetched while plugins were skipped is not reused once plugins are loaded again.
     When I try `wp plugin update premium-updater-simulation`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDERR should contain:
+      """
+      Error: No plugins updated (1 failed).
+      """
+    And the return code should be 1
+
+    # Skipping other plugins leaves the plugin's update mechanism running.
+    When I try `wp transient delete update_plugins --network`
+    And I try `wp plugin update premium-updater-simulation --skip-plugins=akismet`
     Then STDERR should contain:
       """
       Warning: Update package not available.
