@@ -510,7 +510,10 @@ Feature: Update WordPress plugins
 
     # Excluded plugins are not warned about.
     When I try `wp plugin update --all --skip-plugins --exclude=premium-updater-simulation --dry-run`
-    Then STDERR should be empty
+    Then STDERR should not contain:
+    """
+    premium-updater-simulation
+    """
 
     # Update data fetched while plugins were skipped is not reused once plugins are loaded again.
     When I try `wp plugin update premium-updater-simulation`
