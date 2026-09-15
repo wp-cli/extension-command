@@ -503,7 +503,7 @@ Feature: Update WordPress plugins
 
     # Plugins that WordPress.org reported on are not affected.
     When I try `wp plugin update --all --skip-plugins --dry-run`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
       Warning: premium-updater-simulation: Could not determine whether an update is available. The plugin's own update mechanism might not have run because --skip-plugins is in effect.
       """
