@@ -371,6 +371,67 @@ Feature: Update WordPress plugins
       Success: Updated 2 of 2 plugins.
       """
 
+  @require-wp-5.2
+  Scenario: Updating several plugins downloads their packages side by side
+    Given a WP install
+    And an empty cache
+    And I run `wp plugin delete akismet`
+
+    When I run `wp plugin install health-check --version=1.5.0`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin install wordpress-importer --version=0.5`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin update --all`
+    Then STDOUT should contain:
+      """
+      Downloading 2 packages...
+      """
+    And STDOUT should contain:
+      """
+      Using cached file
+      """
+    And STDOUT should contain:
+      """
+      Success: Updated 2 of 2 plugins.
+      """
+
+    When I run `wp plugin install health-check --version=1.5.0 --force`
+    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And I run `wp plugin update --all`
+    Then STDOUT should not contain:
+      """
+      Downloading 2 packages...
+      """
+    And STDOUT should contain:
+      """
+      Success: Updated 2 of 2 plugins.
+      """
+
+  @require-wp-5.2
+  Scenario: Updating a single plugin downloads its package on its own
+    Given a WP install
+    And an empty cache
+    And I run `wp plugin delete akismet`
+
+    When I run `wp plugin install wordpress-importer --version=0.5`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin update --all`
+    Then STDOUT should not contain:
+      """
+      Downloading 1 packages...
+      """
+    And STDOUT should not contain:
+      """
+      Using cached file
+      """
+    And STDOUT should contain:
+      """
+      Success: Updated 1 of 1 plugins.
+      """
+
   @require-wp-5.2 @skip-windows
   Scenario: Failed plugin update keeps JSON output parseable
     Given a WP install
