@@ -421,7 +421,7 @@ Feature: Update WordPress plugins
     When I try `wp plugin update --all`
     Then STDOUT should not contain:
       """
-      Downloading 1 packages...
+      Downloading 1 package
       """
     And STDOUT should not contain:
       """
