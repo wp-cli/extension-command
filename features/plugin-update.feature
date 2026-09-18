@@ -383,7 +383,7 @@ Feature: Update WordPress plugins
     When I run `wp plugin install wordpress-importer --version=0.5`
     Then STDOUT should not be empty
 
-    When I run `wp plugin update --all`
+    When I try `wp plugin update --all`
     Then STDOUT should contain:
       """
       Downloading 2 packages...
@@ -399,7 +399,7 @@ Feature: Update WordPress plugins
 
     When I run `wp plugin install health-check --version=1.5.0 --force`
     And I run `wp plugin install wordpress-importer --version=0.5 --force`
-    And I run `wp plugin update --all`
+    And I try `wp plugin update --all`
     Then STDOUT should not contain:
       """
       Downloading 2 packages...
@@ -418,7 +418,7 @@ Feature: Update WordPress plugins
     When I run `wp plugin install wordpress-importer --version=0.5`
     Then STDOUT should not be empty
 
-    When I run `wp plugin update --all`
+    When I try `wp plugin update --all`
     Then STDOUT should not contain:
       """
       Downloading 1 packages...

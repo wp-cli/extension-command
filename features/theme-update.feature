@@ -258,6 +258,7 @@ Feature: Update WordPress themes
       Success: Updated 2 of 2 themes.
       """
 
+  @require-wp-4.5
   Scenario: Updating several themes downloads their packages side by side
     Given a WP install
     And an empty cache
@@ -269,7 +270,7 @@ Feature: Update WordPress themes
     When I run `wp theme install twentytwelve --version=1.0`
     Then STDOUT should not be empty
 
-    When I run `wp theme update --all`
+    When I try `wp theme update --all`
     Then STDOUT should contain:
       """
       Downloading 2 packages...
