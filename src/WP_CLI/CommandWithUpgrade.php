@@ -807,6 +807,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			foreach ( $items_to_update as $item ) {
 				$cache_manager->whitelist_package( $item['update_package'], $this->item_type, $item['name'], $item['update_version'] );
 			}
+			// Fetch the packages side by side before the upgrader asks for them one at a time.
+			if ( method_exists( $cache_manager, 'prefetch' ) ) {
+				$cache_manager->prefetch( wp_list_pluck( $items_to_update, 'update_package' ) );
+			}
 			$upgrader = $this->get_upgrader( $assoc_args );
 			// Ensure the upgrader uses the download offer present in each item.
 			$transient_filter = function ( $transient ) use ( $items_to_update ) {
