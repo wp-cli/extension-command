@@ -344,9 +344,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				// Add item to cache allowlist if it matches certain URL patterns.
 				self::maybe_cache( $slug, $this->item_type );
 
-				$requirements_filters = $ignore_requirements ? $this->add_ignore_requirements_filters() : array();
-				$installed            = $file_upgrader->install( $slug );
-				$this->remove_ignore_requirements_filters( $requirements_filters );
+				$installed = $this->maybe_ignore_requirements(
+					$ignore_requirements,
+					static function () use ( $file_upgrader, $slug ) {
+						return $file_upgrader->install( $slug );
+					}
+				);
 
 				if ( $installed ) {
 					$slug   = $file_upgrader->result['destination_name'];
@@ -360,9 +363,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			} else {
 				// Assume a plugin/theme slug from the WordPress.org repository has been specified.
-				$requirements_filters = $ignore_requirements ? $this->add_ignore_requirements_filters() : array();
-				$result               = $this->install_from_repo( $slug, $assoc_args );
-				$this->remove_ignore_requirements_filters( $requirements_filters );
+				$result = $this->maybe_ignore_requirements(
+					$ignore_requirements,
+					function () use ( $slug, $assoc_args ) {
+						return $this->install_from_repo( $slug, $assoc_args );
+					}
+				);
 
 				if ( is_null( $result ) ) {
 					++$errors;
@@ -426,18 +432,25 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	/**
-	 * Bypasses the WordPress and PHP version checks that the core upgraders
-	 * run against the unpacked package in `check_package()`.
+	 * Runs an install callback, optionally bypassing the WordPress and PHP
+	 * version checks that the core upgraders run in `check_package()`.
 	 *
-	 * Must be called right before the upgrader's `install()`, so that the capturing
-	 * callback runs after any directory renaming filters and before `check_package()`,
-	 * which the upgrader registers at the same priority during `install()`.
-	 * If the package was rejected only because of version requirements, the captured
-	 * source is restored. Other validation errors, like a missing plugin header, are kept.
+	 * The callback must trigger the upgrader's `install()`, which registers
+	 * `check_package()` at priority 10. The capturing callback is registered
+	 * right before that, so it runs after any directory renaming filters and
+	 * before `check_package()`. If the package was rejected only because of
+	 * version requirements, the captured source is restored. Other validation
+	 * errors, like a missing plugin header, are kept.
 	 *
-	 * @return array<int, callable> Filter callbacks keyed by priority.
+	 * @param bool     $ignore_requirements Whether to bypass the version checks.
+	 * @param callable $callback            Install callback.
+	 * @return mixed Return value of the callback.
 	 */
-	private function add_ignore_requirements_filters() {
+	private function maybe_ignore_requirements( $ignore_requirements, $callback ) {
+		if ( ! $ignore_requirements ) {
+			return $callback();
+		}
+
 		$original_source = null;
 
 		$capture = static function ( $source ) use ( &$original_source ) {
@@ -457,18 +470,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		add_filter( 'upgrader_source_selection', $capture, 10 );
 		add_filter( 'upgrader_source_selection', $restore, 11 );
 
-		return array(
-			10 => $capture,
-			11 => $restore,
-		);
-	}
-
-	/**
-	 * @param array<int, callable> $filters Filter callbacks keyed by priority.
-	 */
-	private function remove_ignore_requirements_filters( $filters ) {
-		foreach ( $filters as $priority => $callback ) {
-			remove_filter( 'upgrader_source_selection', $callback, $priority );
+		try {
+			return $callback();
+		} finally {
+			remove_filter( 'upgrader_source_selection', $capture, 10 );
+			remove_filter( 'upgrader_source_selection', $restore, 11 );
 		}
 	}
 

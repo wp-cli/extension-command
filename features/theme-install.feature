@@ -213,15 +213,14 @@ Feature: Install WordPress themes
     And the return code should be 1
 
   @require-wp-5.5
-  Scenario: Install theme from a zip file with unmet requirements using --ignore-requirements
+  Scenario Outline: Install theme from a zip file with an unmet <requirement> requirement using --ignore-requirements
     Given a WP install
     And a requires-theme/style.css file:
       """
       /*
       Theme Name: Requires Theme
       Version: 1.0.0
-      Requires at least: 99.0
-      Requires PHP: 99.0
+      <requirement>: 99.0
       */
       """
     And a requires-theme/index.php file:
@@ -237,10 +236,20 @@ Feature: Install WordPress themes
       $zip->addFile( 'requires-theme/index.php' );
       $zip->close();
       """
-    And I run `wp eval-file make-zip.php --skip-wordpress`
+
+    When I run `wp eval-file make-zip.php --skip-wordpress`
+    Then the return code should be 0
 
     When I try `wp theme install requires-theme.zip`
     Then STDERR should contain:
+      """
+      <message>
+      """
+    And STDERR should contain:
+      """
+      however the uploaded theme requires 99.0.
+      """
+    And STDERR should contain:
       """
       Error: No themes installed.
       """
@@ -253,3 +262,35 @@ Feature: Install WordPress themes
       Theme installed successfully.
       """
     And the wp-content/themes/requires-theme/style.css file should exist
+
+    Examples:
+      | requirement       | message                           |
+      | Requires at least | Your WordPress version is         |
+      | Requires PHP      | The PHP version on your server is |
+
+  @require-wp-5.5
+  Scenario: Install invalid theme zip file using --ignore-requirements
+    Given a WP install
+    And a not-a-theme/index.php file:
+      """
+      <?php
+      """
+    And a make-zip.php file:
+      """
+      <?php
+      $zip = new ZipArchive();
+      $zip->open( 'not-a-theme.zip', ZipArchive::CREATE );
+      $zip->addFile( 'not-a-theme/index.php' );
+      $zip->close();
+      """
+
+    When I run `wp eval-file make-zip.php --skip-wordpress`
+    Then the return code should be 0
+
+    When I try `wp theme install not-a-theme.zip --ignore-requirements`
+    Then STDERR should contain:
+      """
+      Error: No themes installed.
+      """
+    And the wp-content/themes/not-a-theme directory should not exist
+    And the return code should be 1
