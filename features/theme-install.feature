@@ -211,3 +211,45 @@ Feature: Install WordPress themes
       Error: The --slug option can only be used when installing a single item.
       """
     And the return code should be 1
+
+  @require-wp-5.5
+  Scenario: Install theme from a zip file with unmet requirements using --ignore-requirements
+    Given a WP install
+    And a requires-theme/style.css file:
+      """
+      /*
+      Theme Name: Requires Theme
+      Version: 1.0.0
+      Requires at least: 99.0
+      Requires PHP: 99.0
+      */
+      """
+    And a requires-theme/index.php file:
+      """
+      <?php
+      """
+    And a make-zip.php file:
+      """
+      <?php
+      $zip = new ZipArchive();
+      $zip->open( 'requires-theme.zip', ZipArchive::CREATE );
+      $zip->addFile( 'requires-theme/style.css' );
+      $zip->addFile( 'requires-theme/index.php' );
+      $zip->close();
+      """
+    And I run `wp eval-file make-zip.php --skip-wordpress`
+
+    When I try `wp theme install requires-theme.zip`
+    Then STDERR should contain:
+      """
+      Error: No themes installed.
+      """
+    And the wp-content/themes/requires-theme directory should not exist
+    And the return code should be 1
+
+    When I run `wp theme install requires-theme.zip --ignore-requirements`
+    Then STDOUT should contain:
+      """
+      Theme installed successfully.
+      """
+    And the wp-content/themes/requires-theme/style.css file should exist
