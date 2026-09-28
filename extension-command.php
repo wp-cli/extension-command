@@ -56,3 +56,17 @@ WP_CLI::add_hook(
 		);
 	}
 );
+
+// Update data stored while --skip-plugins or --skip-themes is in effect must not
+// outlive the process, as it lacks what the skipped plugins or themes would have
+// added for themselves.
+WP_CLI::add_hook(
+	'before_wp_load',
+	static function () {
+		$arguments = WP_CLI::get_runner()->arguments;
+
+		if ( isset( $arguments[0] ) && in_array( $arguments[0], [ 'plugin', 'theme' ], true ) ) {
+			\WP_CLI\CommandWithUpgrade::discard_update_data_stored_while_skipping();
+		}
+	}
+);
