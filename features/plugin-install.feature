@@ -550,3 +550,98 @@ Feature: Install WordPress plugins
       Error: The --slug option can only be used when installing a single item.
       """
     And the return code should be 1
+
+  @require-wp-5.5
+  Scenario Outline: Install plugin from a zip file with an unmet <requirement> requirement using --ignore-requirements
+    Given a WP install
+    And a requires-plugin/requires-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Requires Plugin
+       * Version: 1.0.0
+       * <requirement>: 99.0
+       */
+      """
+    And a make-zip.php file:
+      """
+      <?php
+      $zip = new ZipArchive();
+      $zip->open( 'requires-plugin.zip', ZipArchive::CREATE );
+      $zip->addFile( 'requires-plugin/requires-plugin.php' );
+      $zip->close();
+      """
+
+    When I run `wp eval-file make-zip.php --skip-wordpress`
+    Then the return code should be 0
+
+    When I try `wp plugin install requires-plugin.zip`
+    Then STDERR should contain:
+      """
+      <message>
+      """
+    And STDERR should contain:
+      """
+      however the uploaded plugin requires 99.0.
+      """
+    And STDERR should contain:
+      """
+      Error: No plugins installed.
+      """
+    And the wp-content/plugins/requires-plugin directory should not exist
+    And the return code should be 1
+
+    When I run `wp plugin install requires-plugin.zip --ignore-requirements`
+    Then STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the wp-content/plugins/requires-plugin/requires-plugin.php file should exist
+
+    When I run `wp plugin install requires-plugin.zip --ignore-requirements --slug=custom-requires-plugin`
+    Then STDOUT should contain:
+      """
+      Renamed 'requires-plugin' to 'custom-requires-plugin'.
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the wp-content/plugins/custom-requires-plugin/requires-plugin.php file should exist
+
+    Examples:
+      | requirement       | message                           |
+      | Requires at least | Your WordPress version is         |
+      | Requires PHP      | The PHP version on your server is |
+
+  @require-wp-5.5
+  Scenario: Install invalid plugin zip file using --ignore-requirements
+    Given a WP install
+    And a not-a-plugin/not-a-plugin.php file:
+      """
+      <?php
+      // Not a plugin.
+      """
+    And a make-zip.php file:
+      """
+      <?php
+      $zip = new ZipArchive();
+      $zip->open( 'not-a-plugin.zip', ZipArchive::CREATE );
+      $zip->addFile( 'not-a-plugin/not-a-plugin.php' );
+      $zip->close();
+      """
+
+    When I run `wp eval-file make-zip.php --skip-wordpress`
+    Then the return code should be 0
+
+    When I try `wp plugin install not-a-plugin.zip --ignore-requirements`
+    Then STDERR should contain:
+      """
+      No valid plugins were found.
+      """
+    And STDERR should contain:
+      """
+      Error: No plugins installed.
+      """
+    And the wp-content/plugins/not-a-plugin directory should not exist
+    And the return code should be 1

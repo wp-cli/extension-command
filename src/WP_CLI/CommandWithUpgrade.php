@@ -197,6 +197,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			WP_CLI::error( 'The --slug option can only be used when installing a single item.' );
 		}
 
+		$ignore_requirements = Utils\get_flag_value( $assoc_args, 'ignore-requirements', false );
+
 		foreach ( $args as $slug ) {
 
 			if ( empty( $slug ) ) {
@@ -342,7 +344,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				// Add item to cache allowlist if it matches certain URL patterns.
 				self::maybe_cache( $slug, $this->item_type );
 
-				if ( $file_upgrader->install( $slug ) ) {
+				$installed = $this->maybe_ignore_requirements(
+					$ignore_requirements,
+					static function () use ( $file_upgrader, $slug ) {
+						return $file_upgrader->install( $slug );
+					}
+				);
+
+				if ( $installed ) {
 					$slug   = $file_upgrader->result['destination_name'];
 					$result = true;
 					if ( $filter ) {
@@ -354,7 +363,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			} else {
 				// Assume a plugin/theme slug from the WordPress.org repository has been specified.
-				$result = $this->install_from_repo( $slug, $assoc_args );
+				$result = $this->maybe_ignore_requirements(
+					$ignore_requirements,
+					function () use ( $slug, $assoc_args ) {
+						return $this->install_from_repo( $slug, $assoc_args );
+					}
+				);
 
 				if ( is_null( $result ) ) {
 					++$errors;
@@ -415,6 +429,53 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		}
 		Utils\report_batch_operation_results( $this->item_type, 'install', count( $args ), $successes, $errors );
+	}
+
+	/**
+	 * Runs an install callback, optionally bypassing the WordPress and PHP
+	 * version checks that the core upgraders run in `check_package()`.
+	 *
+	 * The callback must trigger the upgrader's `install()`, which registers
+	 * `check_package()` at priority 10. The capturing callback is registered
+	 * right before that, so it runs after any directory renaming filters and
+	 * before `check_package()`. If the package was rejected only because of
+	 * version requirements, the captured source is restored. Other validation
+	 * errors, like a missing plugin header, are kept.
+	 *
+	 * @param bool     $ignore_requirements Whether to bypass the version checks.
+	 * @param callable $callback            Install callback.
+	 * @return mixed Return value of the callback.
+	 */
+	private function maybe_ignore_requirements( $ignore_requirements, $callback ) {
+		if ( ! $ignore_requirements ) {
+			return $callback();
+		}
+
+		$original_source = null;
+
+		$capture = static function ( $source ) use ( &$original_source ) {
+			$original_source = $source;
+			return $source;
+		};
+
+		$restore = static function ( $source ) use ( &$original_source ) {
+			if ( is_wp_error( $source )
+				&& in_array( $source->get_error_code(), array( 'incompatible_wp_required_version', 'incompatible_php_required_version' ), true )
+				&& is_string( $original_source ) ) {
+				return $original_source;
+			}
+			return $source;
+		};
+
+		add_filter( 'upgrader_source_selection', $capture, 10 );
+		add_filter( 'upgrader_source_selection', $restore, 11 );
+
+		try {
+			return $callback();
+		} finally {
+			remove_filter( 'upgrader_source_selection', $capture, 10 );
+			remove_filter( 'upgrader_source_selection', $restore, 11 );
+		}
 	}
 
 	/**
