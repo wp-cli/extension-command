@@ -909,3 +909,39 @@ Feature: Manage WordPress themes
       | name          | status   |
       | twentyeleven  | active   |
       | twentytwelve  | inactive |
+
+  Scenario: Flag themes whose version is higher than the one on WordPress.org without a request per theme
+    Given a WP install
+    And I run `wp theme install twentytwelve --force`
+    And I run `sed -i.bak 's/^Version: .*/Version: 99.0/' wp-content/themes/twentytwelve/style.css`
+    And a wp-content/themes/my-local-theme/style.css file:
+      """
+      /*
+      Theme Name: My Local Theme
+      Version: 1.0
+      */
+      """
+    And a wp-content/themes/my-local-theme/index.php file:
+      """
+      <?php
+      """
+    # The latest versions come from the update check, not from a theme information request per theme.
+    And that HTTP requests to api.wordpress.org/themes/info/ will respond with:
+      """
+      HTTP/1.1 500 Internal Server Error
+      Content-Type: text/plain
+
+      Error
+      """
+
+    When I run `wp theme list --fields=name,update,version`
+    Then STDOUT should be a table containing rows:
+      | name           | update                       | version |
+      | twentytwelve   | version higher than expected | 99.0    |
+      | my-local-theme | none                         | 1.0     |
+
+    When I try `wp theme update twentytwelve`
+    Then STDERR should contain:
+      """
+      Warning: twentytwelve: version higher than expected.
+      """
