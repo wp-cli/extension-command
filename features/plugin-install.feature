@@ -310,10 +310,10 @@ Feature: Install WordPress plugins
   Scenario: Can't install plugin that requires a newer version of PHP
     Given a WP install
 
-    And I try `wp plugin install contact-form-7`
+    And I try `wp plugin install wp-mail-smtp`
     Then STDERR should contain:
       """
-      Warning: contact-form-7: This plugin does not work with your version of PHP
+      Warning: wp-mail-smtp: This plugin does not work with your version of PHP
       """
 
     And STDERR should contain:
