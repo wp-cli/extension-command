@@ -910,6 +910,8 @@ Feature: Manage WordPress themes
       | twentyeleven  | active   |
       | twentytwelve  | inactive |
 
+  # The update check only lists themes without an update in `no_update` since WordPress 5.5.
+  @require-wp-5.5
   Scenario: Flag themes whose version is higher than the one on WordPress.org without a request per theme
     Given a WP install
     And I run `wp theme install twentytwelve --force`

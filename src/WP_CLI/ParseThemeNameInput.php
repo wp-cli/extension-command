@@ -201,8 +201,10 @@ trait ParseThemeNameInput {
 			$latest = null;
 			foreach ( [ 'response', 'no_update' ] as $key ) {
 				$themes = isset( $update_info->$key ) ? (array) $update_info->$key : [];
-				if ( isset( $themes[ $slug ]['new_version'] ) ) {
-					$latest = (string) $themes[ $slug ]['new_version'];
+				// Entries are arrays in core, but filters can turn them into objects.
+				$theme = isset( $themes[ $slug ] ) ? (array) $themes[ $slug ] : [];
+				if ( isset( $theme['new_version'] ) ) {
+					$latest = (string) $theme['new_version'];
 					break;
 				}
 			}
