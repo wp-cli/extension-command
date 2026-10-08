@@ -258,6 +258,32 @@ Feature: Update WordPress themes
       Success: Updated 2 of 2 themes.
       """
 
+  @require-wp-4.5
+  Scenario: Updating several themes downloads their packages side by side
+    Given a WP install
+    And an empty cache
+    And I run `wp theme delete --all --force`
+
+    When I run `wp theme install storefront --version=1.0.0`
+    Then STDOUT should not be empty
+
+    When I run `wp theme install twentytwelve --version=1.0`
+    Then STDOUT should not be empty
+
+    When I try `wp theme update --all`
+    Then STDOUT should contain:
+      """
+      Downloading 2 packages...
+      """
+    And STDOUT should contain:
+      """
+      Using cached file
+      """
+    And STDOUT should contain:
+      """
+      Success: Updated 2 of 2 themes.
+      """
+
   Scenario: Skip theme update when theme directory is a VCS checkout
     Given a WP install
     And I run `wp theme install twentytwelve --version=3.0 --force`
