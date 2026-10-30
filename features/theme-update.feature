@@ -3,8 +3,11 @@ Feature: Update WordPress themes
   Scenario: Updating a theme with no version in the WordPress.org directory shouldn't delete the original theme
     Given a WP install
 
-    When I run `wp theme install twentytwelve --force`
-    And I run `wp scaffold child-theme wpclitesttheme --parent_theme=twentytwelve`
+    Given these installed themes:
+      """
+      twentytwelve --force
+      """
+    When I run `wp scaffold child-theme wpclitesttheme --parent_theme=twentytwelve`
     Then the wp-content/themes/wpclitesttheme directory should exist
 
     When I try `wp theme update wpclitesttheme --version=100.0.0`
@@ -50,7 +53,10 @@ Feature: Update WordPress themes
       """
 
     # One theme installed.
-    Given I run `wp theme install storefront --version=1.0.0`
+    Given these installed themes:
+      """
+      storefront --version=1.0.0
+      """
 
     When I try `wp theme update`
     Then the return code should be 1
@@ -86,7 +92,10 @@ Feature: Update WordPress themes
       """
 
     # Two themes installed.
-    Given I run `wp theme install --force twentytwelve --version=1.0`
+    Given these installed themes:
+      """
+      twentytwelve --version=1.0 --force
+      """
 
     When I run `wp theme update --all`
     Then STDOUT should contain:
@@ -125,7 +134,10 @@ Feature: Update WordPress themes
 
   Scenario: Update a theme to its latest minor release
     Given a WP install
-    And I run `wp theme install --force twentytwelve --version=3.0`
+    And these installed themes:
+      """
+      twentytwelve --version=3.0 --force
+      """
 
     When I run `wp theme update twentytwelve --minor`
     Then STDOUT should contain:
@@ -141,7 +153,10 @@ Feature: Update WordPress themes
 
   Scenario: Update a theme to its latest patch release
     Given a WP install
-    And I run `wp theme install --force twentytwelve --version=1.1`
+    And these installed themes:
+      """
+      twentytwelve --version=1.1 --force
+      """
 
     When I run `wp theme update twentytwelve --patch`
     Then STDOUT should contain:
@@ -260,7 +275,10 @@ Feature: Update WordPress themes
 
   Scenario: Skip theme update when theme directory is a VCS checkout
     Given a WP install
-    And I run `wp theme install twentytwelve --version=3.0 --force`
+    And these installed themes:
+      """
+      twentytwelve --version=3.0 --force
+      """
     And I run `wp theme path twentytwelve --dir`
     And save STDOUT as {THEME_DIR}
 
@@ -278,7 +296,10 @@ Feature: Update WordPress themes
 
   Scenario: Update theme in VCS checkout when --include-vcs is set
     Given a WP install
-    And I run `wp theme install twentytwelve --version=3.0 --force`
+    And these installed themes:
+      """
+      twentytwelve --version=3.0 --force
+      """
     And I run `wp theme path twentytwelve --dir`
     And save STDOUT as {THEME_DIR}
 

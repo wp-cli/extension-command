@@ -13,7 +13,10 @@ Feature: Manage WordPress themes
   Scenario: Installing and deleting theme
     Given a WP install
     And I run `wp theme delete --all --force`
-    And I run `wp theme install twentyeleven --activate`
+    And these installed and active themes:
+      """
+      twentyeleven
+      """
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -72,8 +75,11 @@ Feature: Manage WordPress themes
   Scenario: Checking theme status without theme parameter
     Given a WP install
 
-    When I run `wp theme install classic --activate`
-    And I run `wp theme list --field=name --status=inactive | xargs wp theme delete`
+    Given these installed and active themes:
+      """
+      classic
+      """
+    When I run `wp theme list --field=name --status=inactive | xargs wp theme delete`
     And I try `wp theme status`
     Then STDOUT should be:
       """
@@ -86,7 +92,10 @@ Feature: Manage WordPress themes
   Scenario: Install a theme, activate, then force install an older version of the theme
     Given a WP install
     And I run `wp theme delete --all --force`
-    And I run `wp theme install twentyeleven --activate`
+    And these installed and active themes:
+      """
+      twentyeleven
+      """
 
     When I run `wp theme install twentytwelve --version=1.4`
     Then STDOUT should not be empty
@@ -143,7 +152,10 @@ Feature: Manage WordPress themes
   Scenario: Exclude theme from bulk updates.
     Given a WP install
     And I run `wp theme delete --all --force`
-    And I run `wp theme install twentyeleven --activate`
+    And these installed and active themes:
+      """
+      twentyeleven
+      """
 
     When I run `wp theme install twentytwelve --version=1.4 --force`
     Then STDOUT should contain:
@@ -330,8 +342,11 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: Enabling and disabling a theme
     Given a WP multisite install
-    And I run `wp theme install oceanly`
-    And I run `wp theme install oceanly-green`
+    And these installed themes:
+      """
+      oceanly
+      oceanly-green
+      """
 
     When I try `wp option get allowedthemes`
     Then the return code should be 1
@@ -426,7 +441,10 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: Install and attempt to activate a child theme without its parent
     Given a WP install
-    And I run `wp theme install oceanly-green`
+    And these installed themes:
+      """
+      oceanly-green
+      """
     And I run `rm -rf wp-content/themes/oceanly`
 
     When I try `wp theme activate oceanly-green`
@@ -440,8 +458,14 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: List an active theme with its parent
     Given a WP install
-    And I run `wp theme install oceanly`
-    And I run `wp theme install --activate oceanly-green`
+    And these installed themes:
+      """
+      oceanly
+      """
+    And these installed and active themes:
+      """
+      oceanly-green
+      """
 
     # Hybrid_Registry throws warning for PHP 8+.
     When I try `wp theme list --fields=name,status`
@@ -453,8 +477,11 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: List broken themes (child theme without parent)
     Given a WP install
-    And I run `wp theme install oceanly`
-    And I run `wp theme install oceanly-green`
+    And these installed themes:
+      """
+      oceanly
+      oceanly-green
+      """
     
     When I run `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
@@ -668,8 +695,14 @@ Feature: Manage WordPress themes
   Scenario: Parent theme is active when its child is active
     Given a WP install
     And I run `wp theme delete --all --force`
-    And I run `wp theme install twentytwelve`
-    And I run `wp theme install oceanly-green --activate`
+    And these installed themes:
+      """
+      twentytwelve
+      """
+    And these installed and active themes:
+      """
+      oceanly-green
+      """
 
     When I run `wp theme is-active oceanly-green`
     Then the return code should be 0
@@ -683,7 +716,10 @@ Feature: Manage WordPress themes
   Scenario: Excluding a missing theme should not throw an error
     Given a WP install
     And I run `wp theme delete --all --force`
-    And I run `wp theme install twentytwelve --version=1.5 --activate`
+    And these installed and active themes:
+      """
+      twentytwelve --version=1.5
+      """
     And I run `wp theme update --all --exclude=missing-theme`
     Then STDERR should be empty
     And STDOUT should contain:
@@ -868,8 +904,11 @@ Feature: Manage WordPress themes
   Scenario: Check theme type field for classic themes
     Given a WP install
 
-    When I run `wp theme install twentytwelve --force`
-    And I run `wp theme list --fields=name,type --name=twentytwelve`
+    Given these installed themes:
+      """
+      twentytwelve --force
+      """
+    When I run `wp theme list --fields=name,type --name=twentytwelve`
     Then STDOUT should be a table containing rows:
       | name         | type    |
       | twentytwelve | classic |
@@ -883,8 +922,14 @@ Feature: Manage WordPress themes
   Scenario: Filter theme list by multiple names
     Given a WP install
     And I run `wp theme delete --all --force`
-    And I run `wp theme install twentyeleven --activate`
-    And I run `wp theme install twentytwelve`
+    And these installed and active themes:
+      """
+      twentyeleven
+      """
+    And these installed themes:
+      """
+      twentytwelve
+      """
 
     When I run `wp theme list --name=twentytwelve,twentyeleven --fields=name,status`
     Then STDOUT should be a table containing rows:
@@ -914,7 +959,10 @@ Feature: Manage WordPress themes
   @require-wp-5.5
   Scenario: Flag themes whose version is higher than the one on WordPress.org without a request per theme
     Given a WP install
-    And I run `wp theme install twentytwelve --force`
+    And these installed themes:
+      """
+      twentytwelve --force
+      """
     And I run `sed -i.bak 's/^Version: .*/Version: 99.0/' wp-content/themes/twentytwelve/style.css`
     And a wp-content/themes/my-local-theme/style.css file:
       """
