@@ -2,8 +2,6 @@ Feature: Manage WordPress plugins
 
   Scenario: Create, activate and check plugin status
     Given a WP install
-    And I run `wp plugin path`
-    And save STDOUT as {PLUGIN_DIR}
 
     When I run `wp scaffold plugin --skip-tests plugin1`
     Then STDOUT should not be empty
