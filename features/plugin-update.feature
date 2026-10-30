@@ -116,8 +116,6 @@ Feature: Update WordPress plugins
   @require-wp-5.2
   Scenario: Not giving a slug on update should throw an error unless --all given
     Given a WP install
-    And I run `wp plugin path`
-    And save STDOUT as {PLUGIN_DIR}
     And an empty {PLUGIN_DIR} directory
 
     # No plugins installed. Don't give an error if --all given for BC.

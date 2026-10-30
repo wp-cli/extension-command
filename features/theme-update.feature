@@ -32,8 +32,6 @@ Feature: Update WordPress themes
   @require-wp-4.5
   Scenario: Not giving a slug on update should throw an error unless --all given
     Given a WP install
-    And I run `wp theme path`
-    And save STDOUT as {THEME_DIR}
     And an empty {THEME_DIR} directory
 
     # No themes installed. Don't give an error if --all given for BC.
