@@ -16,7 +16,7 @@ Feature: Update WordPress themes
 
   Scenario: Install a theme, then update to a specific version of that theme
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install twentytwelve --version=3.0`
     Then STDOUT should not be empty
@@ -239,7 +239,7 @@ Feature: Update WordPress themes
   @require-wp-4.5
   Scenario: Updating all themes should show the name of each theme as it is updated
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install storefront --version=1.0.0`
     Then STDOUT should not be empty

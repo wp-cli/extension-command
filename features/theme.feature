@@ -12,8 +12,10 @@ Feature: Manage WordPress themes
 
   Scenario: Installing and deleting theme
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentyeleven --activate`
+    And only these installed and active themes:
+      """
+      twentyeleven
+      """
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -85,8 +87,10 @@ Feature: Manage WordPress themes
 
   Scenario: Install a theme, activate, then force install an older version of the theme
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentyeleven --activate`
+    And only these installed and active themes:
+      """
+      twentyeleven
+      """
 
     When I run `wp theme install twentytwelve --version=1.4`
     Then STDOUT should not be empty
@@ -142,8 +146,10 @@ Feature: Manage WordPress themes
 
   Scenario: Exclude theme from bulk updates.
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentyeleven --activate`
+    And only these installed and active themes:
+      """
+      twentyeleven
+      """
 
     When I run `wp theme install twentytwelve --version=1.4 --force`
     Then STDOUT should contain:
@@ -185,7 +191,7 @@ Feature: Manage WordPress themes
 
   Scenario: Get the path of an installed theme
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -198,7 +204,7 @@ Feature: Manage WordPress themes
 
   Scenario: Activate an already active theme
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -276,7 +282,7 @@ Feature: Manage WordPress themes
 
   Scenario: Install a theme when the theme directory doesn't yet exist
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `rm -rf wp-content/themes`
     And I run `wp eval "if ( is_dir('wp-content/themes') ) echo 'fail';"`
@@ -487,7 +493,7 @@ Feature: Manage WordPress themes
 
   Scenario: When updating a theme --format should be the same when using --dry-run
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install --force twentytwelve --version=1.0`
     Then STDOUT should not be empty
@@ -527,7 +533,7 @@ Feature: Manage WordPress themes
 
   Scenario: Check json and csv formats when updating a theme
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install --force twentytwelve --version=1.0`
     Then STDOUT should not be empty
@@ -581,7 +587,7 @@ Feature: Manage WordPress themes
 
   Scenario: Get status field in theme detail
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -608,7 +614,7 @@ Feature: Manage WordPress themes
 
   Scenario: Theme activation fails when slug does not match exactly
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install twentytwelve`
     Then the return code should be 0
@@ -667,9 +673,14 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: Parent theme is active when its child is active
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentytwelve`
-    And I run `wp theme install oceanly-green --activate`
+    And only these installed themes:
+      """
+      twentytwelve
+      """
+    And these installed and active themes:
+      """
+      oceanly-green
+      """
 
     When I run `wp theme is-active oceanly-green`
     Then the return code should be 0
@@ -682,8 +693,10 @@ Feature: Manage WordPress themes
 
   Scenario: Excluding a missing theme should not throw an error
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentytwelve --version=1.5 --activate`
+    And only these installed and active themes:
+      """
+      twentytwelve --version=1.5
+      """
     And I run `wp theme update --all --exclude=missing-theme`
     Then STDERR should be empty
     And STDOUT should contain:
@@ -882,9 +895,14 @@ Feature: Manage WordPress themes
 
   Scenario: Filter theme list by multiple names
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentyeleven --activate`
-    And I run `wp theme install twentytwelve`
+    And only these installed themes:
+      """
+      twentytwelve
+      """
+    And these installed and active themes:
+      """
+      twentyeleven
+      """
 
     When I run `wp theme list --name=twentytwelve,twentyeleven --fields=name,status`
     Then STDOUT should be a table containing rows:

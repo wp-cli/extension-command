@@ -2,9 +2,14 @@ Feature: Delete WordPress themes
 
   Background:
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentytwelve`
-    And I run `wp theme install twentyeleven --activate`
+    And only these installed themes:
+      """
+      twentytwelve
+      """
+    And these installed and active themes:
+      """
+      twentyeleven
+      """
 
   Scenario: Delete an installed theme
     When I run `wp theme delete twentytwelve`
