@@ -159,7 +159,10 @@ Feature: Uninstall a WordPress plugin
   @require-wp-5.2
   Scenario: Uninstalling a plugin should remove its language pack
     Given a WP install
-    And I run `wp plugin install wordpress-importer`
+    And these installed plugins:
+      """
+      wordpress-importer
+      """
     And I run `wp language core install fr_FR`
     And I run `wp site switch-language fr_FR`
 
@@ -185,7 +188,10 @@ Feature: Uninstall a WordPress plugin
   @require-wp-5.2
   Scenario: Uninstalling a plugin should remove its update info
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.6`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.6
+      """
     And I try `wp plugin status wordpress-importer`
 
     And I run `wp transient get --network update_plugins`
