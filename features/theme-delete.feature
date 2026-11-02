@@ -3,8 +3,14 @@ Feature: Delete WordPress themes
   Background:
     Given a WP install
     And I run `wp theme delete --all --force`
-    And I run `wp theme install twentytwelve`
-    And I run `wp theme install twentyeleven --activate`
+    And these installed themes:
+      """
+      twentytwelve
+      """
+    And these installed and active themes:
+      """
+      twentyeleven
+      """
 
   Scenario: Delete an installed theme
     When I run `wp theme delete twentytwelve`
@@ -58,7 +64,10 @@ Feature: Delete WordPress themes
 
   Scenario: Delete all installed themes when active theme has a parent
     Given a WP install
-    And I run `wp theme install oceanly-green --activate`
+    And these installed and active themes:
+      """
+      oceanly-green
+      """
 
     When I run `wp theme list --field=name`
     Then STDOUT should contain:

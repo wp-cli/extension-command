@@ -3,9 +3,12 @@ Feature: Enable auto-updates for WordPress themes
   Background:
     Given a WP install
     And I run `wp theme delete --all --force`
-    And I run `wp theme install twentysixteen`
-    And I run `wp theme install twentyseventeen`
-    And I run `wp theme install twentynineteen`
+    And these installed themes:
+      """
+      twentysixteen
+      twentyseventeen
+      twentynineteen
+      """
     And I try `wp theme auto-updates disable --all`
 
   @require-wp-5.5

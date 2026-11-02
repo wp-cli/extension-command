@@ -3,7 +3,10 @@ Feature: Check the status of plugins on WordPress.org
   @require-wp-5.2
   Scenario: Install plugins and check the status on wp.org.
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And I run `wp plugin install https://downloads.wordpress.org/plugin/no-longer-in-directory.1.0.62.zip`
     And a wp-content/plugins/never-wporg/never-wporg.php file:
       """
@@ -114,7 +117,10 @@ Feature: Check the status of plugins on WordPress.org
   @require-wp-5.2
   Scenario: The wp.org last updated date for an active plugin does not depend on a second, rate-limited request
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And that HTTP requests to https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request%5Blocale%5D=en_US&request%5Bslug%5D=wordpress-importer will respond with:
       """
       HTTP/1.1 200
@@ -146,7 +152,10 @@ Feature: Check the status of plugins on WordPress.org
   @require-wp-5.2
   Scenario: The wp.org last updated date falls back to the trac log when the plugin-info API omits it
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And that HTTP requests to https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request%5Blocale%5D=en_US&request%5Bslug%5D=wordpress-importer will respond with:
       """
       HTTP/1.1 200
@@ -180,7 +189,10 @@ Feature: Check the status of plugins on WordPress.org
   @require-wp-5.2
   Scenario: The wp.org last updated date falls back to the trac log when the plugin-info API date can't be parsed
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And that HTTP requests to https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request%5Blocale%5D=en_US&request%5Bslug%5D=wordpress-importer will respond with:
       """
       HTTP/1.1 200
@@ -217,7 +229,10 @@ Feature: Check the status of plugins on WordPress.org
   @require-wp-5.2
   Scenario: The wp.org last updated date stays empty when the trac log pubDate can't be parsed
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And that HTTP requests to https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request%5Blocale%5D=en_US&request%5Bslug%5D=wordpress-importer will respond with:
       """
       HTTP/1.1 200
