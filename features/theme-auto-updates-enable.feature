@@ -2,8 +2,7 @@ Feature: Enable auto-updates for WordPress themes
 
   Background:
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And these installed themes:
+    And only these installed themes:
       """
       twentysixteen
       twentyseventeen
