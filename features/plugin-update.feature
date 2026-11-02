@@ -81,7 +81,10 @@ Feature: Update WordPress plugins
   @require-wp-5.2
   Scenario: Update a plugin to its latest patch release
     Given a WP install
-    And I run `wp plugin install --force wordpress-importer --version=0.5`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
 
     When I run `wp plugin update wordpress-importer --patch`
     Then STDOUT should contain:
@@ -99,7 +102,10 @@ Feature: Update WordPress plugins
   @require-wp-5.8
   Scenario: Update a plugin to its latest minor release
     Given a WP install
-    And I run `wp plugin install --force akismet --version=2.5.4`
+    And these installed plugins:
+      """
+      akismet --version=2.5.4 --force
+      """
 
     When I run `wp plugin update akismet --minor`
     Then STDOUT should contain:
@@ -134,7 +140,10 @@ Feature: Update WordPress plugins
       """
 
     # One plugin installed.
-    Given I run `wp plugin install wordpress-importer --version=0.5 --force`
+    Given these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
 
     When I try `wp plugin update`
     Then the return code should be 1
@@ -170,7 +179,10 @@ Feature: Update WordPress plugins
       """
 
     # Two plugins installed.
-    Given I run `wp plugin install akismet --version=2.5.4`
+    Given these installed plugins:
+      """
+      akismet --version=2.5.4
+      """
 
     When I run `wp plugin update --all`
     Then STDOUT should contain:
@@ -202,7 +214,10 @@ Feature: Update WordPress plugins
   @require-wp-5.8 @skip-windows
   Scenario: Plugin updates that error should not report a success
     Given a WP install
-    And I run `wp plugin install --force akismet --version=4.0`
+    And these installed plugins:
+      """
+      akismet --version=4.0 --force
+      """
 
     When I run `chmod -w wp-content/plugins/akismet`
     And I try `wp plugin update akismet`
@@ -374,7 +389,10 @@ Feature: Update WordPress plugins
   @require-wp-5.2 @skip-windows
   Scenario: Failed plugin update keeps JSON output parseable
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And I run `chmod -w wp-content/plugins/wordpress-importer`
 
     When I try `wp plugin update wordpress-importer --format=json`
@@ -390,7 +408,10 @@ Feature: Update WordPress plugins
   @require-wp-5.2 @skip-windows
   Scenario: Failed plugin update keeps CSV output parseable
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And I run `chmod -w wp-content/plugins/wordpress-importer`
 
     When I try `wp plugin update wordpress-importer --format=csv`
@@ -406,7 +427,10 @@ Feature: Update WordPress plugins
   @require-wp-5.2 @skip-windows
   Scenario: Skip plugin update when plugin directory is a VCS checkout
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And I run `wp plugin path wordpress-importer --dir`
     And save STDOUT as {PLUGIN_DIR}
 
@@ -426,7 +450,10 @@ Feature: Update WordPress plugins
   @require-wp-5.2 @skip-windows
   Scenario: Update plugin in VCS checkout when --include-vcs is set
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And I run `wp plugin path wordpress-importer --dir`
     And save STDOUT as {PLUGIN_DIR}
 

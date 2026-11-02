@@ -3,7 +3,10 @@ Feature: Check for theme updates
   Scenario: Check for theme updates with no updates available
     Given a WP install
 
-    When I run `wp theme install twentytwelve --force`
+    Given these installed themes:
+      """
+      twentytwelve --force
+      """
     # Ignore warnings if theme versions in trunk are newer than what's in the directory.
     # This is only a temporary situation before an impending release.
     And I try `wp theme update --all`
