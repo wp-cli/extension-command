@@ -75,7 +75,7 @@ Feature: Manage WordPress themes
   Scenario: Checking theme status without theme parameter
     Given a WP install
 
-    Given these installed and active themes:
+    And these installed and active themes:
       """
       classic
       """
@@ -904,7 +904,7 @@ Feature: Manage WordPress themes
   Scenario: Check theme type field for classic themes
     Given a WP install
 
-    Given these installed themes:
+    And these installed themes:
       """
       twentytwelve --force
       """

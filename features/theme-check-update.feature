@@ -3,7 +3,7 @@ Feature: Check for theme updates
   Scenario: Check for theme updates with no updates available
     Given a WP install
 
-    Given these installed themes:
+    And these installed themes:
       """
       twentytwelve --force
       """

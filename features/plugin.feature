@@ -303,7 +303,7 @@ Feature: Manage WordPress plugins
     Given a WP multisite install
     And I run `wp plugin delete --all`
 
-    Given these installed plugins:
+    And these installed plugins:
       """
       debug-bar
       """

@@ -3,7 +3,7 @@ Feature: Update WordPress themes
   Scenario: Updating a theme with no version in the WordPress.org directory shouldn't delete the original theme
     Given a WP install
 
-    Given these installed themes:
+    And these installed themes:
       """
       twentytwelve --force
       """
