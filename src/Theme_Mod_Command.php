@@ -338,7 +338,9 @@ class Theme_Mod_Command extends WP_CLI_Command {
 
 		set_theme_mod( $mod, $value );
 
-		if ( get_theme_mod( $mod ) === $value ) {
+		// Read the stored mods, as a theme_mod_{$mod} filter can change get_theme_mod() without changing what was saved.
+		$mods = get_theme_mods();
+		if ( isset( $mods[ $mod ] ) && $mods[ $mod ] === $value ) {
 			WP_CLI::success( "Theme mod {$mod} set to {$value}." );
 		} else {
 			WP_CLI::error( "Could not update theme mod {$mod}." );

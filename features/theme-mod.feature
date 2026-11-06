@@ -177,6 +177,22 @@ Feature: Manage WordPress theme mods
     And STDOUT should be empty
     And the return code should be 1
 
+  Scenario: Setting a theme mod whose value is changed when it is read
+    Given a WP install
+    And a wp-content/mu-plugins/filter-theme-mod.php file:
+      """
+      <?php
+      add_filter( 'theme_mod_background_color', function () {
+        return 'ffffff';
+      } );
+      """
+
+    When I run `wp theme mod set background_color 123456`
+    Then STDOUT should be:
+      """
+      Success: Theme mod background_color set to 123456.
+      """
+
   Scenario: Removing theme mods
     Given a WP install
 
