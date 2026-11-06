@@ -341,7 +341,7 @@ class Theme_Mod_Command extends WP_CLI_Command {
 		if ( get_theme_mod( $mod ) === $value ) {
 			WP_CLI::success( "Theme mod {$mod} set to {$value}." );
 		} else {
-			WP_CLI::success( "Could not update theme mod {$mod}." );
+			WP_CLI::error( "Could not update theme mod {$mod}." );
 		}
 	}
 }
