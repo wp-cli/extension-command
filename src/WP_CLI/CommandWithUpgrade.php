@@ -995,9 +995,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$cache_manager->whitelist_package( $item['update_package'], $this->item_type, $item['name'], $item['update_version'] );
 			}
 
-			/**
-			 * @var ThemeUpgrader|PluginUpgrader $upgrader
-			 */
 			$upgrader = $this->get_upgrader( $assoc_args );
 			// Ensure the upgrader uses the download offer present in each item.
 			$transient_filter = function ( $transient ) use ( $items_to_update ) {
@@ -1020,6 +1017,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			add_filter( 'site_transient_' . $this->upgrade_transient, $transient_filter, 999 );
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
 			remove_filter( 'site_transient_' . $this->upgrade_transient, $transient_filter, 999 );
+
+			// Fired before any errors are reported, as files might have changed even if some updates failed.
+			if ( $upgrader instanceof PluginUpgrader || $upgrader instanceof ThemeUpgrader ) {
+				WP_CLI::do_hook( "{$this->item_type}_update_finished", $upgrader->get_changed_files() );
+			}
 		}
 
 		if ( ! is_array( $result ) ) {
@@ -1082,10 +1084,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		Utils\report_batch_operation_results( $this->item_type, 'update', $total_updated, $num_updated, $errors, $skipped );
 		if ( null !== $exclude ) {
 			WP_CLI::log( "Skipped updates for: $exclude" );
-		}
-
-		if ( isset( $upgrader ) ) {
-			WP_CLI::do_hook( "{$this->item_type}_update_finished", $upgrader->get_changed_files() );
 		}
 	}
 

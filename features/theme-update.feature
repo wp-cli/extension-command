@@ -32,6 +32,32 @@ Feature: Update WordPress themes
       | name         | version   |
       | twentytwelve | 4.0       |
 
+  @require-wp-5.5
+  Scenario: Expose the files changed by a theme update via a hook
+    Given a WP install
+    And an empty wp-content/themes directory
+    And a hook.php file:
+      """
+      <?php
+      WP_CLI::add_hook(
+          'theme_update_finished',
+          static function ( $files ) {
+              foreach ( $files as $file ) {
+                  WP_CLI::log( 'Changed file: ' . $file );
+              }
+          }
+      );
+      """
+
+    When I run `wp theme install twentytwelve --version=3.0`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update twentytwelve --require=hook.php`
+    Then STDOUT should contain:
+      """
+      Changed file: {THEME_DIR}/twentytwelve/functions.php
+      """
+
   @require-wp-4.5
   Scenario: Not giving a slug on update should throw an error unless --all given
     Given a WP install
