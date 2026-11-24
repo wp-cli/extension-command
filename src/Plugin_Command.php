@@ -987,6 +987,9 @@ class Plugin_Command extends CommandWithUpgrade {
 			// filter out plugins based on PHP requirements -- so we must do that here
 			$compatible_php = empty( $requires_php ) || version_compare( PHP_VERSION, $requires_php, '>=' );
 
+			// Reset for each plugin so a previous plugin's reason does not leak into this row.
+			$update_unavailable_reason = '';
+
 			if ( ! $compatible_php ) {
 				$update = 'unavailable';
 
@@ -1030,7 +1033,7 @@ class Plugin_Command extends CommandWithUpgrade {
 				'wporg_status'              => $wporg_info['status'],
 				'wporg_last_updated'        => $wporg_info['last_updated'],
 				'recently_active'           => in_array( $file, array_keys( $recently_active ), true ),
-				'update_unavailable_reason' => isset( $update_unavailable_reason ) ? $update_unavailable_reason : '',
+				'update_unavailable_reason' => $update_unavailable_reason,
 			];
 
 			if ( $this->check_headers['tested_up_to'] ) {
@@ -1124,9 +1127,25 @@ class Plugin_Command extends CommandWithUpgrade {
 				$plugin_data = false;
 			}
 			if ( $plugin_data ) {
-				$data['status'] = 'active';
+				if ( ! empty( $plugin_data['closed'] ) || ( isset( $plugin_data['error'] ) && 'closed' === $plugin_data['error'] ) ) {
+					$data['status'] = 'closed';
+				} else {
+					$data['status'] = 'active';
+				}
+
 				if ( ! $this->check_wporg['last_updated'] ) {
-					return $data; // The plugin is active on .org, but we don't need the date.
+					return $data; // The plugin is active or closed on .org, but we don't need the date.
+				}
+				// The plugins API already reports when the plugin was last updated, so use
+				// that instead of also scraping the trac log, which is rate-limited and
+				// otherwise unnecessary here. If the value can't be parsed, fall through
+				// to the trac log below rather than defaulting to today's date.
+				if ( ! empty( $plugin_data['last_updated'] ) && is_string( $plugin_data['last_updated'] ) ) {
+					$pub_date = strtotime( $plugin_data['last_updated'] );
+					if ( false !== $pub_date ) {
+						$data['last_updated'] = $this->format_wporg_last_updated( $pub_date );
+						return $data;
+					}
 				}
 			}
 			// Just because the plugin is not in the api, does not mean it was never on .org.
@@ -1152,24 +1171,36 @@ class Plugin_Command extends CommandWithUpgrade {
 			if ( false !== $xml ) {
 				$xml_pub_date = $xml->xpath( '//pubDate' );
 				if ( $xml_pub_date ) {
-					$pub_date = strtotime( $xml_pub_date[0] ) ?: null;
-
-					if ( function_exists( 'wp_date' ) ) {
-						$data['last_updated'] = wp_date( 'Y-m-d', $pub_date );
-					} else {
-						// wp_date() is WordPress 5.3+. get_date_from_gmt() renders in the site
-						// timezone the same way, without date_i18n()'s pre-5.3 contract of
-						// expecting a timestamp that already has the offset added to it.
-						$data['last_updated'] = get_date_from_gmt(
-							gmdate( 'Y-m-d H:i:s', $pub_date ?? time() ),
-							'Y-m-d'
-						);
+					$pub_date = strtotime( $xml_pub_date[0] );
+					if ( false !== $pub_date ) {
+						$data['last_updated'] = $this->format_wporg_last_updated( $pub_date );
 					}
 				}
 			}
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Formats a wp.org publish date as a `Y-m-d` string in the site's configured timezone.
+	 *
+	 * @param int $pub_date Unix timestamp.
+	 *
+	 * @return string|false
+	 */
+	private function format_wporg_last_updated( $pub_date ) {
+		if ( function_exists( 'wp_date' ) ) {
+			return wp_date( 'Y-m-d', $pub_date );
+		}
+
+		// wp_date() is WordPress 5.3+. get_date_from_gmt() renders in the site
+		// timezone the same way, without date_i18n()'s pre-5.3 contract of
+		// expecting a timestamp that already has the offset added to it.
+		return get_date_from_gmt(
+			gmdate( 'Y-m-d H:i:s', $pub_date ),
+			'Y-m-d'
+		);
 	}
 
 	protected function filter_item_list( $items, $args ) {

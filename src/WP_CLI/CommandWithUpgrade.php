@@ -69,6 +69,103 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	/**
+	 * Gets the skip flags in effect that can prevent the update mechanism of a plugin or theme from running.
+	 *
+	 * Plugins are affected by `--skip-plugins`. Themes are affected by `--skip-themes` and by `--skip-plugins`,
+	 * as theme updates are often provided by a companion plugin.
+	 *
+	 * @param string $item_type Either 'plugin' or 'theme'.
+	 * @return string[] Flags in effect, e.g. `[ '--skip-plugins' ]`.
+	 */
+	public static function get_skip_flags_in_effect( $item_type ) {
+		$flags = [ 'skip-plugins' ];
+
+		if ( 'theme' === $item_type ) {
+			$flags[] = 'skip-themes';
+		}
+
+		$in_effect = [];
+		foreach ( $flags as $flag ) {
+			if ( WP_CLI::get_config( $flag ) ) {
+				$in_effect[] = "--{$flag}";
+			}
+		}
+
+		return $in_effect;
+	}
+
+	/**
+	 * Gets the skip flags that can prevent the update mechanism of the given plugin or theme from running.
+	 *
+	 * Unlike `get_skip_flags_in_effect()`, this honors comma-separated skip lists: a plugin is only affected
+	 * when it is skipped itself, a theme when it is skipped itself or when any plugin is skipped.
+	 *
+	 * @param array $item_info Item as returned by `get_item_list()`.
+	 * @return string[] Flags affecting the item, e.g. `[ '--skip-plugins' ]`.
+	 */
+	protected function get_skip_flags_affecting_item( $item_info ) {
+		$flags = [];
+
+		if ( 'theme' === $this->item_type ) {
+			if ( WP_CLI::get_config( 'skip-plugins' ) ) {
+				$flags[] = '--skip-plugins';
+			}
+
+			if ( Utils\is_theme_skipped( $item_info['update_id'] ) ) {
+				$flags[] = '--skip-themes';
+			}
+		} elseif ( Utils\is_plugin_skipped( $item_info['update_id'] ) ) {
+			$flags[] = '--skip-plugins';
+		}
+
+		return $flags;
+	}
+
+	/**
+	 * Prevents update data stored while plugins or themes are skipped from outliving the current process.
+	 *
+	 * Update data fetched while `--skip-plugins` or `--skip-themes` is in effect lacks the entries that the
+	 * skipped plugins or themes would have added for themselves. Later WP-CLI runs, cron and wp-admin would
+	 * otherwise consider those plugins or themes up to date until the transient expires.
+	 *
+	 * Meant to run before WordPress loads, so that update checks WordPress performs on its own are covered too.
+	 *
+	 * @return void
+	 */
+	public static function discard_update_data_stored_while_skipping() {
+		$transients = [
+			'plugin' => 'update_plugins',
+			'theme'  => 'update_themes',
+		];
+
+		foreach ( $transients as $item_type => $transient ) {
+			if ( ! self::get_skip_flags_in_effect( $item_type ) ) {
+				continue;
+			}
+
+			WP_CLI::add_wp_hook(
+				"set_site_transient_{$transient}",
+				static function () use ( $transient ) {
+					static $scheduled = false;
+
+					if ( $scheduled ) {
+						return;
+					}
+
+					$scheduled = true;
+
+					register_shutdown_function(
+						static function () use ( $transient ) {
+							WP_CLI::debug( "Discarding the '{$transient}' transient, as it was stored while skipping plugins or themes.", 'extension-command' );
+							delete_site_transient( $transient );
+						}
+					);
+				}
+			);
+		}
+	}
+
+	/**
 	 * @return class-string<\WP_Upgrader>
 	 */
 	abstract protected function get_upgrader_class( $force );
@@ -196,6 +293,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( $custom_slug && count( $args ) > 1 ) {
 			WP_CLI::error( 'The --slug option can only be used when installing a single item.' );
 		}
+
+		$ignore_requirements = Utils\get_flag_value( $assoc_args, 'ignore-requirements', false );
 
 		foreach ( $args as $slug ) {
 
@@ -342,7 +441,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				// Add item to cache allowlist if it matches certain URL patterns.
 				self::maybe_cache( $slug, $this->item_type );
 
-				if ( $file_upgrader->install( $slug ) ) {
+				$installed = $this->maybe_ignore_requirements(
+					$ignore_requirements,
+					static function () use ( $file_upgrader, $slug ) {
+						return $file_upgrader->install( $slug );
+					}
+				);
+
+				if ( $installed ) {
 					$slug   = $file_upgrader->result['destination_name'];
 					$result = true;
 					if ( $filter ) {
@@ -354,7 +460,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			} else {
 				// Assume a plugin/theme slug from the WordPress.org repository has been specified.
-				$result = $this->install_from_repo( $slug, $assoc_args );
+				$result = $this->maybe_ignore_requirements(
+					$ignore_requirements,
+					function () use ( $slug, $assoc_args ) {
+						return $this->install_from_repo( $slug, $assoc_args );
+					}
+				);
 
 				if ( is_null( $result ) ) {
 					++$errors;
@@ -415,6 +526,53 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		}
 		Utils\report_batch_operation_results( $this->item_type, 'install', count( $args ), $successes, $errors );
+	}
+
+	/**
+	 * Runs an install callback, optionally bypassing the WordPress and PHP
+	 * version checks that the core upgraders run in `check_package()`.
+	 *
+	 * The callback must trigger the upgrader's `install()`, which registers
+	 * `check_package()` at priority 10. The capturing callback is registered
+	 * right before that, so it runs after any directory renaming filters and
+	 * before `check_package()`. If the package was rejected only because of
+	 * version requirements, the captured source is restored. Other validation
+	 * errors, like a missing plugin header, are kept.
+	 *
+	 * @param bool     $ignore_requirements Whether to bypass the version checks.
+	 * @param callable $callback            Install callback.
+	 * @return mixed Return value of the callback.
+	 */
+	private function maybe_ignore_requirements( $ignore_requirements, $callback ) {
+		if ( ! $ignore_requirements ) {
+			return $callback();
+		}
+
+		$original_source = null;
+
+		$capture = static function ( $source ) use ( &$original_source ) {
+			$original_source = $source;
+			return $source;
+		};
+
+		$restore = static function ( $source ) use ( &$original_source ) {
+			if ( is_wp_error( $source )
+				&& in_array( $source->get_error_code(), array( 'incompatible_wp_required_version', 'incompatible_php_required_version' ), true )
+				&& is_string( $original_source ) ) {
+				return $original_source;
+			}
+			return $source;
+		};
+
+		add_filter( 'upgrader_source_selection', $capture, 10 );
+		add_filter( 'upgrader_source_selection', $restore, 11 );
+
+		try {
+			return $callback();
+		} finally {
+			remove_filter( 'upgrader_source_selection', $capture, 10 );
+			remove_filter( 'upgrader_source_selection', $restore, 11 );
+		}
 	}
 
 	/**
@@ -711,7 +869,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		/**
 		 * @var string|null $exclude
 		 */
-		$exclude = Utils\get_flag_value( $assoc_args, 'exclude' );
+		$exclude      = Utils\get_flag_value( $assoc_args, 'exclude' );
+		$excluded_ids = [];
 		if ( isset( $exclude ) ) {
 			$exclude_items = explode( ',', trim( $assoc_args['exclude'], ',' ) );
 			unset( $assoc_args['exclude'] );
@@ -721,10 +880,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					if ( ! $plugin ) {
 						continue;
 					}
+					$excluded_ids[] = $plugin->file;
 					unset( $items_to_update[ $plugin->file ] );
 				} elseif ( 'theme' === $this->item_type ) {
 					$theme = wp_get_theme( $item );
 					if ( $theme->exists() ) {
+						$excluded_ids[] = $theme->get_stylesheet();
 						unset( $items_to_update[ $theme->get_stylesheet() ] );
 					}
 				}
@@ -742,6 +903,32 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				WP_CLI::warning( "{$item_info['name']}: {$item_info['update_unavailable_reason']}" );
 				++$skipped;
 				unset( $items_to_update[ $item_key ] );
+			}
+		}
+
+		// While a plugin's or theme's own update mechanism might not have run, an item missing from both
+		// `response` and `no_update` cannot be assumed to be up to date.
+		if ( self::get_skip_flags_in_effect( $this->item_type ) ) {
+			$update_info = $this->get_update_info();
+
+			foreach ( $items as $item_key => $item_info ) {
+				if ( 'none' !== $item_info['update'] || in_array( $item_key, $excluded_ids, true ) ) {
+					continue;
+				}
+
+				$skip_flags = $this->get_skip_flags_affecting_item( $item_info );
+				if ( ! $skip_flags ) {
+					continue;
+				}
+
+				$update_id = $item_info['update_id'];
+				if ( isset( $update_info->response[ $update_id ] ) || isset( $update_info->no_update[ $update_id ] ) ) {
+					continue;
+				}
+
+				$flags_text = implode( ' and ', $skip_flags ) . ( count( $skip_flags ) > 1 ? ' are' : ' is' ) . ' in effect';
+				WP_CLI::warning( "{$item_info['name']}: Could not determine whether an update is available. The {$this->item_type}'s own update mechanism might not have run because {$flags_text}." );
+				++$skipped;
 			}
 		}
 

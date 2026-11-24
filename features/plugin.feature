@@ -2,8 +2,6 @@ Feature: Manage WordPress plugins
 
   Scenario: Create, activate and check plugin status
     Given a WP install
-    And I run `wp plugin path`
-    And save STDOUT as {PLUGIN_DIR}
 
     When I run `wp scaffold plugin --skip-tests plugin1`
     Then STDOUT should not be empty
@@ -303,8 +301,11 @@ Feature: Manage WordPress plugins
     Given a WP multisite install
     And I run `wp plugin delete --all`
 
-    When I run `wp plugin install debug-bar`
-    And I run `wp plugin install wordpress-importer --activate`
+    And these installed plugins:
+      """
+      debug-bar
+      """
+    When I run `wp plugin install wordpress-importer --activate`
     Then STDOUT should contain:
       """
       Plugin 'wordpress-importer' activated.
@@ -704,7 +705,7 @@ Feature: Manage WordPress plugins
           function ( $all_plugins ) {
               unset( $all_plugins['site-secrets/site-secrets.php'] );
               return $all_plugins;
-          } 
+          }
       );
       """
 
@@ -1130,4 +1131,62 @@ Feature: Manage WordPress plugins
     Then STDERR should contain:
       """
       Warning: example: This update requires PHP version 100
+      """
+
+  @require-wp-4.0
+  Scenario: The unavailable reason of one plugin does not leak into other plugins
+    Given a WP install
+    And a wp-content/plugins/aaa-example/aaa-example.php file:
+      """
+      <?php
+        /**
+        * Plugin Name: AAA Example Plugin
+        * Version: 1.0.0
+        * Requires at least: 3.7
+        * Tested up to: 6.7
+      """
+    And a wp-content/plugins/zzz-example/zzz-example.php file:
+      """
+      <?php
+        /**
+        * Plugin Name: ZZZ Example Plugin
+        * Version: 1.0.0
+        * Requires at least: 3.7
+        * Tested up to: 6.7
+      """
+    And that HTTP requests to https://api.wordpress.org/plugins/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
+
+      {
+        "plugins": {
+          "aaa-example/aaa-example.php": {
+            "id": "w.org/plugins/aaa-example",
+            "slug": "aaa-example",
+            "plugin": "aaa-example/aaa-example.php",
+            "new_version": "2.0.0",
+            "requires": "3.7",
+            "tested": "6.6",
+            "requires_php": "100",
+            "requires_plugins": [],
+            "compatibility": []
+        }
+      },
+        "translations": [],
+        "no_update": []
+      }
+      """
+
+    When I run `wp plugin list --fields=name,update,update_unavailable_reason --format=csv`
+    Then STDOUT should contain:
+      """
+      aaa-example,unavailable,"This update requires PHP version 100
+      """
+    And STDOUT should contain:
+      """
+      zzz-example,none,
+      """
+    And STDOUT should not contain:
+      """
+      zzz-example,none,"
       """

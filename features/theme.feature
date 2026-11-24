@@ -12,8 +12,10 @@ Feature: Manage WordPress themes
 
   Scenario: Installing and deleting theme
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentyeleven --activate`
+    And only these installed and active themes:
+      """
+      twentyeleven
+      """
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -72,8 +74,11 @@ Feature: Manage WordPress themes
   Scenario: Checking theme status without theme parameter
     Given a WP install
 
-    When I run `wp theme install classic --activate`
-    And I run `wp theme list --field=name --status=inactive | xargs wp theme delete`
+    And these installed and active themes:
+      """
+      classic
+      """
+    When I run `wp theme list --field=name --status=inactive | xargs wp theme delete`
     And I try `wp theme status`
     Then STDOUT should be:
       """
@@ -85,8 +90,10 @@ Feature: Manage WordPress themes
 
   Scenario: Install a theme, activate, then force install an older version of the theme
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentyeleven --activate`
+    And only these installed and active themes:
+      """
+      twentyeleven
+      """
 
     When I run `wp theme install twentytwelve --version=1.4`
     Then STDOUT should not be empty
@@ -142,8 +149,10 @@ Feature: Manage WordPress themes
 
   Scenario: Exclude theme from bulk updates.
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentyeleven --activate`
+    And only these installed and active themes:
+      """
+      twentyeleven
+      """
 
     When I run `wp theme install twentytwelve --version=1.4 --force`
     Then STDOUT should contain:
@@ -185,7 +194,7 @@ Feature: Manage WordPress themes
 
   Scenario: Get the path of an installed theme
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -198,7 +207,7 @@ Feature: Manage WordPress themes
 
   Scenario: Activate an already active theme
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -276,7 +285,7 @@ Feature: Manage WordPress themes
 
   Scenario: Install a theme when the theme directory doesn't yet exist
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `rm -rf wp-content/themes`
     And I run `wp eval "if ( is_dir('wp-content/themes') ) echo 'fail';"`
@@ -330,8 +339,11 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: Enabling and disabling a theme
     Given a WP multisite install
-    And I run `wp theme install oceanly`
-    And I run `wp theme install oceanly-green`
+    And these installed themes:
+      """
+      oceanly
+      oceanly-green
+      """
 
     When I try `wp option get allowedthemes`
     Then the return code should be 1
@@ -426,7 +438,10 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: Install and attempt to activate a child theme without its parent
     Given a WP install
-    And I run `wp theme install oceanly-green`
+    And these installed themes:
+      """
+      oceanly-green
+      """
     And I run `rm -rf wp-content/themes/oceanly`
 
     When I try `wp theme activate oceanly-green`
@@ -440,8 +455,14 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: List an active theme with its parent
     Given a WP install
-    And I run `wp theme install oceanly`
-    And I run `wp theme install --activate oceanly-green`
+    And these installed themes:
+      """
+      oceanly
+      """
+    And these installed and active themes:
+      """
+      oceanly-green
+      """
 
     # Hybrid_Registry throws warning for PHP 8+.
     When I try `wp theme list --fields=name,status`
@@ -453,8 +474,11 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: List broken themes (child theme without parent)
     Given a WP install
-    And I run `wp theme install oceanly`
-    And I run `wp theme install oceanly-green`
+    And these installed themes:
+      """
+      oceanly
+      oceanly-green
+      """
     
     When I run `wp theme list --fields=name,status`
     Then STDOUT should be a table containing rows:
@@ -487,7 +511,7 @@ Feature: Manage WordPress themes
 
   Scenario: When updating a theme --format should be the same when using --dry-run
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install --force twentytwelve --version=1.0`
     Then STDOUT should not be empty
@@ -527,7 +551,7 @@ Feature: Manage WordPress themes
 
   Scenario: Check json and csv formats when updating a theme
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install --force twentytwelve --version=1.0`
     Then STDOUT should not be empty
@@ -581,7 +605,7 @@ Feature: Manage WordPress themes
 
   Scenario: Get status field in theme detail
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install twentytwelve`
     Then STDOUT should not be empty
@@ -608,7 +632,7 @@ Feature: Manage WordPress themes
 
   Scenario: Theme activation fails when slug does not match exactly
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install twentytwelve`
     Then the return code should be 0
@@ -667,9 +691,14 @@ Feature: Manage WordPress themes
   @require-wp-5.7
   Scenario: Parent theme is active when its child is active
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentytwelve`
-    And I run `wp theme install oceanly-green --activate`
+    And only these installed themes:
+      """
+      twentytwelve
+      """
+    And these installed and active themes:
+      """
+      oceanly-green
+      """
 
     When I run `wp theme is-active oceanly-green`
     Then the return code should be 0
@@ -682,8 +711,10 @@ Feature: Manage WordPress themes
 
   Scenario: Excluding a missing theme should not throw an error
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentytwelve --version=1.5 --activate`
+    And only these installed and active themes:
+      """
+      twentytwelve --version=1.5
+      """
     And I run `wp theme update --all --exclude=missing-theme`
     Then STDERR should be empty
     And STDOUT should contain:
@@ -792,6 +823,64 @@ Feature: Manage WordPress themes
       Warning: example: This update requires PHP version 100
       """
 
+  Scenario: The unavailable reason of one theme does not leak into other themes
+    Given a WP install
+    And a wp-content/themes/aaa-example/style.css file:
+      """
+      /*
+      Theme Name: aaa-example
+      Version: 1.0.0
+      */
+      """
+    And a wp-content/themes/aaa-example/index.php file:
+      """
+      <?php
+      // Silence is golden.
+      """
+    And a wp-content/themes/zzz-example/style.css file:
+      """
+      /*
+      Theme Name: zzz-example
+      Version: 1.0.0
+      */
+      """
+    And a wp-content/themes/zzz-example/index.php file:
+      """
+      <?php
+      // Silence is golden.
+      """
+    And that HTTP requests to https://api.wordpress.org/themes/update-check/1.1/ will respond with:
+      """
+      HTTP/1.1 200 OK
+
+      {
+        "themes": {
+          "aaa-example": {
+            "theme": "aaa-example",
+            "new_version": "2.0.0",
+            "requires": "3.7",
+            "requires_php": "100"
+          }
+      },
+        "translations": [],
+        "no_update": []
+      }
+      """
+
+    When I run `wp theme list --fields=name,update,update_unavailable_reason --format=csv`
+    Then STDOUT should contain:
+      """
+      aaa-example,unavailable,"This update requires PHP version 100
+      """
+    And STDOUT should contain:
+      """
+      zzz-example,none,
+      """
+    And STDOUT should not contain:
+      """
+      zzz-example,none,"
+      """
+
   @require-wp-5.9
   Scenario: Check theme type field for block themes
     Given a WP install
@@ -810,8 +899,11 @@ Feature: Manage WordPress themes
   Scenario: Check theme type field for classic themes
     Given a WP install
 
-    When I run `wp theme install twentytwelve --force`
-    And I run `wp theme list --fields=name,type --name=twentytwelve`
+    And these installed themes:
+      """
+      twentytwelve --force
+      """
+    When I run `wp theme list --fields=name,type --name=twentytwelve`
     Then STDOUT should be a table containing rows:
       | name         | type    |
       | twentytwelve | classic |
@@ -824,9 +916,14 @@ Feature: Manage WordPress themes
 
   Scenario: Filter theme list by multiple names
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentyeleven --activate`
-    And I run `wp theme install twentytwelve`
+    And only these installed themes:
+      """
+      twentytwelve
+      """
+    And these installed and active themes:
+      """
+      twentyeleven
+      """
 
     When I run `wp theme list --name=twentytwelve,twentyeleven --fields=name,status`
     Then STDOUT should be a table containing rows:
@@ -851,3 +948,44 @@ Feature: Manage WordPress themes
       | name          | status   |
       | twentyeleven  | active   |
       | twentytwelve  | inactive |
+
+  # The update check only lists themes without an update in `no_update` since WordPress 5.5.
+  @require-wp-5.5
+  Scenario: Flag themes whose version is higher than the one on WordPress.org without a request per theme
+    Given a WP install
+    And these installed themes:
+      """
+      twentytwelve --force
+      """
+    And I run `sed -i.bak 's/^Version: .*/Version: 99.0/' wp-content/themes/twentytwelve/style.css`
+    And a wp-content/themes/my-local-theme/style.css file:
+      """
+      /*
+      Theme Name: My Local Theme
+      Version: 1.0
+      */
+      """
+    And a wp-content/themes/my-local-theme/index.php file:
+      """
+      <?php
+      """
+    # The latest versions come from the update check, not from a theme information request per theme.
+    And that HTTP requests to api.wordpress.org/themes/info/ will respond with:
+      """
+      HTTP/1.1 500 Internal Server Error
+      Content-Type: text/plain
+
+      Error
+      """
+
+    When I run `wp theme list --fields=name,update,version`
+    Then STDOUT should be a table containing rows:
+      | name           | update                       | version |
+      | twentytwelve   | version higher than expected | 99.0    |
+      | my-local-theme | none                         | 1.0     |
+
+    When I try `wp theme update twentytwelve`
+    Then STDERR should contain:
+      """
+      Warning: twentytwelve: version higher than expected.
+      """

@@ -81,7 +81,10 @@ Feature: Update WordPress plugins
   @require-wp-5.2
   Scenario: Update a plugin to its latest patch release
     Given a WP install
-    And I run `wp plugin install --force wordpress-importer --version=0.5`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
 
     When I run `wp plugin update wordpress-importer --patch`
     Then STDOUT should contain:
@@ -99,7 +102,10 @@ Feature: Update WordPress plugins
   @require-wp-5.8
   Scenario: Update a plugin to its latest minor release
     Given a WP install
-    And I run `wp plugin install --force akismet --version=2.5.4`
+    And these installed plugins:
+      """
+      akismet --version=2.5.4 --force
+      """
 
     When I run `wp plugin update akismet --minor`
     Then STDOUT should contain:
@@ -116,8 +122,6 @@ Feature: Update WordPress plugins
   @require-wp-5.2
   Scenario: Not giving a slug on update should throw an error unless --all given
     Given a WP install
-    And I run `wp plugin path`
-    And save STDOUT as {PLUGIN_DIR}
     And an empty {PLUGIN_DIR} directory
 
     # No plugins installed. Don't give an error if --all given for BC.
@@ -134,7 +138,10 @@ Feature: Update WordPress plugins
       """
 
     # One plugin installed.
-    Given I run `wp plugin install wordpress-importer --version=0.5 --force`
+    Given these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
 
     When I try `wp plugin update`
     Then the return code should be 1
@@ -170,7 +177,10 @@ Feature: Update WordPress plugins
       """
 
     # Two plugins installed.
-    Given I run `wp plugin install akismet --version=2.5.4`
+    Given these installed plugins:
+      """
+      akismet --version=2.5.4
+      """
 
     When I run `wp plugin update --all`
     Then STDOUT should contain:
@@ -202,7 +212,10 @@ Feature: Update WordPress plugins
   @require-wp-5.8 @skip-windows
   Scenario: Plugin updates that error should not report a success
     Given a WP install
-    And I run `wp plugin install --force akismet --version=4.0`
+    And these installed plugins:
+      """
+      akismet --version=4.0 --force
+      """
 
     When I run `chmod -w wp-content/plugins/akismet`
     And I try `wp plugin update akismet`
@@ -374,7 +387,10 @@ Feature: Update WordPress plugins
   @require-wp-5.2 @skip-windows
   Scenario: Failed plugin update keeps JSON output parseable
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And I run `chmod -w wp-content/plugins/wordpress-importer`
 
     When I try `wp plugin update wordpress-importer --format=json`
@@ -390,7 +406,10 @@ Feature: Update WordPress plugins
   @require-wp-5.2 @skip-windows
   Scenario: Failed plugin update keeps CSV output parseable
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And I run `chmod -w wp-content/plugins/wordpress-importer`
 
     When I try `wp plugin update wordpress-importer --format=csv`
@@ -406,7 +425,10 @@ Feature: Update WordPress plugins
   @require-wp-5.2 @skip-windows
   Scenario: Skip plugin update when plugin directory is a VCS checkout
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And I run `wp plugin path wordpress-importer --dir`
     And save STDOUT as {PLUGIN_DIR}
 
@@ -426,7 +448,10 @@ Feature: Update WordPress plugins
   @require-wp-5.2 @skip-windows
   Scenario: Update plugin in VCS checkout when --include-vcs is set
     Given a WP install
-    And I run `wp plugin install wordpress-importer --version=0.5 --force`
+    And these installed plugins:
+      """
+      wordpress-importer --version=0.5 --force
+      """
     And I run `wp plugin path wordpress-importer --dir`
     And save STDOUT as {PLUGIN_DIR}
 
@@ -436,3 +461,106 @@ Feature: Update WordPress plugins
       """
       Success: Updated 1 of 1 plugins.
       """
+
+  Scenario: Updating a plugin whose own update mechanism is skipped with --skip-plugins
+    Given a WP install
+    And a wp-content/plugins/premium-updater-simulation/premium-updater-simulation.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Premium Updater Simulation
+       * Description: Mimics a premium plugin whose license does not allow downloading the update.
+       * Version: 1.0.0
+       */
+
+      add_filter(
+          'pre_set_site_transient_update_plugins',
+          function ( $transient ) {
+              if ( ! is_object( $transient ) ) {
+                  $transient = new stdClass();
+              }
+
+              $transient->response['premium-updater-simulation/premium-updater-simulation.php'] = (object) [
+                  'id'          => 'premium-updater-simulation/premium-updater-simulation.php',
+                  'slug'        => 'premium-updater-simulation',
+                  'plugin'      => 'premium-updater-simulation/premium-updater-simulation.php',
+                  'new_version' => '2.0.0',
+                  'url'         => '',
+                  'package'     => '',
+              ];
+
+              return $transient;
+          }
+      );
+      """
+    And I run `wp plugin activate premium-updater-simulation`
+
+    # Update data fetched while plugins are skipped must not be reused by later runs.
+    When I run `wp plugin list --skip-plugins --fields=name,update`
+    Then STDOUT should be a table containing rows:
+      | name                       | update |
+      | premium-updater-simulation | none   |
+
+    When I try `wp plugin update premium-updater-simulation`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDOUT should end with a table containing rows:
+      | name                       | old_version | new_version | status |
+      | premium-updater-simulation | 1.0.0       | 2.0.0       | Error  |
+    And STDERR should contain:
+      """
+      Error: No plugins updated (1 failed).
+      """
+    And the return code should be 1
+
+    # Once the update data is refreshed without the plugin's update mechanism, the plugin must not be mistaken for being up to date.
+    When I try `wp transient delete update_plugins --network`
+    And I try `wp plugin update premium-updater-simulation --skip-plugins`
+    Then STDERR should be:
+      """
+      Warning: premium-updater-simulation: Could not determine whether an update is available. The plugin's own update mechanism might not have run because --skip-plugins is in effect.
+      Error: No plugins updated.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    # Plugins that WordPress.org reported on are not affected.
+    When I try `wp plugin update --all --skip-plugins --dry-run`
+    Then STDERR should contain:
+      """
+      Warning: premium-updater-simulation: Could not determine whether an update is available. The plugin's own update mechanism might not have run because --skip-plugins is in effect.
+      """
+
+    # Excluded plugins are not warned about.
+    When I try `wp plugin update --all --skip-plugins --exclude=premium-updater-simulation --dry-run`
+    Then STDERR should not contain:
+    """
+    premium-updater-simulation
+    """
+
+    # Update data fetched while plugins were skipped is not reused once plugins are loaded again.
+    When I try `wp plugin update premium-updater-simulation`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDERR should contain:
+      """
+      Error: No plugins updated (1 failed).
+      """
+    And the return code should be 1
+
+    # Skipping other plugins leaves the plugin's update mechanism running.
+    When I try `wp transient delete update_plugins --network`
+    And I try `wp plugin update premium-updater-simulation --skip-plugins=akismet`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDERR should contain:
+      """
+      Error: No plugins updated (1 failed).
+      """
+    And the return code should be 1

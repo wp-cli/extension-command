@@ -48,7 +48,7 @@ Feature: Activate WordPress plugins
           function ( $all_plugins ) {
               unset( $all_plugins['site-secrets/site-secrets.php'] );
               return $all_plugins;
-          } 
+          }
       );
       """
 
@@ -73,8 +73,8 @@ Feature: Activate WordPress plugins
       <?php
       // Plugin Name: Example Plugin
       function example_plugin_activate( bool $network_wide = false ) {
-      	// Doesn't matter what we do here, we just need a function definition to check the type
-      	return;
+          // Doesn't matter what we do here, we just need a function definition to check the type
+          return;
       }
       register_activation_hook( __FILE__, 'example_plugin_activate' );
       """
@@ -191,8 +191,8 @@ Feature: Activate WordPress plugins
       register_activation_hook(
           __FILE__,
           function () {
-      		@file_put_contents( WP_CONTENT_DIR . '/activation-test.txt', 'Activation hook was run' );
-      	}
+              @file_put_contents( WP_CONTENT_DIR . '/activation-test.txt', 'Activation hook was run' );
+          }
       );
       """
     

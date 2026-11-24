@@ -3,8 +3,11 @@ Feature: Update WordPress themes
   Scenario: Updating a theme with no version in the WordPress.org directory shouldn't delete the original theme
     Given a WP install
 
-    When I run `wp theme install twentytwelve --force`
-    And I run `wp scaffold child-theme wpclitesttheme --parent_theme=twentytwelve`
+    And these installed themes:
+      """
+      twentytwelve --force
+      """
+    When I run `wp scaffold child-theme wpclitesttheme --parent_theme=twentytwelve`
     Then the wp-content/themes/wpclitesttheme directory should exist
 
     When I try `wp theme update wpclitesttheme --version=100.0.0`
@@ -16,7 +19,7 @@ Feature: Update WordPress themes
 
   Scenario: Install a theme, then update to a specific version of that theme
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install twentytwelve --version=3.0`
     Then STDOUT should not be empty
@@ -32,8 +35,6 @@ Feature: Update WordPress themes
   @require-wp-4.5
   Scenario: Not giving a slug on update should throw an error unless --all given
     Given a WP install
-    And I run `wp theme path`
-    And save STDOUT as {THEME_DIR}
     And an empty {THEME_DIR} directory
 
     # No themes installed. Don't give an error if --all given for BC.
@@ -50,7 +51,10 @@ Feature: Update WordPress themes
       """
 
     # One theme installed.
-    Given I run `wp theme install storefront --version=1.0.0`
+    Given these installed themes:
+      """
+      storefront --version=1.0.0
+      """
 
     When I try `wp theme update`
     Then the return code should be 1
@@ -86,7 +90,10 @@ Feature: Update WordPress themes
       """
 
     # Two themes installed.
-    Given I run `wp theme install --force twentytwelve --version=1.0`
+    Given these installed themes:
+      """
+      twentytwelve --version=1.0 --force
+      """
 
     When I run `wp theme update --all`
     Then STDOUT should contain:
@@ -125,7 +132,10 @@ Feature: Update WordPress themes
 
   Scenario: Update a theme to its latest minor release
     Given a WP install
-    And I run `wp theme install --force twentytwelve --version=3.0`
+    And these installed themes:
+      """
+      twentytwelve --version=3.0 --force
+      """
 
     When I run `wp theme update twentytwelve --minor`
     Then STDOUT should contain:
@@ -141,7 +151,10 @@ Feature: Update WordPress themes
 
   Scenario: Update a theme to its latest patch release
     Given a WP install
-    And I run `wp theme install --force twentytwelve --version=1.1`
+    And these installed themes:
+      """
+      twentytwelve --version=1.1 --force
+      """
 
     When I run `wp theme update twentytwelve --patch`
     Then STDOUT should contain:
@@ -239,7 +252,7 @@ Feature: Update WordPress themes
   @require-wp-4.5
   Scenario: Updating all themes should show the name of each theme as it is updated
     Given a WP install
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install storefront --version=1.0.0`
     Then STDOUT should not be empty
@@ -260,7 +273,10 @@ Feature: Update WordPress themes
 
   Scenario: Skip theme update when theme directory is a VCS checkout
     Given a WP install
-    And I run `wp theme install twentytwelve --version=3.0 --force`
+    And these installed themes:
+      """
+      twentytwelve --version=3.0 --force
+      """
     And I run `wp theme path twentytwelve --dir`
     And save STDOUT as {THEME_DIR}
 
@@ -278,7 +294,10 @@ Feature: Update WordPress themes
 
   Scenario: Update theme in VCS checkout when --include-vcs is set
     Given a WP install
-    And I run `wp theme install twentytwelve --version=3.0 --force`
+    And these installed themes:
+      """
+      twentytwelve --version=3.0 --force
+      """
     And I run `wp theme path twentytwelve --dir`
     And save STDOUT as {THEME_DIR}
 
@@ -288,3 +307,167 @@ Feature: Update WordPress themes
       """
       Success: Updated 1 of 1 themes.
       """
+
+  Scenario: Updating a theme whose own update mechanism is skipped with --skip-themes
+    Given a WP install
+    And a wp-content/themes/premium-theme-simulation/style.css file:
+      """
+      /*
+      Theme Name: Premium Theme Simulation
+      Description: Mimics a premium theme whose license does not allow downloading the update.
+      Version: 1.0.0
+      */
+      """
+    And a wp-content/themes/premium-theme-simulation/index.php file:
+      """
+      <?php
+      """
+    And a wp-content/themes/premium-theme-simulation/functions.php file:
+      """
+      <?php
+      add_filter(
+          'pre_set_site_transient_update_themes',
+          function ( $transient ) {
+              if ( ! is_object( $transient ) ) {
+                  $transient = new stdClass();
+              }
+
+              $transient->response['premium-theme-simulation'] = [
+                  'theme'       => 'premium-theme-simulation',
+                  'new_version' => '2.0.0',
+                  'url'         => '',
+                  'package'     => '',
+              ];
+
+              return $transient;
+          }
+      );
+      """
+    And I run `wp theme activate premium-theme-simulation`
+
+    # Update data fetched while themes are skipped must not be reused by later runs.
+    When I run `wp theme list --skip-themes --fields=name,update`
+    Then STDOUT should be a table containing rows:
+      | name                     | update |
+      | premium-theme-simulation | none   |
+
+    When I try `wp theme update premium-theme-simulation`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDOUT should end with a table containing rows:
+      | name                     | old_version | new_version | status |
+      | premium-theme-simulation | 1.0.0       | 2.0.0       | Error  |
+    And STDERR should contain:
+      """
+      Error: No themes updated (1 failed).
+      """
+    And the return code should be 1
+
+    # Once the update data is refreshed without the theme's update mechanism, the theme must not be mistaken for being up to date.
+    When I try `wp transient delete update_themes --network`
+    And I try `wp theme update premium-theme-simulation --skip-themes`
+    Then STDERR should be:
+      """
+      Warning: premium-theme-simulation: Could not determine whether an update is available. The theme's own update mechanism might not have run because --skip-themes is in effect.
+      Error: No themes updated.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    # Update data fetched while themes were skipped is not reused once themes are loaded again.
+    When I try `wp theme update premium-theme-simulation`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDERR should contain:
+      """
+      Error: No themes updated (1 failed).
+      """
+    And the return code should be 1
+
+  Scenario: Updating a theme whose update mechanism lives in a skipped companion plugin
+    Given a WP install
+    And a wp-content/themes/premium-theme-simulation/style.css file:
+      """
+      /*
+      Theme Name: Premium Theme Simulation
+      Description: Mimics a premium theme whose updates are provided by a companion plugin.
+      Version: 1.0.0
+      */
+      """
+    And a wp-content/themes/premium-theme-simulation/index.php file:
+      """
+      <?php
+      """
+    And a wp-content/plugins/premium-theme-updater/premium-theme-updater.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Premium Theme Updater
+       * Description: Mimics a companion plugin providing updates for a premium theme.
+       * Version: 1.0.0
+       */
+
+      add_filter(
+          'pre_set_site_transient_update_themes',
+          function ( $transient ) {
+              if ( ! is_object( $transient ) ) {
+                  $transient = new stdClass();
+              }
+
+              $transient->response['premium-theme-simulation'] = [
+                  'theme'       => 'premium-theme-simulation',
+                  'new_version' => '2.0.0',
+                  'url'         => '',
+                  'package'     => '',
+              ];
+
+              return $transient;
+          }
+      );
+      """
+    And I run `wp plugin activate premium-theme-updater`
+    And I try `wp transient delete update_themes --network`
+
+    When I try `wp theme update premium-theme-simulation`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDERR should contain:
+      """
+      Error: No themes updated (1 failed).
+      """
+    And the return code should be 1
+
+    When I try `wp transient delete update_themes --network`
+    And I try `wp theme update premium-theme-simulation --skip-plugins`
+    Then STDERR should be:
+      """
+      Warning: premium-theme-simulation: Could not determine whether an update is available. The theme's own update mechanism might not have run because --skip-plugins is in effect.
+      Error: No themes updated.
+      """
+    And the return code should be 1
+
+    When I try `wp theme update premium-theme-simulation --skip-plugins --skip-themes`
+    Then STDERR should be:
+      """
+      Warning: premium-theme-simulation: Could not determine whether an update is available. The theme's own update mechanism might not have run because --skip-plugins and --skip-themes are in effect.
+      Error: No themes updated.
+      """
+    And the return code should be 1
+
+    # Skipping only unrelated themes leaves the companion plugin running.
+    When I try `wp theme update premium-theme-simulation --skip-themes=twentytwentyfive`
+    Then STDERR should contain:
+      """
+      Warning: Update package not available.
+      """
+    And STDERR should contain:
+      """
+      Error: No themes updated (1 failed).
+      """
+    And the return code should be 1

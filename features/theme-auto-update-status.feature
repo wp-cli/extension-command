@@ -2,10 +2,12 @@ Feature: Show the status of auto-updates for WordPress themes
 
   Background:
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentysixteen`
-    And I run `wp theme install twentyseventeen`
-    And I run `wp theme install twentynineteen`
+    And only these installed themes:
+      """
+      twentysixteen
+      twentyseventeen
+      twentynineteen
+      """
 
   @require-wp-5.5
   Scenario: Show an error if required params are missing
