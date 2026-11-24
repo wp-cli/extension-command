@@ -78,7 +78,7 @@ class Plugin_Command extends CommandWithUpgrade {
 	}
 
 	protected function get_upgrader_class( $force ) {
-		return $force ? '\\WP_CLI\\DestructivePluginUpgrader' : 'Plugin_Upgrader';
+		return $force ? '\\WP_CLI\\DestructivePluginUpgrader' : '\\WP_CLI\\PluginUpgrader';
 	}
 
 	/**

@@ -36,6 +36,46 @@ Feature: Update WordPress plugins
       | name               | status   | update    | version           | update_version | auto_update |
       | wordpress-importer | inactive | none      | {UPDATE_VERSION}  |                | off         |
 
+  @require-wp-5.5
+  Scenario: Expose the files changed by a plugin update via a hook
+    Given a WP install
+    And a hook.php file:
+      """
+      <?php
+      WP_CLI::add_hook(
+          'plugin_update_finished',
+          static function ( $files ) {
+              WP_CLI::log( 'Hook fired with ' . ( count( $files ) > 0 ? 'files' : 'no files' ) );
+              foreach ( $files as $file ) {
+                  WP_CLI::log( 'Changed file: ' . $file );
+              }
+          }
+      );
+      """
+
+    When I run `wp plugin install wordpress-importer --version=0.5 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin update wordpress-importer --require=hook.php`
+    Then STDOUT should contain:
+      """
+      Hook fired with files
+      """
+    And STDOUT should contain:
+      """
+      Changed file: {PLUGIN_DIR}/wordpress-importer/wordpress-importer.php
+      """
+    And STDOUT should not contain:
+      """
+      Changed file: {PLUGIN_DIR}/wordpress-importer/readme.txt
+      """
+
+    When I run `wp plugin update wordpress-importer --require=hook.php`
+    Then STDOUT should not contain:
+      """
+      Hook fired
+      """
+
   Scenario: Error when both --minor and --patch are provided
     Given a WP install
 
