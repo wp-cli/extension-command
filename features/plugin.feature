@@ -2,8 +2,6 @@ Feature: Manage WordPress plugins
 
   Scenario: Create, activate and check plugin status
     Given a WP install
-    And I run `wp plugin path`
-    And save STDOUT as {PLUGIN_DIR}
 
     When I run `wp scaffold plugin --skip-tests plugin1`
     Then STDOUT should not be empty
@@ -303,8 +301,11 @@ Feature: Manage WordPress plugins
     Given a WP multisite install
     And I run `wp plugin delete --all`
 
-    When I run `wp plugin install debug-bar`
-    And I run `wp plugin install wordpress-importer --activate`
+    And these installed plugins:
+      """
+      debug-bar
+      """
+    When I run `wp plugin install wordpress-importer --activate`
     Then STDOUT should contain:
       """
       Plugin 'wordpress-importer' activated.

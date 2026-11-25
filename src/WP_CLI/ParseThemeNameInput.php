@@ -79,7 +79,7 @@ trait ParseThemeNameInput {
 
 		if ( ! empty( $checked_themes ) ) {
 			foreach ( $checked_themes as $slug => $version ) {
-				$theme_version_info[ $slug ] = $this->is_theme_version_valid( $slug, $version );
+				$theme_version_info[ $slug ] = $this->is_theme_version_valid( $slug, $version, $all_update_info );
 			}
 		}
 
@@ -184,14 +184,35 @@ trait ParseThemeNameInput {
 	}
 
 	/**
-	 * Check if current version of the theme is higher than the one available at WP.org.
+	 * Check whether the installed version of a theme is not higher than the latest version on WordPress.org.
 	 *
-	 * @param string $slug Theme slug.
-	 * @param string $version Theme current version.
+	 * The update check already returns the latest version of every theme hosted on WordPress.org,
+	 * in `response` for themes with an update and in `no_update` for the others, so this does not
+	 * need a request per theme unless that information is missing.
 	 *
-	 * @return bool|string
+	 * @param string      $slug        Theme slug.
+	 * @param string      $version     Installed theme version.
+	 * @param object|null $update_info Optional. Value of the `update_themes` site transient.
+	 *
+	 * @return bool|string Whether the version is valid, or an empty string for themes not on WordPress.org.
 	 */
-	protected function is_theme_version_valid( $slug, $version ) {
+	protected function is_theme_version_valid( $slug, $version, $update_info = null ) {
+		if ( is_object( $update_info ) && isset( $update_info->no_update ) ) {
+			$latest = null;
+			foreach ( [ 'response', 'no_update' ] as $key ) {
+				$themes = isset( $update_info->$key ) ? (array) $update_info->$key : [];
+				// Entries are arrays in core, but filters can turn them into objects.
+				$theme = isset( $themes[ $slug ] ) ? (array) $themes[ $slug ] : [];
+				if ( isset( $theme['new_version'] ) ) {
+					$latest = (string) $theme['new_version'];
+					break;
+				}
+			}
+
+			// Themes that are not on WordPress.org are not part of the update check response.
+			return null === $latest ? '' : ! version_compare( $version, $latest, '>' );
+		}
+
 		/**
 		 * @var \WP_Error|object{name: string, slug: string, version: string, download_link: string} $theme_info
 		 */
