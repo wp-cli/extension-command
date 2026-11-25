@@ -301,7 +301,7 @@ Feature: Update WordPress themes
   Scenario: Updating several themes downloads their packages side by side
     Given a WP install
     And an empty cache
-    And I run `wp theme delete --all --force`
+    And an empty wp-content/themes directory
 
     When I run `wp theme install storefront --version=1.0.0`
     Then STDOUT should not be empty
