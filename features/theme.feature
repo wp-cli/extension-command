@@ -262,8 +262,10 @@ Feature: Manage WordPress themes
     When I run `wp theme list`
     Then STDOUT should not be empty
 
-    When I run `wp eval "echo get_site_transient( 'update_themes' )->last_checked;"`
-    Then save STDOUT as {LAST_UPDATED}
+    When I run `wp eval "set_site_transient( 'update_themes', (object) array_merge( (array) get_site_transient( 'update_themes' ), array( 'last_checked' => time() + DAY_IN_SECONDS ) ) );"`
+    And I run `wp eval "echo get_site_transient( 'update_themes' )->last_checked;"`
+    Then STDOUT should be a number
+    And save STDOUT as {LAST_UPDATED}
 
     When I run `wp theme list --skip-update-check`
     Then STDOUT should not be empty
