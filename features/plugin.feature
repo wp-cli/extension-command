@@ -357,12 +357,9 @@ Feature: Manage WordPress plugins
       Automattic
       """
 
-    When I run `wp eval "set_site_transient( 'update_plugins', (object) array_merge( (array) get_site_transient( 'update_plugins' ), array( 'last_checked' => 1000000000 ) ) );"`
+    When I run `wp eval "set_site_transient( 'update_plugins', (object) array_merge( (array) get_site_transient( 'update_plugins' ), array( 'last_checked' => time() + DAY_IN_SECONDS ) ) );"`
     And I run `wp eval "echo get_site_transient('update_plugins')->last_checked;"`
-    Then STDOUT should be:
-      """
-      1000000000
-      """
+    Then STDOUT should be a number
     And save STDOUT as {LAST_UPDATED}
 
     When I run `wp plugin list --skip-update-check`
