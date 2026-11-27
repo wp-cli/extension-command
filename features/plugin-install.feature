@@ -295,8 +295,8 @@ Feature: Install WordPress plugins
     # May produce a warning if the checksums for the version being replaced cannot be retrieved, e.g. for a development build.
     When I try `wp core download --version=6.4 --force`
     Then the return code should be 0
-    And I run `rm -r wp-content/themes/*`
 
+    When I run `rm -r wp-content/themes/*`
     And I try `wp plugin install wp-super-cache`
     Then STDERR should contain:
       """
