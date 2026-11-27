@@ -130,9 +130,11 @@ Feature: Install WordPress themes
   Scenario: Can't install theme that requires a newer version of WordPress
     Given a WP install
 
-    When I run `wp core download --version=6.4 --force`
-    And I run `rm -r wp-content/themes/*`
+    # May produce a warning if the checksums for the version being replaced cannot be retrieved, e.g. for a development build.
+    When I try `wp core download --version=6.4 --force`
+    Then the return code should be 0
 
+    When I run `rm -r wp-content/themes/*`
     And I try `wp theme install twentytwentyfive`
     Then STDERR should contain:
       """
