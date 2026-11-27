@@ -19,7 +19,7 @@ Feature: Download WordPress.org extensions without loading WordPress
   Scenario: Downloading a plugin package to a custom path
     Given an empty directory
 
-    When I run `wp plugin download debug-bar --target-path={RUN_DIR}/custom-path`
+    When I run `wp plugin download debug-bar --target-path="{RUN_DIR}/custom-path"`
     Then STDOUT should contain:
       """
       Success: Downloaded plugin package to
@@ -103,7 +103,7 @@ Feature: Download WordPress.org extensions without loading WordPress
   Scenario: Downloading a theme package to a custom path
     Given an empty directory
 
-    When I run `wp theme download twentytwelve --target-path={RUN_DIR}/custom-path`
+    When I run `wp theme download twentytwelve --target-path="{RUN_DIR}/custom-path"`
     Then STDOUT should contain:
       """
       Success: Downloaded theme package to
